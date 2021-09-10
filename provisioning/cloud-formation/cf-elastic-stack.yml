@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  VPC:
+    Type: 'AWS::EC2::VPC'
+    Properties: {}
+  Subnet:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+  RouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+  Route:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      RouteTableId: !Ref RouteTable
+  SecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties: {}
+  Elasticsearch:
+    Type: 'AWS::Elasticsearch::Domain'
+    Properties: {}
+  KibanaInstanceLB:
+    Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
+    Properties:
+      SecurityGroups:
+        - !Ref SecurityGroup
+  LogstashInstanceIP:
+    Type: 'AWS::EC2::EIP'
+    Properties: {}
+  LogstashTask:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties: {}
+  ElasticStackService:
+    Type: 'AWS::ECS::Service'
+    Properties: {}
+  ElasticStackCluster:
+    Type: 'AWS::ECS::Cluster'
+    Properties: {}
+  KibanaTask:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties: {}
