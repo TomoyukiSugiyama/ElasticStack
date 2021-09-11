@@ -1,4 +1,35 @@
 AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  DomainName:
+    Description: Elasticsearch domain name
+    Type: "es"
+  ElasticsearchVersion:
+    Description: Elasticsearch version
+    Type: "7.10"
+  InstanceType:
+    Type: "m3.medium.elasticsearch"
+  CidrBlock:
+    Type: "192.168.0.0/24"
+  AppName:
+    Type: "ElasticStack"
+    Description: Name of app requiring ELB exposure
+    Default: simple-app
+  AppContainerPort:
+    Type: Number
+    Description: Container port of app requiring ELB exposure
+    Default: '5601'
+  AppHostPort:
+    Type: Number
+    Description: Host port of app requiring ELB exposure
+    Default: '80'
+  ServiceName:
+    Type: "ElasticStackService"
+  LoadBalancerName:
+    Type: "KibanaInstanceLB"
+  HealthCheckGracePeriodSeconds:
+    Type: '60'
+
 Resources:
   VPC:
     Type: 'AWS::EC2::VPC'
@@ -20,7 +51,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: !GetAtt GetAvailabilityZone.ZoneName
-      CidrBlock: "192.168.0.0/24"
+      CidrBlock: !Ref CidrBlock
       VpcId: !Ref VPC
       MapPublicIpOnLaunch: False
   RouteTable:
@@ -52,63 +83,139 @@ Resources:
           FromPort: "80"
           ToPort: "80"
           CidrIp: "0.0.0.0/0"
+        - IpProtocol: tcp
+          FromPort: "443"
+          ToPort: "443"
+          CidrIp: "0.0.0.0/0"
         - IpProtocol: -1
           CidrIp: "192.168.0.0/24"
   ElasticsearchDomain:
     Type: AWS::Elasticsearch::Domain
     Properties:
-      DomainName: 'test'
-      ElasticsearchVersion: '7.10'
+      DomainName: !Ref DomainName
+      ElasticsearchVersion: !Ref ElasticsearchVersion
       ElasticsearchClusterConfig:
-        DedicatedMasterEnabled: true
-        InstanceCount: '2'
-        ZoneAwarenessEnabled: true
-        InstanceType: 'm3.medium.elasticsearch'
-        DedicatedMasterType: 'm3.medium.elasticsearch'
-        DedicatedMasterCount: '3'
+        InstanceCount: '1'
+        InstanceType: !Ref InstanceType
       EBSOptions:
         EBSEnabled: true
         Iops: '0'
-        VolumeSize: '20'
-        VolumeType: 'gp2'
+        VolumeSize: '10'
+        VolumeType: 'standard'
       AccessPolicies:
         Version: '2012-10-17'
         Statement:
-          -
-            Effect: 'Allow'
+          - Effect: Deny
             Principal:
-              AWS: 'arn:aws:iam::123456789012:user/es-user'
+              AWS: '*'
             Action: 'es:*'
-            Resource: 'arn:aws:es:us-east-1:846973539254:domain/test/*'
-      LogPublishingOptions:
-        ES_APPLICATION_LOGS:
-            CloudWatchLogsLogGroupArn: 'arn:aws:logs:us-east-1:123456789012:log-group:/aws/aes/domains/es-application-logs'
-            Enabled: true
-        SEARCH_SLOW_LOGS:
-            CloudWatchLogsLogGroupArn: 'arn:aws:logs:us-east-1:123456789012:log-group:/aws/aes/domains/es-slow-logs'
-            Enabled: true
-        INDEX_SLOW_LOGS:
-            CloudWatchLogsLogGroupArn: 'arn:aws:logs:us-east-1:123456789012:log-group:/aws/aes/domains/es-index-slow-logs'
-            Enabled: true
+            Resource: '*'
       AdvancedOptions:
         rest.action.multi.allow_explicit_index: true
-  KibanaInstanceLB:
-    Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
+      Tags:
+        - Key: stack
+          Value: develop
+      VPCOptions:
+        SubnetIds:
+          - Ref: Subnet
+        SecurityGroupIds:
+          - Ref: SecurityGroup
+  #LogstashInstanceIP:
+  #  Type: 'AWS::EC2::EIP'
+  #  Properties: {}
+  ElasticStackCluster:
+    Type: AWS::ECS::Cluster
+    Properties: {}
+  ElasticStackTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
     Properties:
+      ContainerDefinitions:
+        - Name: !Ref AppName
+          #MountPoints:
+          #  - SourceVolume: my-vol
+          #    ContainerPath: /var/www/my-vol
+          Image: docker.elastic.co/kibana/kibana:7.14.1
+          Cpu: '10'
+          PortMappings:
+            - ContainerPort: !Ref AppContainerPort
+              HostPort: !Ref AppHostPort
+          #EntryPoint:
+          #  - /usr/sbin/apache2
+          #  - '-D'
+          #  - FOREGROUND
+          Memory: '500'
+          Essential: true
+      #Volumes:
+      #  - Host:
+      #      SourcePath: /var/lib/docker/vfs/dir/
+      #    Name: my-vol
+  ElasticStackService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref ElasticStackCluster
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DesiredCount: 0
+      HealthCheckGracePeriodSeconds: !Ref HealthCheckGracePeriodSeconds
+      LoadBalancers:
+        - ContainerName: !Ref AppName
+          ContainerPort: !Ref AppContainerPort
+          LoadBalancerName: !Ref KibanaInstanceLB
+      PlacementStrategies:
+        - Type: binpack
+          Field: memory
+        - Type: spread
+          Field: host
+      PlacementConstraints:
+        - Type: memberOf
+          Expression: 'attribute:ecs.availability-zone != us-east-1d'
+        - Type: distinctInstance
+      TaskDefinition: !Ref ElasticStackTaskDefinition
+      ServiceName: !Ref ServiceName
+      Role: !Ref Role
+  KibanaInstanceLB:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      LoadBalancerName: !Ref LoadBalancerName
+      Listeners:
+        - InstancePort: !Ref AppHostPort
+          LoadBalancerPort: '80'
+          Protocol: HTTP
+      Subnets:
+        - !Ref Subnet
       SecurityGroups:
         - !Ref SecurityGroup
-  LogstashInstanceIP:
-    Type: 'AWS::EC2::EIP'
-    Properties: {}
-  LogstashTask:
-    Type: 'AWS::ECS::TaskDefinition'
-    Properties: {}
-  ElasticStackService:
-    Type: 'AWS::ECS::Service'
-    Properties: {}
-  ElasticStackCluster:
-    Type: 'AWS::ECS::Cluster'
-    Properties: {}
-  KibanaTask:
-    Type: 'AWS::ECS::TaskDefinition'
-    Properties: {}
+    DependsOn: InternetGatewayAttachment
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2008-10-17
+        Statement:
+          - Sid: ''
+            Effect: Allow
+            Principal:
+              Service: ecs.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole'
+Outputs:
+  DomainArn:
+    Value:
+      'Fn::GetAtt':
+        - ElasticsearchDomain
+        - DomainArn
+  DomainEndpoint:
+    Value:
+      'Fn::GetAtt':
+        - ElasticsearchDomain
+        - DomainEndpoint
+  SecurityGroupId:
+    Value:
+      Ref: SecurityGroup
+  SubnetId:
+    Value:
+      Ref: Subnet
+  Cluster:
+    Value: !Ref ElasticStackCluster
