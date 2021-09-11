@@ -1,18 +1,10 @@
 AWSTemplateFormatVersion: 2010-09-09
-
+Description: ElasticStack
 Parameters:
-  DomainName:
-    Description: Elasticsearch domain name
-    Type: "es"
-  ElasticsearchVersion:
-    Description: Elasticsearch version
-    Type: "7.10"
-  InstanceType:
-    Type: "m3.medium.elasticsearch"
-  CidrBlock:
-    Type: "192.168.0.0/24"
+  AvailabilityZone:
+    Type: String
   AppName:
-    Type: "ElasticStack"
+    Type: String
     Description: Name of app requiring ELB exposure
     Default: simple-app
   AppContainerPort:
@@ -22,13 +14,7 @@ Parameters:
   AppHostPort:
     Type: Number
     Description: Host port of app requiring ELB exposure
-    Default: '80'
-  ServiceName:
-    Type: "ElasticStackService"
-  LoadBalancerName:
-    Type: "KibanaInstanceLB"
-  HealthCheckGracePeriodSeconds:
-    Type: '60'
+    Default: '5601'
 
 Resources:
   VPC:
@@ -50,8 +36,8 @@ Resources:
   Subnet:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: !GetAtt GetAvailabilityZone.ZoneName
-      CidrBlock: !Ref CidrBlock
+      AvailabilityZone: AvailabilityZone
+      CidrBlock: 192.168.0.0/24
       VpcId: !Ref VPC
       MapPublicIpOnLaunch: False
   RouteTable:
@@ -92,11 +78,11 @@ Resources:
   ElasticsearchDomain:
     Type: AWS::Elasticsearch::Domain
     Properties:
-      DomainName: !Ref DomainName
-      ElasticsearchVersion: !Ref ElasticsearchVersion
+      DomainName: 'csaoire-kvfsnvpor32csef4mker'
+      ElasticsearchVersion: '7.10'
       ElasticsearchClusterConfig:
         InstanceCount: '1'
-        InstanceType: !Ref InstanceType
+        InstanceType: 'm3.medium.elasticsearch'
       EBSOptions:
         EBSEnabled: true
         Iops: '0'
@@ -120,9 +106,6 @@ Resources:
           - Ref: Subnet
         SecurityGroupIds:
           - Ref: SecurityGroup
-  #LogstashInstanceIP:
-  #  Type: 'AWS::EC2::EIP'
-  #  Properties: {}
   ElasticStackCluster:
     Type: AWS::ECS::Cluster
     Properties: {}
@@ -131,24 +114,13 @@ Resources:
     Properties:
       ContainerDefinitions:
         - Name: !Ref AppName
-          #MountPoints:
-          #  - SourceVolume: my-vol
-          #    ContainerPath: /var/www/my-vol
           Image: docker.elastic.co/kibana/kibana:7.14.1
           Cpu: '10'
           PortMappings:
             - ContainerPort: !Ref AppContainerPort
               HostPort: !Ref AppHostPort
-          #EntryPoint:
-          #  - /usr/sbin/apache2
-          #  - '-D'
-          #  - FOREGROUND
           Memory: '500'
           Essential: true
-      #Volumes:
-      #  - Host:
-      #      SourcePath: /var/lib/docker/vfs/dir/
-      #    Name: my-vol
   ElasticStackService:
     Type: AWS::ECS::Service
     Properties:
@@ -157,7 +129,7 @@ Resources:
         MaximumPercent: 200
         MinimumHealthyPercent: 100
       DesiredCount: 0
-      HealthCheckGracePeriodSeconds: !Ref HealthCheckGracePeriodSeconds
+      HealthCheckGracePeriodSeconds: 60
       LoadBalancers:
         - ContainerName: !Ref AppName
           ContainerPort: !Ref AppContainerPort
@@ -172,12 +144,12 @@ Resources:
           Expression: 'attribute:ecs.availability-zone != us-east-1d'
         - Type: distinctInstance
       TaskDefinition: !Ref ElasticStackTaskDefinition
-      ServiceName: !Ref ServiceName
+      ServiceName: 'ElasticStackService'
       Role: !Ref Role
   KibanaInstanceLB:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
-      LoadBalancerName: !Ref LoadBalancerName
+      LoadBalancerName: 'KibanaInstanceLB'
       Listeners:
         - InstancePort: !Ref AppHostPort
           LoadBalancerPort: '80'
