@@ -10,22 +10,17 @@ Parameters:
   AppContainerPort:
     Type: Number
     Description: Container port of app requiring ELB exposure
-    Default: '5601'
+    Default: '80'
   AppHostPort:
     Type: Number
     Description: Host port of app requiring ELB exposure
-    Default: '5601'
+    Default: '80'
 
 Resources:
   VPC:
     Type: 'AWS::EC2::VPC'
     Properties:
-      CidrBlock: 192.168.0.0/16
-      EnableDnsSupport: 'true'
-      EnableDnsHostnames: 'true'
-      Tags:
-       - Key: stack
-         Value: develop
+      CidrBlock: 10.0.0.0/24
   InternetGateway:
     Type: AWS::EC2::InternetGateway
   InternetGatewayAttachment:
@@ -36,25 +31,9 @@ Resources:
   Subnet:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: AvailabilityZone
-      CidrBlock: 192.168.0.0/24
+      AvailabilityZone: !Ref AvailabilityZone
+      CidrBlock: 10.0.0.0/25
       VpcId: !Ref VPC
-      MapPublicIpOnLaunch: False
-  RouteTable:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !Ref VPC
-  Route:
-    Type: AWS::EC2::Route
-    Properties:
-      RouteTableId: !Ref RouteTable
-      DestinationCidrBlock: "0.0.0.0/0"
-      GatewayId: !Ref InternetGateway
-  SubnetRouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref Subnet
-      RouteTableId: !Ref RouteTable
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -75,46 +54,15 @@ Resources:
           CidrIp: "0.0.0.0/0"
         - IpProtocol: -1
           CidrIp: "192.168.0.0/24"
-  ElasticsearchDomain:
-    Type: AWS::Elasticsearch::Domain
-    Properties:
-      DomainName: 'csaoire-kvfsnvpor32csef4mker'
-      ElasticsearchVersion: '7.10'
-      ElasticsearchClusterConfig:
-        InstanceCount: '1'
-        InstanceType: 'm3.medium.elasticsearch'
-      EBSOptions:
-        EBSEnabled: true
-        Iops: '0'
-        VolumeSize: '10'
-        VolumeType: 'standard'
-      AccessPolicies:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Deny
-            Principal:
-              AWS: '*'
-            Action: 'es:*'
-            Resource: '*'
-      AdvancedOptions:
-        rest.action.multi.allow_explicit_index: true
-      Tags:
-        - Key: stack
-          Value: develop
-      VPCOptions:
-        SubnetIds:
-          - Ref: Subnet
-        SecurityGroupIds:
-          - Ref: SecurityGroup
   ElasticStackCluster:
     Type: AWS::ECS::Cluster
-    Properties: {}
   ElasticStackTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
       ContainerDefinitions:
         - Name: !Ref AppName
-          Image: docker.elastic.co/kibana/kibana:7.14.1
+          Image: nginx
+          #Image: docker.elastic.co/kibana/kibana:7.14.1
           Cpu: '10'
           PortMappings:
             - ContainerPort: !Ref AppContainerPort
@@ -128,22 +76,13 @@ Resources:
       DeploymentConfiguration:
         MaximumPercent: 200
         MinimumHealthyPercent: 100
-      DesiredCount: 0
-      HealthCheckGracePeriodSeconds: 60
+      DesiredCount: 1
       LoadBalancers:
         - ContainerName: !Ref AppName
           ContainerPort: !Ref AppContainerPort
           LoadBalancerName: !Ref KibanaInstanceLB
-      PlacementStrategies:
-        - Type: binpack
-          Field: memory
-        - Type: spread
-          Field: host
-      PlacementConstraints:
-        - Type: memberOf
-          Expression: 'attribute:ecs.availability-zone != us-east-1d'
-        - Type: distinctInstance
       TaskDefinition: !Ref ElasticStackTaskDefinition
+      EnableExecuteCommand: true
       ServiceName: 'ElasticStackService'
       Role: !Ref Role
   KibanaInstanceLB:
@@ -172,17 +111,8 @@ Resources:
             Action: 'sts:AssumeRole'
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole'
+
 Outputs:
-  DomainArn:
-    Value:
-      'Fn::GetAtt':
-        - ElasticsearchDomain
-        - DomainArn
-  DomainEndpoint:
-    Value:
-      'Fn::GetAtt':
-        - ElasticsearchDomain
-        - DomainEndpoint
   SecurityGroupId:
     Value:
       Ref: SecurityGroup
