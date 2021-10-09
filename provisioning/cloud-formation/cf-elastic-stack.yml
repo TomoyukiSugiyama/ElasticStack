@@ -31,8 +31,14 @@ Resources:
   Subnet:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: !Ref AvailabilityZone
+      AvailabilityZone: "ap-northeast-1a"
       CidrBlock: 172.31.0.0/20
+      VpcId: !Ref VPC
+  Subnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: "ap-northeast-1c"
+      CidrBlock: 172.31.16.0/20
       VpcId: !Ref VPC
   RouteTable:
     Type: AWS::EC2::RouteTable
@@ -44,11 +50,11 @@ Resources:
       RouteTableId: !Ref RouteTable
       DestinationCidrBlock: "0.0.0.0/0"
       GatewayId: !Ref InternetGateway
-  SubnetRouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref Subnet
-      RouteTableId: !Ref RouteTable
+  #SubnetRouteTableAssociation:
+  #  Type: AWS::EC2::SubnetRouteTableAssociation
+  #  Properties:
+  #    SubnetId: !Ref Subnet
+  #    RouteTableId: !Ref RouteTable
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -104,7 +110,7 @@ Resources:
       LoadBalancers:
         - ContainerName: !Ref AppName
           ContainerPort: !Ref AppContainerPort
-          #LoadBalancerName: !Ref KibanaInstanceLB
+          LoadBalancerName: !Ref KibanaInstanceLB
       #NetworkConfiguration:
       #  AwsvpcConfiguration:
       #    AssignPublicIp: ENABLED
@@ -115,19 +121,20 @@ Resources:
       TaskDefinition: !Ref ElasticStackTaskDefinition
       ServiceName: 'ElasticStackService'
       Role: !Ref Role
-  #KibanaInstanceLB:
-  #  Type: AWS::ElasticLoadBalancing::LoadBalancer
-  #  Properties:
-  #    LoadBalancerName: 'KibanaInstanceLB'
-  #    Listeners:
-  #      - InstancePort: !Ref AppHostPort
-  #        LoadBalancerPort: '80'
-  #        Protocol: HTTP
-  #    Subnets:
-  #      - !Ref Subnet
-  #    SecurityGroups:
-  #      - !Ref SecurityGroup
-  #  DependsOn: InternetGatewayAttachment
+  KibanaInstanceLB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: 'KibanaInstanceLB'
+      #Listeners:
+      #  - InstancePort: !Ref AppHostPort
+      #    LoadBalancerPort: '80'
+      #    Protocol: HTTP
+      Subnets:
+        - !Ref Subnet
+        - !Ref Subnet2
+      SecurityGroups:
+        - !Ref SecurityGroup
+    DependsOn: InternetGatewayAttachment
   Role:
     Type: AWS::IAM::Role
     Properties:
