@@ -15,6 +15,14 @@ Parameters:
     Type: Number
     Description: Host port of app requiring ELB exposure
     Default: '80'
+  Listener:
+    Description: The Application Load Balancer listener to register with
+    Type: String
+
+  Path:
+    Description: The path to register with the Application Load Balancer
+    Type: String
+    Default: /
 
 Resources:
   VPC:
@@ -28,7 +36,7 @@ Resources:
     Properties:
       InternetGatewayId: !Ref InternetGateway
       VpcId: !Ref VPC
-  Subnet:
+  Subnet1:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: "ap-northeast-1a"
@@ -80,6 +88,7 @@ Resources:
   ElasticStackTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
+      Family: website-service
       Cpu: '256'
       Memory: '512'
       NetworkMode: awsvpc
@@ -87,7 +96,8 @@ Resources:
         - FARGATE
       ContainerDefinitions:
         - 
-          Name: !Ref AppName
+          Name: website-service
+          Essential: true
           Image: nginx:latest
           #Image: docker.elastic.co/kibana/kibana:7.14.1
           #Cpu: '512'
@@ -100,6 +110,8 @@ Resources:
           #Essential: true
   ElasticStackService:
     Type: AWS::ECS::Service
+    DependsOn:
+      - ListenerHTTP
     Properties:
       Cluster: !Ref ElasticStackCluster
       LaunchType: FARGATE
@@ -110,17 +122,32 @@ Resources:
       LoadBalancers:
         - ContainerName: !Ref AppName
           ContainerPort: !Ref AppContainerPort
-          LoadBalancerName: !Ref KibanaInstanceLB
-      #NetworkConfiguration:
-      #  AwsvpcConfiguration:
-      #    AssignPublicIp: ENABLED
-      #    SecurityGroups:
-      #      - !Ref SecurityGroup
-      #    Subnets:
-      #      - !Ref Subnet
+          #LoadBalancerName: !Ref KibanaInstanceLB
+          TargetGroupArn: !Ref TargetGroup
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !Ref SecurityGroup
+          Subnets:
+            - !Ref Subnet1
+            - !Ref Subnet2
       TaskDefinition: !Ref ElasticStackTaskDefinition
       ServiceName: 'ElasticStackService'
-      Role: !Ref Role
+      Role: !Ref ServiceRole
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !Ref VPC
+      Port: 80
+      Protocol: HTTP
+      Matcher:
+        HttpCode: 200-299
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
   KibanaInstanceLB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -130,7 +157,7 @@ Resources:
       #    LoadBalancerPort: '80'
       #    Protocol: HTTP
       Subnets:
-        - !Ref Subnet
+        - !Ref Subnet1
         - !Ref Subnet2
       SecurityGroups:
         - !Ref SecurityGroup
@@ -148,13 +175,59 @@ Resources:
             Action: 'sts:AssumeRole'
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole'
-
+  ListenerHTTP:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref TargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref KibanaInstanceLB
+      Port: 80
+      Protocol: HTTP
+  ServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ecs-service-${AWS::StackName}
+      Path: /
+      AssumeRolePolicyDocument: |
+        {
+            "Statement": [{
+                "Effect": "Allow",
+                "Principal": { "Service": [ "ecs.amazonaws.com" ]},
+                "Action": [ "sts:AssumeRole" ]
+            }]
+        }
+      Policies:
+        - PolicyName: !Sub ecs-service-${AWS::StackName}
+          PolicyDocument:
+            {
+              "Version": "2012-10-17",
+              "Statement":
+                [
+                  {
+                    "Effect": "Allow",
+                    "Action":
+                      [
+                        "ec2:AuthorizeSecurityGroupIngress",
+                        "ec2:Describe*",
+                        "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+                        "elasticloadbalancing:Describe*",
+                        "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+                        "elasticloadbalancing:DeregisterTargets",
+                        "elasticloadbalancing:DescribeTargetGroups",
+                        "elasticloadbalancing:DescribeTargetHealth",
+                        "elasticloadbalancing:RegisterTargets"
+                      ],
+                    "Resource": "*"
+                  }
+                ]
+            }
 Outputs:
   SecurityGroupId:
     Value:
       Ref: SecurityGroup
   SubnetId:
     Value:
-      Ref: Subnet
+      Ref: Subnet1
   Cluster:
     Value: !Ref ElasticStackCluster
