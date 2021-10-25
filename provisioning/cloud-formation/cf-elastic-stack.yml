@@ -23,12 +23,17 @@ Parameters:
     Description: The path to register with the Application Load Balancer
     Type: String
     Default: /
+  ExecutionRole:
+      Description: The ECS Fargate Execution role ARN
+      Type: String
 
 Resources:
+  # VPC
   VPC:
     Type: 'AWS::EC2::VPC'
     Properties:
       CidrBlock: 172.31.0.0/16
+  # Gateway
   InternetGateway:
     Type: AWS::EC2::InternetGateway
   InternetGatewayAttachment:
@@ -36,6 +41,7 @@ Resources:
     Properties:
       InternetGatewayId: !Ref InternetGateway
       VpcId: !Ref VPC
+  # Subnet
   Subnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -48,6 +54,7 @@ Resources:
       AvailabilityZone: "ap-northeast-1c"
       CidrBlock: 172.31.16.0/20
       VpcId: !Ref VPC
+  # RoutTable
   RouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -63,6 +70,8 @@ Resources:
   #  Properties:
   #    SubnetId: !Ref Subnet
   #    RouteTableId: !Ref RouteTable
+
+  # SecurityGroup
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -81,8 +90,6 @@ Resources:
           FromPort: "443"
           ToPort: "443"
           CidrIp: "0.0.0.0/0"
-        - IpProtocol: -1
-          CidrIp: "192.168.0.0/24"
   ElasticStackCluster:
     Type: AWS::ECS::Cluster
   ElasticStackTaskDefinition:
@@ -96,7 +103,7 @@ Resources:
         - FARGATE
       ContainerDefinitions:
         - 
-          Name: website-service
+          Name: !Ref AppName
           Essential: true
           Image: nginx:latest
           #Image: docker.elastic.co/kibana/kibana:7.14.1
@@ -105,9 +112,16 @@ Resources:
           PortMappings:
             - ContainerPort: !Ref AppContainerPort
               HostPort: !Ref AppHostPort
+          #LogConfiguration:
+          #  LogDriver: awslogs
+          #  Options:
+          #      awslogs-group: !Ref AWS::StackName
+          #      awslogs-region: !Ref AWS::Region
+          #      awslogs-stream-prefix: product-service
           #Memory: '512'
           #TaskRoleArn: "arn:aws:iam::645402554699:role/ecsTaskExecutionRole"
           #Essential: true
+      ExecutionRoleArn: !Ref ExecutionRole
   ElasticStackService:
     Type: AWS::ECS::Service
     DependsOn:
@@ -126,7 +140,7 @@ Resources:
           TargetGroupArn: !Ref TargetGroup
       NetworkConfiguration:
         AwsvpcConfiguration:
-          AssignPublicIp: ENABLED
+          AssignPublicIp: DISABLED
           SecurityGroups:
             - !Ref SecurityGroup
           Subnets:
@@ -134,7 +148,7 @@ Resources:
             - !Ref Subnet2
       TaskDefinition: !Ref ElasticStackTaskDefinition
       ServiceName: 'ElasticStackService'
-      Role: !Ref ServiceRole
+      # Role: !Ref ServiceRole
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -148,6 +162,7 @@ Resources:
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
+      TargetType: ip
   KibanaInstanceLB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
