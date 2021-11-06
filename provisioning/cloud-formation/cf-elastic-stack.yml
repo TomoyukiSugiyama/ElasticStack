@@ -119,9 +119,9 @@ Resources:
           #      awslogs-region: !Ref AWS::Region
           #      awslogs-stream-prefix: product-service
           #Memory: '512'
-          #TaskRoleArn: "arn:aws:iam::645402554699:role/ecsTaskExecutionRole"
+          TaskRoleArn: "arn:aws:iam::645402554699:role/ecsTaskExecutionRole"
           #Essential: true
-      ExecutionRoleArn: !Ref ExecutionRole
+      #ExecutionRoleArn: "arn:aws:iam::645402554699:role/ecsTaskExecutionRole"
   ElasticStackService:
     Type: AWS::ECS::Service
     DependsOn:
@@ -129,9 +129,6 @@ Resources:
     Properties:
       Cluster: !Ref ElasticStackCluster
       LaunchType: FARGATE
-      DeploymentConfiguration:
-        MaximumPercent: 200
-        MinimumHealthyPercent: 100
       DesiredCount: 1
       LoadBalancers:
         - ContainerName: !Ref AppName
