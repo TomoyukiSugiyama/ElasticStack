@@ -1,0 +1,8 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: GuardDuty
+
+Resources:
+  GuardDuty:
+    Type: AWS::GuardDuty::Detector
+    Properties:
+      Enable: true
