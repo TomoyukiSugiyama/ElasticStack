@@ -4,19 +4,26 @@ Parameters:
   DomainName:
     Description: User-defined OpenSearch domain name
     Type: String
+    Default: 'my-es'
   EngineVersion:
     Description: User-defined OpenSearch version
     Type: String
+    Default: 'OpenSearch_1.0'
   InstanceType:
     Type: String
+    Default: 'm3.medium.search'
   AvailabilityZone:
     Type: String
+    Default: 'ap-northeast-1a'
   CidrBlock:
     Type: String
+    Default: 10.0.0.0/17
   GroupDescription:
     Type: String
+    Default: 'my-securitygroup'
   SGName:
     Type: String
+    Default: 'my-sg'
 Resources:
   OpenSearchServiceDomain:
     Type: 'AWS::OpenSearchService::Domain'
