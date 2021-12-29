@@ -44,9 +44,9 @@ Resources:
       AccessPolicies:
         Version: '2012-10-17'
         Statement:
-          - Effect: Deny
+          - Effect: Allow
             Principal:
-              AWS: '*'
+              AWS: 'arn:aws:iam::645402554699:user/tomoyuki'
             Action: 'es:*'
             Resource: '*'
       AdvancedOptions:
@@ -64,6 +64,14 @@ Resources:
     Type: 'AWS::EC2::VPC'
     Properties:
       CidrBlock: 10.0.0.0/16
+  # Gateway
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref vpc
   subnet:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -73,6 +81,17 @@ Resources:
         Ref: CidrBlock
       AvailabilityZone:
         Ref: AvailabilityZone
+  # RoutTable
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref vpc
+  Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref RouteTable
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref InternetGateway
   mySecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
