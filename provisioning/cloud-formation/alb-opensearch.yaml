@@ -12,12 +12,6 @@ Parameters:
   InstanceType:
     Type: String
     Default: "m3.medium.search"
-  AvailabilityZone:
-    Type: String
-    Default: "ap-northeast-1a"
-  CidrBlock:
-    Type: String
-    Default: 10.0.0.0/17
   GroupDescription:
     Type: String
     Default: "my-securitygroup"
@@ -62,13 +56,13 @@ Resources:
           Value: bar
       VPCOptions:
         SubnetIds:
-          - Ref: subnet
+          - Ref: Subnet
         SecurityGroupIds:
           - Ref: SecurityGroup
   Vpc:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: 10.0.0.0/16
+      CidrBlock: 172.31.0.0/16
   # Gateway
   InternetGateway:
     Type: AWS::EC2::InternetGateway
@@ -77,15 +71,21 @@ Resources:
     Properties:
       InternetGatewayId: !Ref InternetGateway
       VpcId: !Ref Vpc
-  subnet:
+  Subnet:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
         Ref: Vpc
-      CidrBlock:
-        Ref: CidrBlock
-      AvailabilityZone:
-        Ref: AvailabilityZone
+      CidrBlock: 172.31.0.0/20
+      AvailabilityZone: "ap-northeast-1a"
+      MapPublicIpOnLaunch: True
+  Subnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: Vpc
+      CidrBlock: 172.31.16.0/20
+      AvailabilityZone: "ap-northeast-1c"
       MapPublicIpOnLaunch: True
   # RoutTable
   RouteTable:
@@ -101,7 +101,7 @@ Resources:
   SubnetRootTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId: !Ref subnet
+      SubnetId: !Ref Subnet
       RouteTableId: !Ref RouteTable
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -133,7 +133,7 @@ Resources:
       NetworkInterfaces:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
-          SubnetId: !Ref subnet
+          SubnetId: !Ref Subnet
           GroupSet:
             - !Ref SecurityGroup
   Alb:
@@ -144,7 +144,9 @@ Resources:
       LoadBalancerAttributes:
         - Key: idle_timeout.timeout_seconds
           Value: "30"
-      Subnets: !Ref subnet
+      Subnets:
+        - !Ref Subnet
+        - !Ref Subnet2
       SecurityGroups: [!Ref SecurityGroup]
   AlbListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -191,7 +193,7 @@ Resources:
             Principal:
               AWS: "arn:aws:iam::645402554699:user/tomoyuki"
             Action: ["sts:AssumeRole"]
-      Path: /_dashboards/*
+      Path: /_dashboards/
       Policies:
         - PolicyName: servicePolicy
           PolicyDocument:
@@ -220,4 +222,4 @@ Outputs:
       Ref: SecurityGroup
   SubnetId:
     Value:
-      Ref: subnet
+      Ref: Subnet
