@@ -24,6 +24,11 @@ Parameters:
   SGName:
     Type: String
     Default: 'my-sg'
+  KeyName:
+    Description: The EC2 Key Pair to allow SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: "elastic-stack"
+
 Resources:
   OpenSearchServiceDomain:
     Type: 'AWS::OpenSearchService::Domain'
@@ -48,7 +53,7 @@ Resources:
             Principal:
               AWS: 'arn:aws:iam::645402554699:user/tomoyuki'
             Action: 'es:*'
-            Resource: '*'
+            Resource: 'arn:aws:es:ap-northeast-1:645402554699:domain/my-es/*'
       AdvancedOptions:
         rest.action.multi.allow_explicit_index: true
         override_main_response_version: true
@@ -81,6 +86,7 @@ Resources:
         Ref: CidrBlock
       AvailabilityZone:
         Ref: AvailabilityZone
+      MapPublicIpOnLaunch: True
   # RoutTable
   RouteTable:
     Type: AWS::EC2::RouteTable
@@ -92,6 +98,11 @@ Resources:
       RouteTableId: !Ref RouteTable
       DestinationCidrBlock: "0.0.0.0/0"
       GatewayId: !Ref InternetGateway
+  SubnetRootTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref subnet
+      RouteTableId: !Ref RouteTable
   mySecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -106,6 +117,23 @@ Resources:
           IpProtocol: tcp
           ToPort: 443
           CidrIp: 0.0.0.0/0
+        - FromPort: 22
+          IpProtocol: tcp
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties: 
+      ImageId:  ami-085e9421f80dbe728
+      KeyName: !Ref KeyName
+      InstanceType: t2.micro
+      NetworkInterfaces: 
+        - AssociatePublicIpAddress: "true"
+          DeviceIndex: "0"
+          SubnetId: !Ref subnet
+          GroupSet:
+            - !Ref mySecurityGroup
+
 Outputs:
   Arn:
     Value:
