@@ -56,7 +56,7 @@ Resources:
           Value: bar
       VPCOptions:
         SubnetIds:
-          - Ref: Subnet
+          - Ref: PublicSubnet
         SecurityGroupIds:
           - Ref: SecurityGroup
   Vpc:
@@ -71,7 +71,7 @@ Resources:
     Properties:
       InternetGatewayId: !Ref InternetGateway
       VpcId: !Ref Vpc
-  Subnet:
+  PublicSubnet:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
@@ -101,7 +101,7 @@ Resources:
   SubnetRootTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId: !Ref Subnet
+      SubnetId: !Ref PublicSubnet
       RouteTableId: !Ref RouteTable
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -133,7 +133,7 @@ Resources:
       NetworkInterfaces:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
-          SubnetId: !Ref Subnet
+          SubnetId: !Ref PublicSubnet
           GroupSet:
             - !Ref SecurityGroup
   Alb:
@@ -145,7 +145,7 @@ Resources:
         - Key: idle_timeout.timeout_seconds
           Value: "30"
       Subnets:
-        - !Ref Subnet
+        - !Ref PublicSubnet
         - !Ref Subnet2
       SecurityGroups: [!Ref SecurityGroup]
   AlbListener:
@@ -176,7 +176,7 @@ Resources:
     Properties:
       HealthCheckIntervalSeconds: 10
       HealthCheckPath: /
-      HealthCheckProtocol: HTTPS
+      HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
       Name: TargetGroup
@@ -193,7 +193,7 @@ Resources:
             Principal:
               AWS: "arn:aws:iam::645402554699:user/tomoyuki"
             Action: ["sts:AssumeRole"]
-      Path: /_dashboards/
+      Path: /
       Policies:
         - PolicyName: servicePolicy
           PolicyDocument:
@@ -222,4 +222,4 @@ Outputs:
       Ref: SecurityGroup
   SubnetId:
     Value:
-      Ref: Subnet
+      Ref: PublicSubnet
