@@ -1,59 +1,51 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Description: OpenSearchServiceDomain resource
 Parameters:
   DomainName:
     Description: User-defined OpenSearch domain name
     Type: String
-    Default: 'my-es'
+    Default: "my-es"
   EngineVersion:
     Description: User-defined OpenSearch version
     Type: String
-    Default: 'OpenSearch_1.0'
+    Default: "OpenSearch_1.0"
   InstanceType:
     Type: String
-    Default: 'm3.medium.search'
-  AvailabilityZone:
-    Type: String
-    Default: 'ap-northeast-1a'
-  CidrBlock:
-    Type: String
-    Default: 10.0.0.0/17
+    Default: "m3.medium.search"
   GroupDescription:
     Type: String
-    Default: 'my-securitygroup'
-  SGName:
-    Type: String
-    Default: 'my-sg'
+    Default: "my-securitygroup"
   KeyName:
     Description: The EC2 Key Pair to allow SSH access to the instance
     Type: AWS::EC2::KeyPair::KeyName
     Default: "elastic-stack"
 
 Resources:
+  # OpenSearchServiceDomain
   OpenSearchServiceDomain:
-    Type: 'AWS::OpenSearchService::Domain'
+    Type: "AWS::OpenSearchService::Domain"
     Properties:
       DomainName:
         Ref: DomainName
       EngineVersion:
         Ref: EngineVersion
       ClusterConfig:
-        InstanceCount: '1'
+        InstanceCount: "1"
         InstanceType:
           Ref: InstanceType
       EBSOptions:
         EBSEnabled: true
-        Iops: '0'
-        VolumeSize: '10'
-        VolumeType: 'standard'
+        Iops: "0"
+        VolumeSize: "10"
+        VolumeType: "standard"
       AccessPolicies:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
-              AWS: 'arn:aws:iam::645402554699:user/tomoyuki'
-            Action: 'es:*'
-            Resource: 'arn:aws:es:ap-northeast-1:645402554699:domain/my-es/*'
+              AWS: "arn:aws:iam::645402554699:user/tomoyuki"
+            Action: "es:*"
+            Resource: "arn:aws:es:ap-northeast-1:645402554699:domain/my-es/*"
       AdvancedOptions:
         rest.action.multi.allow_explicit_index: true
         override_main_response_version: true
@@ -62,13 +54,14 @@ Resources:
           Value: bar
       VPCOptions:
         SubnetIds:
-          - Ref: subnet
+          - Ref: PublicSubnet1
         SecurityGroupIds:
-          - Ref: mySecurityGroup
-  vpc:
-    Type: 'AWS::EC2::VPC'
+          - Ref: OpenSearchSecurityGroup
+  # VPC
+  Vpc:
+    Type: "AWS::EC2::VPC"
     Properties:
-      CidrBlock: 10.0.0.0/16
+      CidrBlock: 172.31.0.0/16
   # Gateway
   InternetGateway:
     Type: AWS::EC2::InternetGateway
@@ -76,78 +69,122 @@ Resources:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
       InternetGatewayId: !Ref InternetGateway
-      VpcId: !Ref vpc
-  subnet:
-    Type: 'AWS::EC2::Subnet'
+      VpcId: !Ref Vpc
+  # Subnet
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
     Properties:
       VpcId:
-        Ref: vpc
-      CidrBlock:
-        Ref: CidrBlock
-      AvailabilityZone:
-        Ref: AvailabilityZone
+        Ref: Vpc
+      CidrBlock: 172.31.0.0/20
+      AvailabilityZone: "ap-northeast-1a"
+      MapPublicIpOnLaunch: True
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: Vpc
+      CidrBlock: 172.31.16.0/20
+      AvailabilityZone: "ap-northeast-1c"
+      MapPublicIpOnLaunch: True
+  PublicSubnet3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: Vpc
+      CidrBlock: 172.31.32.0/20
+      AvailabilityZone: "ap-northeast-1d"
       MapPublicIpOnLaunch: True
   # RoutTable
   RouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId: !Ref vpc
+      VpcId: !Ref Vpc
   Route:
     Type: AWS::EC2::Route
     Properties:
       RouteTableId: !Ref RouteTable
       DestinationCidrBlock: "0.0.0.0/0"
       GatewayId: !Ref InternetGateway
-  SubnetRootTableAssociation:
+  # SubnetRoutTableAssociation
+  PublicSubnet1RootTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId: !Ref subnet
+      SubnetId: !Ref PublicSubnet1
       RouteTableId: !Ref RouteTable
-  mySecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
+  PublicSubnet2RootTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      GroupDescription:
-        Ref: GroupDescription
-      VpcId:
-        Ref: vpc
-      GroupName:
-        Ref: SGName
-      SecurityGroupIngress:
-        - FromPort: 443
-          IpProtocol: tcp
-          ToPort: 443
-          CidrIp: 0.0.0.0/0
-        - FromPort: 22
-          IpProtocol: tcp
-          ToPort: 22
-          CidrIp: 0.0.0.0/0
+      SubnetId: !Ref PublicSubnet2
+      RouteTableId: !Ref RouteTable
+  PublicSubnet3RootTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet3
+      RouteTableId: !Ref RouteTable
+  # SecurityGroup
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group
+      VpcId: !Ref Vpc
+  SecurityGroupHTTPinbound:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref "SecurityGroup"
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      CidrIp: 0.0.0.0/0
+  SecurityGroupSSHinbound:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref "SecurityGroup"
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+      CidrIp: 0.0.0.0/0
+  OpenSearchSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group
+      VpcId: !Ref Vpc
+  OpenSearchSecurityGroupHTTPinbound:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref "OpenSearchSecurityGroup"
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      CidrIp: 172.31.0.0/16
+  # EC2
   EC2Instance:
     Type: AWS::EC2::Instance
-    Properties: 
-      ImageId:  ami-085e9421f80dbe728
+    Properties:
+      ImageId: ami-085e9421f80dbe728
       KeyName: !Ref KeyName
       InstanceType: t2.micro
-      NetworkInterfaces: 
+      NetworkInterfaces:
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
-          SubnetId: !Ref subnet
+          SubnetId: !Ref PublicSubnet1
           GroupSet:
-            - !Ref mySecurityGroup
+            - !Ref SecurityGroup
 
 Outputs:
   Arn:
     Value:
-      'Fn::GetAtt':
+      "Fn::GetAtt":
         - OpenSearchServiceDomain
         - Arn
   DomainEndpoint:
     Value:
-      'Fn::GetAtt':
+      "Fn::GetAtt":
         - OpenSearchServiceDomain
         - DomainEndpoint
   SecurityGroupId:
     Value:
-      Ref: mySecurityGroup
-  SubnetId:
+      Ref: SecurityGroup
+  PublicSubnet1Id:
     Value:
-      Ref: subnet
+      Ref: PublicSubnet1
