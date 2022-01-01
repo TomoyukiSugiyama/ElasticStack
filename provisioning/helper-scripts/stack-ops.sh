@@ -1,5 +1,5 @@
 #!/bin/sh
-# ref from https://www.slideshare.net/yktko/cloudformation-getting-started-with-yaml
+# ref: https://www.slideshare.net/yktko/cloudformation-getting-started-with-yaml
 
 mode=$1; shift
 stack_name=$1; shift
