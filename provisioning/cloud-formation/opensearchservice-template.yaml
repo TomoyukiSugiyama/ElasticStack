@@ -4,40 +4,40 @@ Parameters:
   DomainName:
     Description: User-defined OpenSearch domain name
     Type: String
-    Default: "my-es"
+    Default: my-es
   EngineVersion:
     Description: User-defined OpenSearch version
     Type: String
-    Default: "OpenSearch_1.0"
+    Default: OpenSearch_1.0
   InstanceType:
     Type: String
-    Default: "m3.medium.search"
+    Default: m3.medium.search
   GroupDescription:
     Type: String
-    Default: "my-securitygroup"
+    Default: my-securitygroup
   KeyName:
     Description: The EC2 Key Pair to allow SSH access to the instance
     Type: AWS::EC2::KeyPair::KeyName
-    Default: "elastic-stack"
+    Default: elastic-stack
 
 Resources:
   # OpenSearchServiceDomain
   OpenSearchServiceDomain:
-    Type: "AWS::OpenSearchService::Domain"
+    Type: AWS::OpenSearchService::Domain
     Properties:
       DomainName:
         Ref: DomainName
       EngineVersion:
         Ref: EngineVersion
       ClusterConfig:
-        InstanceCount: "1"
+        InstanceCount: 1
         InstanceType:
           Ref: InstanceType
       EBSOptions:
         EBSEnabled: true
-        Iops: "0"
-        VolumeSize: "10"
-        VolumeType: "standard"
+        Iops: 0
+        VolumeSize: 10
+        VolumeType: standard
       AccessPolicies:
         Version: "2012-10-17"
         Statement:
@@ -59,7 +59,7 @@ Resources:
           - Ref: OpenSearchSecurityGroup
   # VPC
   Vpc:
-    Type: "AWS::EC2::VPC"
+    Type: AWS::EC2::VPC
     Properties:
       CidrBlock: 172.31.0.0/16
   # Gateway
@@ -77,7 +77,7 @@ Resources:
       VpcId:
         Ref: Vpc
       CidrBlock: 172.31.0.0/20
-      AvailabilityZone: "ap-northeast-1a"
+      AvailabilityZone: ap-northeast-1a
       MapPublicIpOnLaunch: True
   PublicSubnet2:
     Type: AWS::EC2::Subnet
@@ -85,7 +85,7 @@ Resources:
       VpcId:
         Ref: Vpc
       CidrBlock: 172.31.16.0/20
-      AvailabilityZone: "ap-northeast-1c"
+      AvailabilityZone: ap-northeast-1c
       MapPublicIpOnLaunch: True
   PublicSubnet3:
     Type: AWS::EC2::Subnet
@@ -93,7 +93,7 @@ Resources:
       VpcId:
         Ref: Vpc
       CidrBlock: 172.31.32.0/20
-      AvailabilityZone: "ap-northeast-1d"
+      AvailabilityZone: ap-northeast-1d
       MapPublicIpOnLaunch: True
   # RoutTable
   RouteTable:
@@ -104,7 +104,7 @@ Resources:
     Type: AWS::EC2::Route
     Properties:
       RouteTableId: !Ref RouteTable
-      DestinationCidrBlock: "0.0.0.0/0"
+      DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
   # SubnetRoutTableAssociation
   PublicSubnet1RootTableAssociation:
@@ -131,7 +131,7 @@ Resources:
   SecurityGroupHTTPinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
-      GroupId: !Ref "SecurityGroup"
+      GroupId: !Ref SecurityGroup
       IpProtocol: tcp
       FromPort: 443
       ToPort: 443
@@ -139,7 +139,7 @@ Resources:
   SecurityGroupSSHinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
-      GroupId: !Ref "SecurityGroup"
+      GroupId: !Ref SecurityGroup
       IpProtocol: tcp
       FromPort: 22
       ToPort: 22
@@ -152,7 +152,7 @@ Resources:
   OpenSearchSecurityGroupHTTPinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
-      GroupId: !Ref "OpenSearchSecurityGroup"
+      GroupId: !Ref OpenSearchSecurityGroup
       IpProtocol: tcp
       FromPort: 443
       ToPort: 443
@@ -165,8 +165,8 @@ Resources:
       KeyName: !Ref KeyName
       InstanceType: t2.micro
       NetworkInterfaces:
-        - AssociatePublicIpAddress: "true"
-          DeviceIndex: "0"
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
           SubnetId: !Ref PublicSubnet1
           GroupSet:
             - !Ref SecurityGroup
