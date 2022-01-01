@@ -62,9 +62,16 @@ Resources:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: 172.31.0.0/16
+      Tags:
+        - Key: Name
+          Value: !Join [" ", [!Ref AWS::StackName, VPC]]
   # Gateway
   InternetGateway:
     Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Join [" ", [!Ref AWS::StackName, InternetGateway]]
   InternetGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
@@ -79,6 +86,9 @@ Resources:
       CidrBlock: 172.31.0.0/20
       AvailabilityZone: ap-northeast-1a
       MapPublicIpOnLaunch: True
+      Tags:
+        - Key: Name
+          Value: !Join [" ", [!Ref AWS::StackName, PublicSubnet1]]
   PublicSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
@@ -87,6 +97,9 @@ Resources:
       CidrBlock: 172.31.16.0/20
       AvailabilityZone: ap-northeast-1c
       MapPublicIpOnLaunch: True
+      Tags:
+        - Key: Name
+          Value: !Join [" ", [!Ref AWS::StackName, PublicSubnet2]]
   PublicSubnet3:
     Type: AWS::EC2::Subnet
     Properties:
@@ -95,11 +108,17 @@ Resources:
       CidrBlock: 172.31.32.0/20
       AvailabilityZone: ap-northeast-1d
       MapPublicIpOnLaunch: True
+      Tags:
+        - Key: Name
+          Value: !Join [" ", [!Ref AWS::StackName, PublicSubnet3]]
   # RoutTable
   RouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Join [" ", [!Ref AWS::StackName, RouteTable]]
   Route:
     Type: AWS::EC2::Route
     Properties:
@@ -128,6 +147,9 @@ Resources:
     Properties:
       GroupDescription: Security Group
       VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Join [" ", [!Ref AWS::StackName, SecurityGroup, EC2]]
   SecurityGroupHTTPinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -149,6 +171,9 @@ Resources:
     Properties:
       GroupDescription: Security Group
       VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Join [" ", [!Ref AWS::StackName, SecurityGroup, OpenSearch]]
   OpenSearchSecurityGroupHTTPinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -170,6 +195,9 @@ Resources:
           SubnetId: !Ref PublicSubnet1
           GroupSet:
             - !Ref SecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Join [" ", [!Ref AWS::StackName, EC2]]
 
 Outputs:
   Arn:
