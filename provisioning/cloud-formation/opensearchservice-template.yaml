@@ -43,7 +43,7 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              AWS: "arn:aws:iam::645402554699:user/tomoyuki"
+              AWS: "*"
             Action: "es:*"
             Resource: "arn:aws:es:ap-northeast-1:645402554699:domain/my-es/*"
       AdvancedOptions:
@@ -156,7 +156,7 @@ Resources:
       IpProtocol: tcp
       FromPort: 443
       ToPort: 443
-      CidrIp: 172.31.0.0/16
+      CidrIp: 172.31.0.0/20
   # EC2
   EC2Instance:
     Type: AWS::EC2::Instance
