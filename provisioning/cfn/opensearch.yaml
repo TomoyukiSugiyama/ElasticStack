@@ -1,0 +1,76 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: OpenSearchServiceDomain resource
+# ------------------------------------------------------------------------------
+# Parameters
+# ------------------------------------------------------------------------------
+Parameters:
+  DomainName:
+    Description: User-defined OpenSearch domain name
+    Type: String
+    Default: my-es
+  EngineVersion:
+    Description: User-defined OpenSearch version
+    Type: String
+    Default: OpenSearch_1.0
+  InstanceType:
+    Type: String
+    Default: m3.medium.search
+  GroupDescription:
+    Type: String
+    Default: my-securitygroup
+
+# ------------------------------------------------------------------------------
+# Resources
+# ------------------------------------------------------------------------------
+Resources:
+  # OpenSearchServiceDomain
+  OpenSearchServiceDomain:
+    Type: AWS::OpenSearchService::Domain
+    Properties:
+      DomainName:
+        Ref: DomainName
+      EngineVersion:
+        Ref: EngineVersion
+      ClusterConfig:
+        InstanceCount: 1
+        InstanceType:
+          Ref: InstanceType
+      EBSOptions:
+        EBSEnabled: true
+        Iops: 0
+        VolumeSize: 10
+        VolumeType: standard
+      AccessPolicies:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: "*"
+            Action: "es:*"
+            Resource: "arn:aws:es:ap-northeast-1:645402554699:domain/my-es/*"
+      AdvancedOptions:
+        rest.action.multi.allow_explicit_index: true
+        override_main_response_version: true
+      Tags:
+        - Key: Name
+          Value: !Join [" ", [!Ref AWS::StackName, OpenSearch]]
+      VPCOptions:
+        SubnetIds:
+          - Ref: PublicSubnet1
+        SecurityGroupIds:
+          - Ref: OpenSearchSecurityGroup
+
+# ------------------------------------------------------------------------------
+# Outputs
+# ------------------------------------------------------------------------------
+Outputs:
+  Arn:
+    Value:
+      "Fn::GetAtt":
+        - OpenSearchServiceDomain
+        - Arn
+  DomainEndpoint:
+    Value:
+      "Fn::GetAtt":
+        - OpenSearchServiceDomain
+        - DomainEndpoint
