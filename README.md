@@ -45,7 +45,7 @@ $ cfn-stack-ops delete test-stack
 ```shell
 $ s3-ops 
 
-Usage: /Users/tomoyuki/work/github/ElasticStack/provisioning/helper-scripts/s3-ops.sh MODE ARGS
+Usage: /path/to/ElasticStack/provisioning/helper-scripts/s3-ops.sh MODE ARGS
 
 Mode:     Args:
 list      
