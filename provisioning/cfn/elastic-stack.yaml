@@ -26,3 +26,12 @@ Resources:
       Parameters:
         VpcId: !GetAtt Network.Outputs.VpcId
         VpcCidrBlock: !Ref VpcCidrBlock
+
+  SpringBoard:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: springboard.yaml
+      Parameters:
+        KeyName: elastic-stack
+        SubnetId: !GetAtt Network.Outputs.PublicSubnet1Id
+        SecurityGroupId: !GetAtt SecurityGroup.Outputs.SecurityGroupId

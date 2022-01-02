@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: OpenSearchServiceDomain resource
+Description: Springboard
 # ------------------------------------------------------------------------------
 # Parameters
 # ------------------------------------------------------------------------------
@@ -7,7 +7,10 @@ Parameters:
   KeyName:
     Description: The EC2 Key Pair to allow SSH access to the instance
     Type: AWS::EC2::KeyPair::KeyName
-    Default: elastic-stack
+  SubnetId:
+    Type: String
+  SecurityGroupId:
+    Type: String
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -23,13 +26,16 @@ Resources:
       NetworkInterfaces:
         - AssociatePublicIpAddress: true
           DeviceIndex: 0
-          SubnetId: !Ref PublicSubnet1
+          SubnetId: !Ref SubnetId
           GroupSet:
-            - !Ref SecurityGroup
+            - !Ref SecurityGroupId
       Tags:
         - Key: Name
           Value: !Join [" ", [!Ref AWS::StackName, EC2]]
 # ------------------------------------------------------------------------------
 # Outputs
 # ------------------------------------------------------------------------------
-#Outputs:
+Outputs:
+  EC2InstanceId:
+    Value:
+      Ref: EC2Instance
