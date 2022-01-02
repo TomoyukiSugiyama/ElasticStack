@@ -20,11 +20,21 @@ $ s3-ops create elastic-stack-xxxxxxxxxxxxxxxxx-artifact
 ```shell
 $ mkdir provisioning/artifacts
 $ cfn-stack-ops package provisioning/cfn/elastic-stack.yaml elastic-stack-xxxxxxxxxxxxxxxxx-artifact provisioning/artifacts/artifact.yaml
+aws cloudformation package --template-file provisioning/cfn/elastic-stack.yaml --s3-bucket elastic-stack-xxxxxxxxxxxxxxxxx-artifact --output-template-file provisioning/artifacts/artifact.yaml
+Uploading to XXXXXXXXXXXXXXXXXXXXXXXXXXXX.template  1669 / 1669.0  (100.00%)
+Successfully packaged artifacts and wrote output template to file provisioning/artifacts/artifact.yaml.
+Execute the following command to deploy the packaged template
+aws cloudformation deploy --template-file /path/to/ElasticStack/provisioning/artifacts/artifact.yaml --stack-name <YOUR STACK NAME>
 ```
 
 3. Deploy
 ```shell
 $ cfn-stack-ops deploy test-stack provisioning/artifacts/artifact.yaml
+aws cloudformation deploy --stack-name test-stack --template-file provisioning/artifacts/artifact.yaml
+
+Waiting for changeset to be created..
+Waiting for stack create/update to complete
+Successfully created/updated stack - test-stack
 ```
 
 ## Delete
