@@ -4,13 +4,16 @@
 mode=$1; shift
 arg1=$1; shift
 arg2=$1; shift
-if [ "$mode" != "create" -a "$mode" != "update" -a "$mode" != "delete" -a "$mode" != "list" -a "$mode" != "describe" -a "$mode" != "validate" ]; then
+arg3=$1; shift
+if [ "$mode" != "create" -a "$mode" != "update" -a "$mode" != "delete" -a "$mode" != "list" -a "$mode" != "describe" -a "$mode" != "validate" -a "$mode" != "package"  -a "$mode" != "deploy" ]; then
     echo ""
     echo "Usage: $0 MODE ARGS"
     echo ""
     echo "Mode:     Args:"
     echo "create    stack-name path-to-cfn-template-file [param1=val1 param2=val2]"
     echo "update    stack-name path-to-cfn-template-file [param1=val1 param2=val2]"
+    echo "package   path-to-cfn-template-file s3-bucket output-template-file"
+    echo "deploy    stack-name path-to-cfn-template-filee"
     echo "list      ";
     echo "describe  stack-name";
     echo "validate  path-to-cfn-template-file"
@@ -22,6 +25,18 @@ if [ "$mode" == "create" -o "$mode" == "update" ]; then
     args="--template-body file://${arg2} --capabilities CAPABILITY_IAM ${params}"
     stack_name_option="--stack-name ${arg1}"
     mode_option="${mode}-stack"
+fi
+
+if [ "$mode" == "package" ]; then
+    args="--template-file ${arg1} --s3-bucket ${arg2} --output-template-file ${arg3}"
+    stack_name_option=""
+    mode_option="${mode}"
+fi
+
+if [ "$mode" == "deploy" ]; then
+    args="--template-file ${arg2}"
+    stack_name_option="--stack-name ${arg1}"
+    mode_option="${mode}"
 fi
 
 if [ "$mode" == "list" ]; then
