@@ -30,7 +30,7 @@ Resources:
   SpringBoard:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: springboard.yaml
+      TemplateURL: ec2.yaml
       Parameters:
         KeyName: elastic-stack
         SubnetId: !GetAtt Network.Outputs.PublicSubnet1Id
