@@ -48,7 +48,7 @@ Resources:
             Principal:
               AWS: "*"
             Action: "es:*"
-            Resource: "arn:aws:es:ap-northeast-1:645402554699:domain/my-es/*"
+            Resource: !Sub "arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/${DomainName}/*"
       AdvancedOptions:
         rest.action.multi.allow_explicit_index: true
         override_main_response_version: true
