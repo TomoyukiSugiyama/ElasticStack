@@ -15,9 +15,10 @@ Parameters:
   InstanceType:
     Type: String
     Default: m3.medium.search
-  GroupDescription:
+  SubnetId:
     Type: String
-    Default: my-securitygroup
+  SecurityGroupId:
+    Type: String
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -56,9 +57,9 @@ Resources:
           Value: !Join [" ", [!Ref AWS::StackName, OpenSearch]]
       VPCOptions:
         SubnetIds:
-          - Ref: PublicSubnet1
+          - Ref: SubnetId
         SecurityGroupIds:
-          - Ref: OpenSearchSecurityGroup
+          - Ref: SecurityGroupId
 
 # ------------------------------------------------------------------------------
 # Outputs

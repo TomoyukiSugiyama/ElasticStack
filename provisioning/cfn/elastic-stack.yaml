@@ -35,3 +35,11 @@ Resources:
         KeyName: elastic-stack
         SubnetId: !GetAtt Network.Outputs.PublicSubnet1Id
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.SecurityGroupId
+
+  Opensearch:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: opensearch.yaml
+      Parameters:
+        SubnetId: !GetAtt Network.Outputs.PublicSubnet1Id
+        SecurityGroupId: !GetAtt SecurityGroup.Outputs.OpenSearchSecurityGroupId
