@@ -1,5 +1,12 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: Elastic Stack
+# ------------------------------------------------------------------------------
+# Parameters
+# ------------------------------------------------------------------------------
+Parameters:
+  VpcCidrBlock:
+    Type: String
+    Default: 172.31.0.0/16
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -10,4 +17,12 @@ Resources:
     Properties:
       TemplateURL: network.yaml
       Parameters:
-        VpcCidrBlock: 172.31.0.0/16
+        VpcCidrBlock: !Ref VpcCidrBlock
+
+  SecurityGroup:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: security-group.yaml
+      Parameters:
+        VpcId: !GetAtt Network.Outputs.VpcId
+        VpcCidrBlock: !Ref VpcCidrBlock

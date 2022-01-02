@@ -1,12 +1,14 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: OpenSearchServiceDomain resource
+Description: Security Group
 # ------------------------------------------------------------------------------
 # Parameters
 # ------------------------------------------------------------------------------
 Parameters:
-  GroupDescription:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  VpcCidrBlock:
     Type: String
-    Default: my-securitygroup
+    Default: 172.31.0.0/16
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -17,7 +19,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Security Group
-      VpcId: !Ref Vpc
+      VpcId: !Ref VpcId
       Tags:
         - Key: Name
           Value: !Join [" ", [!Ref AWS::StackName, SecurityGroup, EC2]]
@@ -41,7 +43,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Security Group
-      VpcId: !Ref Vpc
+      VpcId: !Ref VpcId
       Tags:
         - Key: Name
           Value: !Join [" ", [!Ref AWS::StackName, SecurityGroup, OpenSearch]]
@@ -54,7 +56,7 @@ Resources:
       ToPort: 443
       CidrIp: !Select
         - 0
-        - Fn::Cidr: [!GetAtt Vpc.CidrBlock, 3, 12]
+        - Fn::Cidr: [!Ref VpcCidrBlock, 3, 12]
 
 # ------------------------------------------------------------------------------
 # Outputs
@@ -63,3 +65,6 @@ Outputs:
   SecurityGroupId:
     Value:
       Ref: SecurityGroup
+  OpenSearchSecurityGroupId:
+    Value:
+      Ref: OpenSearchSecurityGroup
