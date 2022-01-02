@@ -16,7 +16,7 @@ Resources:
   Vpc:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: VpcCidrBlock
+      CidrBlock: !Ref VpcCidrBlock
       Tags:
         - Key: Name
           Value: !Join [" ", [!Ref AWS::StackName, VPC]]
