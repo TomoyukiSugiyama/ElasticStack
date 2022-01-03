@@ -256,7 +256,7 @@ Resources:
       TaskDefinition: !Ref taskdefinition
       NetworkConfiguration:
         AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
+          AssignPublicIp: ENABLED
           SecurityGroups: [!Ref 'EcsSecurityGroup']
           Subnets: !Ref SubnetId
   ECSServiceRole:
