@@ -22,7 +22,7 @@ fi
 
 if [ "$mode" == "create" -o "$mode" == "update" ]; then
     params=$(echo $* | perl -pe "s/([^= ]+)=([^ ]+)/ParameterKey=\1,ParameterValue=\2/g")
-    args="--template-body file://${arg2} --capabilities CAPABILITY_IAM ${params}"
+    args="--template-body file://${arg2} --capabilities CAPABILITY_IAM --capabilities CAPABILITY_NAMED_IAM ${params}"
     stack_name_option="--stack-name ${arg1}"
     mode_option="${mode}-stack"
 fi

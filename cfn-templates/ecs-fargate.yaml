@@ -81,6 +81,11 @@ Mappings:
 Resources:
   ECSCluster:
     Type: AWS::ECS::Cluster
+    Properties:
+        ClusterName: !Join ["-", [!Ref AWS::StackName, cluster]]
+        Tags:
+          - Key: Name
+            Value: !Join [" ", [!Ref AWS::StackName, Cluster]]
   EcsSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -118,13 +123,17 @@ Resources:
   taskdefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
+      ExecutionRoleArn: !Ref EcsTaskExecutionRole
+      RequiresCompatibilities:
+      - FARGATE
+      NetworkMode: awsvpc
+      Cpu: 256
+      Memory: 512
       Family: !Join ['', [!Ref 'AWS::StackName', -ecs-demo-app]]
       ContainerDefinitions:
       - Name: simple-app
-        Cpu: 10
         Essential: true
         Image: httpd:2.4
-        Memory: 300
         LogConfiguration:
           LogDriver: awslogs
           Options:
@@ -137,7 +146,6 @@ Resources:
         PortMappings:
         - ContainerPort: 80
       - Name: busybox
-        Cpu: 10
         Command: ['/bin/sh -c "while true; do echo ''<html> <head> <title>Amazon ECS
             Sample App</title> <style>body {margin-top: 40px; background-color: #333;}
             </style> </head><body> <div style=color:white;text-align:center> <h1>Amazon
@@ -148,7 +156,6 @@ Resources:
         EntryPoint: [sh, -c]
         Essential: false
         Image: busybox
-        Memory: 200
         LogConfiguration:
           LogDriver: awslogs
           Options:
@@ -205,6 +212,7 @@ Resources:
       Protocol: HTTP
       UnhealthyThresholdCount: 2
       VpcId: !Ref VpcId
+      TargetType: ip
   ECSAutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
@@ -239,12 +247,18 @@ Resources:
     Properties:
       Cluster: !Ref ECSCluster
       DesiredCount: 1
+      LaunchType: FARGATE
       LoadBalancers:
       - ContainerName: simple-app
         ContainerPort: 80
         TargetGroupArn: !Ref ECSTG
-      Role: !Ref ECSServiceRole
+      #Role: !Ref ECSServiceRole
       TaskDefinition: !Ref taskdefinition
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups: [!Ref 'EcsSecurityGroup']
+          Subnets: !Ref SubnetId
   ECSServiceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -322,6 +336,29 @@ Resources:
             Action: ['ecs:CreateCluster', 'ecs:DeregisterContainerInstance', 'ecs:DiscoverPollEndpoint',
               'ecs:Poll', 'ecs:RegisterContainerInstance', 'ecs:StartTelemetrySession',
               'ecs:Submit*', 'logs:CreateLogStream', 'logs:PutLogEvents']
+            Resource: '*'
+  EcsTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: my-ecs-fargate-task-execution-role
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      Policies:
+      - PolicyName: ecs-fargate-service
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action: ['ecs:CreateCluster', 'ecs:DeregisterContainerInstance', 'ecs:DiscoverPollEndpoint',
+              'ecs:Poll', 'ecs:RegisterContainerInstance', 'ecs:StartTelemetrySession',
+              'ecs:Submit*', 'logs:CreateLogStream', 'logs:PutLogEvents', 'iam:CreateServiceLinkedRole']
             Resource: '*'
   AutoscalingRole:
     Type: AWS::IAM::Role
