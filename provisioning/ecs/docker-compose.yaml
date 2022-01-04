@@ -1,23 +1,14 @@
 version: '3'
 services:
-  db:
-    image: mysql:8.0
-    command: '--default-authentication-plugin=mysql_native_password'
+  logstash01:
+    image: docker.elastic.co/logstash/logstash:7.9.2
+    container_name: logstash01
     volumes:
-      - db_data:/var/lib/mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD=somewordpress
-      - MYSQL_DATABASE=wordpress
-      - MYSQL_USER=wordpress
-      - MYSQL_PASSWORD=wordpress
-  wordpress:
-    image: wordpress:latest
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./logstash/config/jvm.options:/usr/share/logstash/config/jvm.options
+      - ./logstash/config/log4j2.properties:/usr/share/logstash/config/log4j2.properties
+      - ./logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml
+      - ./logstash/pipeline/:/usr/share/logstash/pipeline/
+      - ./logstash/extra_patterns/date_jp:/opt/logstash/extra_patterns
     ports:
-      - 80:80
-    environment:
-      - WORDPRESS_DB_HOST=db
-      - WORDPRESS_DB_USER=wordpress
-      - WORDPRESS_DB_PASSWORD=wordpress
-      - WORDPRESS_DB_NAME=wordpress
-volumes:
-  db_data: null
+      - "5044:5044"
