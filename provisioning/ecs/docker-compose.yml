@@ -1,0 +1,7 @@
+version: '3'
+services:
+  logstash:
+    image: ${ECR_URI}:logstash
+    container_name: worker
+    ports:
+      - "5044:5044"

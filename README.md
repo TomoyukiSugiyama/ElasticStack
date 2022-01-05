@@ -9,7 +9,7 @@ alias cfn-stack-ops="/path/to/ElasticStack/provisioning/helper-scripts/cfn-stack
 alias s3-ops="/path/to/ElasticStack/provisioning/helper-scripts/s3-ops.sh $1"
 ```
 
-## Deploy
+## Deploy CFn
 
 1. Create s3 bucket
 ```shell
@@ -35,6 +35,38 @@ aws cloudformation deploy --stack-name test-stack --template-file provisioning/a
 Waiting for changeset to be created..
 Waiting for stack create/update to complete
 Successfully created/updated stack - test-stack
+```
+
+## Deploy ECS
+
+```sh
+export AWS_REGION="ap-northeast-1"
+export ECR_URI=$(aws ecr create-repository \
+  --repository-name test \
+  --region $AWS_REGION \
+  --query 'repository.repositoryUri' \
+  --output text)
+```
+
+```
+aws ecr get-login-password --region $AWS_REGION| docker login --username AWS --password-stdin $ECR_URI
+```
+
+```
+for SERVICE in logstash;
+do
+  docker image build -t $ECR_URI:$SERVICE $SERVICE/
+  docker image push $ECR_URI:$SERVICE
+done
+```
+
+```bash
+$ aws ecr list-images --repository-name test | jq '.imageIds | .[].imageTag'
+"logstash"
+```
+
+```
+sed -i "" 's#dockersample/ecs_logstash#${ECR_URI}:logstash#g' docker-compose.yml
 ```
 
 ## Delete

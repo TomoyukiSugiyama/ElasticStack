@@ -6,35 +6,39 @@
 #
 # Example of two pipelines:
 #
-# - pipeline.id: test
-#   pipeline.workers: 1
-#   pipeline.batch.size: 1
-#   config.string: "input { generator {} } filter { sleep { time => 1 } } output { stdout { codec => dots } }"
+#- pipeline.id: test
+#  pipeline.workers: 1
+#  pipeline.batch.size: 1
+#  config.string: "input { generator {} } filter { sleep { time => 1 } } output { stdout { codec => dots } }"
 # - pipeline.id: another_test
 #   queue.type: persisted
 #   path.config: "/tmp/logstash/*.config"
 #
 
-- pipeline.id: beats-server
-  config.string: |
-    input { beats { port => 5044 } }
-    output {
-        if [source] == 'filebeat' {
-          pipeline { send_to => filebeatlog }
-        } else if [source] == 'metricbeat' {
-          pipeline { send_to => metricbeatlog }
-        }
-    }
-
-- pipeline.id: filebeat-processing
-  path.config: "/usr/share/logstash/pipeline/{input/filebeat_in,filter/filebeat_filter,output/filebeat_out}.cfg"
-  pipeline.batch.size: 50
-  pipeline.batch.delay: 50
-
-- pipeline.id: metricbeat-processing
-  path.config: "/usr/share/logstash/pipeline/{input/metricbeat_in,filter/metricbeat_filter,output/metricbeat_out}.cfg"
-  pipeline.batch.size: 50
-  pipeline.batch.delay: 50
+- pipeline.id: test
+  pipeline.workers: 1
+  pipeline.batch.size: 1
+  config.string: "input { generator {} } filter { sleep { time => 1 } } output { stdout {} }"
+##- pipeline.id: beats-server
+##  config.string: |
+##    input { beats { port => 5044 } }
+##    output {
+##        if [source] == 'filebeat' {
+##          pipeline { send_to => filebeatlog }
+##        } else if [source] == 'metricbeat' {
+##          pipeline { send_to => metricbeatlog }
+##        }
+##    }
+##
+##- pipeline.id: filebeat-processing
+##  path.config: "/usr/share/logstash/pipeline/{input/filebeat_in,filter/filebeat_filter,output/filebeat_out}.cfg"
+##  pipeline.batch.size: 50
+##  pipeline.batch.delay: 50
+##
+##- pipeline.id: metricbeat-processing
+##  path.config: "/usr/share/logstash/pipeline/{input/metricbeat_in,filter/metricbeat_filter,output/metricbeat_out}.cfg"
+##  pipeline.batch.size: 50
+##  pipeline.batch.delay: 50
 
 # Available options:
 #
