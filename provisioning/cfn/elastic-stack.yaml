@@ -43,3 +43,11 @@ Resources:
       Parameters:
         SubnetId: !GetAtt Network.Outputs.PublicSubnet1Id
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.OpenSearchSecurityGroupId
+
+# ------------------------------------------------------------------------------
+# Outputs
+# ------------------------------------------------------------------------------
+Outputs:
+  VpcId:
+    Value:
+      Ref: !GetAtt Network.Outputs.VpcId

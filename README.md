@@ -41,10 +41,23 @@ Successfully created/updated stack - test-stack
 
 ```sh
 export AWS_REGION="ap-northeast-1"
+
+# create a new repository and get repositoryUri
 export ECR_URI=$(aws ecr create-repository \
   --repository-name test \
   --region $AWS_REGION \
   --query 'repository.repositoryUri' \
+  --output text)
+
+# get repositoryUri from existing repository
+export ECR_URI=$(aws ecr describe-repositories \
+  --repository-names test \
+  --query 'repositories[].repositoryUri' \
+  --output text)
+
+export AWS_VPC=$(aws cloudformation describe-stacks \
+  --stack-name test-stack-Network-XXXXX \
+  --query "Stacks[0].Outputs[?OutputKey=='VpcId'].OutputValue" \
   --output text)
 ```
 
