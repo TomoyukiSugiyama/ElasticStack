@@ -18,7 +18,22 @@
 - pipeline.id: test
   pipeline.workers: 1
   pipeline.batch.size: 1
-  config.string: "input { generator {} } filter { sleep { time => 1 } } output { stdout {} }"
+  config.string: |
+    input { generator {} }
+    filter { sleep { time => 1 } }
+    output {
+      opensearch {
+        hosts => ["https://vpc-my-es-sk5xpobbjxtur7njpsc7qplwlq.ap-northeast-1.es.amazonaws.com:443"]
+        index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}"
+        ssl => true
+        ssl_certificate_verification => false
+      }
+    }
+
+##        user => "my-username"
+##        password => "my-password"
+
+##  config.string: "input { generator {} } filter { sleep { time => 1 } } output { stdout {} }"
 ##- pipeline.id: beats-server
 ##  config.string: |
 ##    input { beats { port => 5044 } }

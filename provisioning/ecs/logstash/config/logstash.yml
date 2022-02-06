@@ -86,7 +86,7 @@ pipeline.ordered: auto
 # config.reload.automatic: false
 #
 # How often to check if the pipeline configuration has changed (in seconds)
-# Note that the unit value (s) is required. Values without a qualifier (e.g. 60) 
+# Note that the unit value (s) is required. Values without a qualifier (e.g. 60)
 # are treated as nanoseconds.
 # Setting the interval this way is not recommended and might change in later versions.
 #
@@ -117,7 +117,6 @@ pipeline.ordered: auto
 #
 # http.host: 127.0.0.1
 http.host: "0.0.0.0"
-
 #
 # The HTTP API web server will listen on an available port from the given range.
 # Values can be specified as a single port (e.g., `9600`), or an inclusive range
@@ -263,8 +262,8 @@ http.host: "0.0.0.0"
 #
 # X-Pack Monitoring
 # https://www.elastic.co/guide/en/logstash/current/monitoring-logstash.html
-monitoring.enabled: false
-xpack.monitoring.enabled: true
+#monitoring.enabled: false
+#xpack.monitoring.enabled: true
 #xpack.monitoring.elasticsearch.username: logstash_system
 #xpack.monitoring.elasticsearch.password: password
 #xpack.monitoring.elasticsearch.proxy: ["http://proxy:port"]
