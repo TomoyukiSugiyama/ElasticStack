@@ -56,7 +56,7 @@ export ECR_URI=$(aws ecr describe-repositories \
   --output text)
 
 export AWS_VPC=$(aws cloudformation describe-stacks \
-  --stack-name test-stack-Network-XXXXX \
+  --stack-name test-stack \
   --query "Stacks[0].Outputs[?OutputKey=='VpcId'].OutputValue" \
   --output text)
 ```

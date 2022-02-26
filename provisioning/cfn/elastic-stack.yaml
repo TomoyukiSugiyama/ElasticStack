@@ -49,5 +49,4 @@ Resources:
 # ------------------------------------------------------------------------------
 Outputs:
   VpcId:
-    Value:
-      Ref: !GetAtt Network.Outputs.VpcId
+    Value: !GetAtt Network.Outputs.VpcId
