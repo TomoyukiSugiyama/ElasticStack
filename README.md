@@ -124,3 +124,9 @@ describe  stack-name
 validate  path-to-cfn-template-file
 delete    stack-name
 ```
+
+# SSH tunnel
+
+```
+ssh -i ~/.ssh/your-key.pem ec2-user@your-ec2-instance-public-ip -N -L 9200:vpc-domain-name.region.es.amazonaws.com:443
+```
