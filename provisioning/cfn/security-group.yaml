@@ -86,3 +86,6 @@ Outputs:
   OpenSearchSecurityGroupId:
     Value:
       Ref: OpenSearchSecurityGroup
+  FargateSecurityGroupId:
+    Value:
+      Ref: FargateSecurityGroup
