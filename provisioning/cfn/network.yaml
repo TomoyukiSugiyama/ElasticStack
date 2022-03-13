@@ -125,3 +125,6 @@ Outputs:
   PublicSubnet3Id:
     Value:
       Ref: PublicSubnet3
+  RouteTableId:
+    Value:
+      Ref: RouteTable
