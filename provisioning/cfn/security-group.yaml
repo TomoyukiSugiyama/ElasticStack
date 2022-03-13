@@ -58,6 +58,23 @@ Resources:
       CidrIp: !Select
         - 0
         - Fn::Cidr: [!Ref VpcCidrBlock, 3, 12]
+  # FargateSecurityGroup
+  FargateSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: !Join [" ", [!Ref AWS::StackName, SecurityGroup, Fargate]]
+  FargateSecurityGroupHTTPinbound:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref FargateSecurityGroup
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      CidrIp: VpcCidrBlock
 
 # ------------------------------------------------------------------------------
 # Outputs
