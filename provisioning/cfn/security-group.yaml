@@ -74,7 +74,9 @@ Resources:
       IpProtocol: tcp
       FromPort: 443
       ToPort: 443
-      CidrIp: VpcCidrBlock
+      CidrIp: !Select
+        - 0
+        - Fn::Cidr: [!Ref VpcCidrBlock, 3, 12]
 
 # ------------------------------------------------------------------------------
 # Outputs
