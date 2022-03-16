@@ -22,20 +22,8 @@ Resources:
       Tags:
         - Key: Name
           Value: !Join [" ", [!Ref AWS::StackName, VPC]]
-  # Gateway
-  # InternetGateway:
-  #   Type: AWS::EC2::InternetGateway
-  #   Properties:
-  #     Tags:
-  #       - Key: Name
-  #         Value: !Join [" ", [!Ref AWS::StackName, InternetGateway]]
-  # InternetGatewayAttachment:
-  #   Type: AWS::EC2::VPCGatewayAttachment
-  #   Properties:
-  #     InternetGatewayId: !Ref InternetGateway
-  #     VpcId: !Ref Vpc
   # Subnet
-  PublicSubnet1:
+  PrivateSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
@@ -46,11 +34,10 @@ Resources:
       AvailabilityZone: !Select
         - 0
         - Fn::GetAZs: !Ref AWS::Region
-      # MapPublicIpOnLaunch: True
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, PublicSubnet1]]
-  PublicSubnet2:
+          Value: !Join [" ", [!Ref AWS::StackName, PrivateSubnet1]]
+  PrivateSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
@@ -61,11 +48,10 @@ Resources:
       AvailabilityZone: !Select
         - 1
         - Fn::GetAZs: !Ref AWS::Region
-      # MapPublicIpOnLaunch: True
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, PublicSubnet2]]
-  PublicSubnet3:
+          Value: !Join [" ", [!Ref AWS::StackName, PrivateSubnet2]]
+  PrivateSubnet3:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
@@ -76,10 +62,9 @@ Resources:
       AvailabilityZone: !Select
         - 2
         - Fn::GetAZs: !Ref AWS::Region
-      # MapPublicIpOnLaunch: True
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, PublicSubnet3]]
+          Value: !Join [" ", [!Ref AWS::StackName, PrivateSubnet3]]
   # RoutTable
   RouteTable:
     Type: AWS::EC2::RouteTable
@@ -93,22 +78,21 @@ Resources:
   #   Properties:
   #     RouteTableId: !Ref RouteTable
   #     DestinationCidrBlock: 0.0.0.0/0
-  #     GatewayId: !Ref InternetGateway
   # SubnetRoutTableAssociation
-  PublicSubnet1RootTableAssociation:
+  PrivateSubnet1RootTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId: !Ref PublicSubnet1
+      SubnetId: !Ref PrivateSubnet1
       RouteTableId: !Ref RouteTable
-  PublicSubnet2RootTableAssociation:
+  PrivateSubnet2RootTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId: !Ref PublicSubnet2
+      SubnetId: !Ref PrivateSubnet2
       RouteTableId: !Ref RouteTable
-  PublicSubnet3RootTableAssociation:
+  PrivateSubnet3RootTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId: !Ref PublicSubnet3
+      SubnetId: !Ref PrivateSubnet3
       RouteTableId: !Ref RouteTable
 
 # ------------------------------------------------------------------------------
@@ -118,15 +102,15 @@ Outputs:
   VpcId:
     Value:
       Ref: Vpc
-  PublicSubnet1Id:
+  PrivateSubnet1Id:
     Value:
-      Ref: PublicSubnet1
-  PublicSubnet2Id:
+      Ref: PrivateSubnet1
+  PrivateSubnet2Id:
     Value:
-      Ref: PublicSubnet2
-  PublicSubnet3Id:
+      Ref: PrivateSubnet2
+  PrivateSubnet3Id:
     Value:
-      Ref: PublicSubnet3
+      Ref: PrivateSubnet3
   RouteTableId:
     Value:
       Ref: RouteTable
