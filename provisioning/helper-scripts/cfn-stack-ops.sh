@@ -34,7 +34,7 @@ if [ "$mode" == "package" ]; then
 fi
 
 if [ "$mode" == "deploy" ]; then
-    args="--template-file ${arg2}"
+    args="--template-file ${arg2} --capabilities CAPABILITY_IAM --capabilities CAPABILITY_NAMED_IAM"
     stack_name_option="--stack-name ${arg1}"
     mode_option="${mode}"
 fi
