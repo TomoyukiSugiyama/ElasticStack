@@ -24,7 +24,7 @@ Resources:
       KeyName: !Ref KeyName
       InstanceType: t2.micro
       NetworkInterfaces:
-        - AssociatePublicIpAddress: false
+        - AssociatePublicIpAddress: true
           DeviceIndex: 0
           SubnetId: !Ref SubnetId
           GroupSet:
