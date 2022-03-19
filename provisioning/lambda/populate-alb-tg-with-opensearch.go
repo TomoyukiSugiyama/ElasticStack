@@ -2,21 +2,19 @@ package main
 
 import (
 	"fmt"
+	"net"
+	"os"
 
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
-type MyEvent struct {
-	Name string `json:"What is your name?"`
-	Age  int    `json:"How old are you?"`
-}
-
-type MyResponse struct {
-	Message string `json:"Answer:"`
-}
-
-func HandleLambdaEvent(event MyEvent) (MyResponse, error) {
-	return MyResponse{Message: fmt.Sprintf("%s is %d years old!", event.Name, event.Age)}, nil
+func HandleLambdaEvent() {
+	addr, err := net.ResolveIPAddr("ip", "vpc-my-es-sk5xpobbjxtur7njpsc7qplwlq.ap-northeast-1.es.amazonaws.com")
+	if err != nil {
+		fmt.Println("Resolve error ", err)
+		os.Exit(1)
+	}
+	fmt.Println("Addr: ", addr)
 }
 
 func main() {
