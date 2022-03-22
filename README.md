@@ -61,25 +61,22 @@ export AWS_VPC=$(aws cloudformation describe-stacks \
   --output text)
 ```
 
-```
-aws ecr get-login-password --region $AWS_REGION| docker login --username AWS --password-stdin $ECR_URI
-```
-
-```
-for SERVICE in logstash;
-do
-  docker image build -t $ECR_URI:$SERVICE $SERVICE/
-  docker image push $ECR_URI:$SERVICE
-done
+deploy docker image
+```bash
+(cd provisioning/ecs ; ./deploy-container-image-to-ecr.sh)
 ```
 
+check
 ```bash
 $ aws ecr list-images --repository-name test | jq '.imageIds | .[].imageTag'
+"ecs-serchdomain-sidecar"
 "logstash"
 ```
 
-```
-sed -i "" 's#dockersample/ecs_logstash#${ECR_URI}:logstash#g' docker-compose.yml
+deploy ecs
+```bash
+docker context use myecs
+docker compose up
 ```
 
 ## Delete
