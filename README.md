@@ -103,6 +103,7 @@ Mode:     Args:
 list      
 create    s3-name
 delete    s3-name
+push      s3-name     file-path
 ```
 
 * Cloudformation
