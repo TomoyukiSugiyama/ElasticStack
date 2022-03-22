@@ -62,6 +62,22 @@ Resources:
   #       SecurityGroupId: !GetAtt SecurityGroup.Outputs.FargateSecurityGroupId
   #       PrivateRouteTableId: !GetAtt Network.Outputs.PrivateRouteTableId
 
+  # Lambda:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: lambda.yaml
+  #     Parameters:
+  #       SubnetIds:
+  #         !Join [
+  #           ",",
+  #           [
+  #             !GetAtt Network.Outputs.PrivateSubnet1Id,
+  #             !GetAtt Network.Outputs.PrivateSubnet2Id,
+  #             !GetAtt Network.Outputs.PrivateSubnet3Id,
+  #           ],
+  #         ]
+  #       SecurityGroupId: !GetAtt SecurityGroup.Outputs.FargateSecurityGroupId
+
   # LogstashFargate:
   #   Type: AWS::CloudFormation::Stack
   #   Properties:

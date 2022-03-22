@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Lambda
+# ------------------------------------------------------------------------------
+# Parameters
+# ------------------------------------------------------------------------------
+Parameters:
+  SubnetIds:
+    Type: String
+  SecurityGroupId:
+    Type: String
+# ------------------------------------------------------------------------------
+# Resources
+# ------------------------------------------------------------------------------
+
+Resources:
+  Function:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: populate-alb-tg-with-opensearch
+      Role: !GetAtt LambdaRole.Arn
+      Code:
+        S3Bucket: lambda-m090d3wnw8nug47yfdcw3-artifact
+        S3Key: populate-alb-tg-with-opensearch.zip
+      Runtime: go1.x
+      Timeout: 5
+      TracingConfig:
+        Mode: Active
+      VpcConfig:
+        SecurityGroupIds:
+          - Ref: SecurityGroupId
+        SubnetIds: !Split [",", !Ref SubnetIds]
+
+  LambdaRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Condition: {}
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+        - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+      Policies:
+        - PolicyName: FIoTElasticLoadBalancingAccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "elasticloadbalancing:DescribeLoadBalancers"
+                  - "elasticloadbalancing:DescribeTargetHealth"
+                  - "elasticloadbalancing:DescribeTargetGroups"
+                Resource: "*"
+      Tags:
+        - Key: com.trim.f-iot
+          Value: lambda
+    Type: AWS::IAM::Role
