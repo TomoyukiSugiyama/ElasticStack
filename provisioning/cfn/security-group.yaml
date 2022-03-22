@@ -23,13 +23,21 @@ Resources:
       Tags:
         - Key: Name
           Value: !Join [" ", [!Ref AWS::StackName, SecurityGroup, EC2]]
-  SecurityGroupHTTPinbound:
+  SecurityGroupHTTPSinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       GroupId: !Ref SecurityGroup
       IpProtocol: tcp
       FromPort: 443
       ToPort: 443
+      CidrIp: 0.0.0.0/0
+  SecurityGroupHTTPinbound:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref SecurityGroup
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
       CidrIp: 0.0.0.0/0
   SecurityGroupSSHinbound:
     Type: AWS::EC2::SecurityGroupIngress
@@ -74,7 +82,9 @@ Resources:
       IpProtocol: tcp
       FromPort: 443
       ToPort: 443
-      CidrIp: VpcCidrBlock
+      CidrIp: !Select
+        - 0
+        - Fn::Cidr: [!Ref VpcCidrBlock, 3, 12]
 
 # ------------------------------------------------------------------------------
 # Outputs

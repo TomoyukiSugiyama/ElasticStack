@@ -58,3 +58,14 @@ Resources:
       SubnetIds: !Split [",", !Ref SubnetIds]
       SecurityGroupIds:
         - !Ref SecurityGroupId
+
+  ElasticLoadBalancingEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.elasticloadbalancing"
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: true
+      VpcId: !Ref VpcId
+      SubnetIds: !Split [",", !Ref SubnetIds]
+      SecurityGroupIds:
+        - !Ref SecurityGroupId

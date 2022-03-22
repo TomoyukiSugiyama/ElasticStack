@@ -105,7 +105,7 @@ Resources:
             - !Sub "${AWS::Region}.compute.internal"
             - ecs.local
           Essential: false
-          Image: docker/ecs-searchdomain-sidecar:1.0
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/f-iot-rep:ecs-searchdomain-sidecar"
           LogConfiguration:
             LogDriver: awslogs
             Options:
