@@ -27,19 +27,14 @@ func HandleLambdaEvent() {
 	fmt.Println(cfg)
 
 	svc := elasticloadbalancingv2.NewFromConfig(cfg)
-	//fmt.Println(svc)
 
-	//lbarn := "arn:aws:elasticloadbalancing:ap-northeast-1:645402554699:loadbalancer/app/opensearch-lb/0acadb2211bef59e"
-
-	//input := &elasticloadbalancingv2.DescribeLoadBalancersInput{LoadBalancerArns: []string{lbarn}}
 	input := &elasticloadbalancingv2.DescribeLoadBalancersInput{}
-	//fmt.Println(input)
 	resp, err := svc.DescribeLoadBalancers(context.TODO(), input)
 	if err != nil {
 		log.Fatalf("failed to get loadbalancers, %v", err)
 	}
 
-	//fmt.Println(resp)
+	var lbTargetIp string
 	for _, lb := range resp.LoadBalancers {
 		fmt.Printf("ARN : %s\n", *lb.LoadBalancerArn)
 		fmt.Printf("DNS name : %s\n", *lb.DNSName)
@@ -49,13 +44,28 @@ func HandleLambdaEvent() {
 		if err != nil {
 			log.Fatalf("failed to get target groups, %v", err)
 		}
+
 		for _, tg := range tgs.TargetGroups {
 			fmt.Printf("TargetGroupe name : %s\n", *tg.TargetGroupName)
 			fmt.Printf("TargetGroupe ARN : %s\n", *tg.TargetGroupArn)
 			fmt.Printf("TargetGroupe port : %d\n", *tg.Port)
 
+			inputhelth := &elasticloadbalancingv2.DescribeTargetHealthInput{TargetGroupArn: tg.TargetGroupArn}
+			result, err := svc.DescribeTargetHealth(context.TODO(), inputhelth)
+			if err != nil {
+				log.Fatalf("failed to get target helth, %v", err)
+			}
+			for _, tgh := range result.TargetHealthDescriptions {
+				fmt.Printf("Target Id : %s\n", *tgh.Target.Id)
+				lbTargetIp = *tgh.Target.Id
+			}
 		}
+	}
 
+	if lbTargetIp == addr.IP.String() {
+		fmt.Println("Same Ip")
+	} else {
+		fmt.Println("Defferent Ip")
 	}
 }
 
