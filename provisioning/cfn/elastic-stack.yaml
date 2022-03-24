@@ -36,31 +36,31 @@ Resources:
         SubnetId: !GetAtt Network.Outputs.PublicSubnet1Id
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.SecurityGroupId
 
-  # Opensearch:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: opensearch.yaml
-  #     Parameters:
-  #       SubnetId: !GetAtt Network.Outputs.PrivateSubnet1Id
-  #       SecurityGroupId: !GetAtt SecurityGroup.Outputs.OpenSearchSecurityGroupId
+  Opensearch:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: opensearch.yaml
+      Parameters:
+        SubnetId: !GetAtt Network.Outputs.PrivateSubnet1Id
+        SecurityGroupId: !GetAtt SecurityGroup.Outputs.OpenSearchSecurityGroupId
 
-  # VpcEndpoint:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: vpc-endpoint.yaml
-  #     Parameters:
-  #       VpcId: !GetAtt Network.Outputs.VpcId
-  #       SubnetIds:
-  #         !Join [
-  #           ",",
-  #           [
-  #             !GetAtt Network.Outputs.PrivateSubnet1Id,
-  #             !GetAtt Network.Outputs.PrivateSubnet2Id,
-  #             !GetAtt Network.Outputs.PrivateSubnet3Id,
-  #           ],
-  #         ]
-  #       SecurityGroupId: !GetAtt SecurityGroup.Outputs.FargateSecurityGroupId
-  #       PrivateRouteTableId: !GetAtt Network.Outputs.PrivateRouteTableId
+  VpcEndpoint:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: vpc-endpoint.yaml
+      Parameters:
+        VpcId: !GetAtt Network.Outputs.VpcId
+        SubnetIds:
+          !Join [
+            ",",
+            [
+              !GetAtt Network.Outputs.PrivateSubnet1Id,
+              !GetAtt Network.Outputs.PrivateSubnet2Id,
+              !GetAtt Network.Outputs.PrivateSubnet3Id,
+            ],
+          ]
+        SecurityGroupId: !GetAtt SecurityGroup.Outputs.FargateSecurityGroupId
+        PrivateRouteTableId: !GetAtt Network.Outputs.PrivateRouteTableId
 
   # Lambda:
   #   Type: AWS::CloudFormation::Stack
@@ -78,6 +78,23 @@ Resources:
   #         ]
   #       SecurityGroupId: !GetAtt SecurityGroup.Outputs.FargateSecurityGroupId
 
+  LambdaBacked:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: Opensearch
+    Properties:
+      TemplateURL: lambda-backed.yaml
+      Parameters:
+        SubnetIds:
+          !Join [
+            ",",
+            [
+              !GetAtt Network.Outputs.PrivateSubnet1Id,
+              !GetAtt Network.Outputs.PrivateSubnet2Id,
+              !GetAtt Network.Outputs.PrivateSubnet3Id,
+            ],
+          ]
+        SecurityGroupId: !GetAtt SecurityGroup.Outputs.FargateSecurityGroupId
+
   # LogstashFargate:
   #   Type: AWS::CloudFormation::Stack
   #   Properties:
@@ -93,6 +110,25 @@ Resources:
   #             !GetAtt Network.Outputs.PrivateSubnet3Id,
   #           ],
   #         ]
+
+  AlbForOpensearch:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: LambdaBacked
+    Properties:
+      TemplateURL: alb-for-opensearch.yaml
+      Parameters:
+        VpcId: !GetAtt Network.Outputs.VpcId
+        SubnetIds:
+          !Join [
+            ",",
+            [
+              !GetAtt Network.Outputs.PrivateSubnet1Id,
+              !GetAtt Network.Outputs.PrivateSubnet2Id,
+              !GetAtt Network.Outputs.PrivateSubnet3Id,
+            ],
+          ]
+        SecurityGroupId: !GetAtt SecurityGroup.Outputs.SecurityGroupId
+        TargetIp: !GetAtt LambdaBacked.Outputs.IpAddr
 
 # ------------------------------------------------------------------------------
 # Outputs

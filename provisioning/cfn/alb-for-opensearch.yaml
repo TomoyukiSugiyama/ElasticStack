@@ -1,0 +1,76 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: ALB
+# ------------------------------------------------------------------------------
+# Parameters
+# ------------------------------------------------------------------------------
+Parameters:
+  AlbName:
+    Type: String
+    Default: f-iot-alb
+  AlbTargetGroupName:
+    Type: String
+    Default: f-iot-alb-tg
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  SubnetIds:
+    Type: String
+  SecurityGroupId:
+    Type: String
+  TargetIp:
+    Type: String
+# ------------------------------------------------------------------------------
+# Resources
+# ------------------------------------------------------------------------------
+Resources:
+  Alb:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      IpAddressType: ipv4
+      Name: !Ref AlbName
+      Scheme: internal
+      SecurityGroups:
+        - Ref: SecurityGroupId
+      Subnets: !Split [",", !Ref SubnetIds]
+      Tags:
+        - Key: Name
+          Value: !Join [" ", [!Ref AWS::StackName, Alb]]
+      Type: application
+
+  AlbTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /
+      HealthCheckPort: 443
+      HealthCheckProtocol: HTTPS
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 5
+      IpAddressType: ipv4
+      Name: !Ref AlbTargetGroupName
+      Port: 443
+      Protocol: HTTPS
+      ProtocolVersion: HTTP1
+      Tags:
+        - Key: Name
+          Value: !Join [" ", [!Ref AWS::StackName, AlbTargetGroup]]
+      Targets:
+        - AvailabilityZone: !Select
+            - 0
+            - Fn::GetAZs: !Ref AWS::Region
+          Id: !Ref TargetIp
+          Port: 443
+
+      TargetType: ip
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref VpcId
+
+  AlbListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref AlbTargetGroup
+      LoadBalancerArn: !Ref Alb
+      Port: 80
+      Protocol: HTTP
