@@ -63,9 +63,7 @@ Resources:
       IpProtocol: tcp
       FromPort: 443
       ToPort: 443
-      CidrIp: !Select
-        - 0
-        - Fn::Cidr: [!Ref VpcCidrBlock, 3, 12]
+      CidrIp: !Ref VpcCidrBlock
   # FargateSecurityGroup
   FargateSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -82,9 +80,7 @@ Resources:
       IpProtocol: tcp
       FromPort: 443
       ToPort: 443
-      CidrIp: !Select
-        - 0
-        - Fn::Cidr: [!Ref VpcCidrBlock, 3, 12]
+      CidrIp: !Ref VpcCidrBlock
 
 # ------------------------------------------------------------------------------
 # Outputs
