@@ -1,4 +1,7 @@
 #!/bin/sh
 
-GOOS=linux go build populate-alb-tg-with-opensearch.go
-zip populate-alb-tg-with-opensearch.zip populate-alb-tg-with-opensearch
+for SERVICE in populate-alb-tg-with-opensearch populate-alb-tg-with-opensearch-on-cfn;
+do
+  (cd $SERVICE ; GOOS=linux go build $SERVICE.go)
+  (cd $SERVICE ; zip $SERVICE.zip $SERVICE)
+done

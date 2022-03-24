@@ -1,4 +1,9 @@
 artifacts/
 
 populate-alb-tg-with-opensearch
+!populate-alb-tg-with-opensearch/
 populate-alb-tg-with-opensearch.zip
+
+populate-alb-tg-with-opensearch-on-cfn
+!populate-alb-tg-with-opensearch-on-cfn/
+populate-alb-tg-with-opensearch-on-cfn.zip
