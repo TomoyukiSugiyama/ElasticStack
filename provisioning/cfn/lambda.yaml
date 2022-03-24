@@ -19,7 +19,7 @@ Resources:
       Handler: populate-alb-tg-with-opensearch
       Role: !GetAtt LambdaRole.Arn
       Code:
-        S3Bucket: lambda-m090d3wnw8nug47yfdcw3-artifact
+        S3Bucket: lambda-ces09iuin3ybh1kmv0fp-artifact
         S3Key: populate-alb-tg-with-opensearch.zip
       Runtime: go1.x
       Timeout: 5
@@ -54,6 +54,8 @@ Resources:
                   - "elasticloadbalancing:DescribeLoadBalancers"
                   - "elasticloadbalancing:DescribeTargetHealth"
                   - "elasticloadbalancing:DescribeTargetGroups"
+                  - "elasticloadbalancing:RegisterTargets"
+                  - "elasticloadbalancing:DeregisterTargets"
                 Resource: "*"
       Tags:
         - Key: com.trim.f-iot
