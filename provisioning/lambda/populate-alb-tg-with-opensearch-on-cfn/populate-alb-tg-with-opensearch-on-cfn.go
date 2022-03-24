@@ -11,6 +11,10 @@ import (
 )
 
 func echoResource(ctx context.Context, event cfn.Event) (physicalResourceID string, data map[string]interface{}, err error) {
+	if event.RequestType == "Delete" {
+		return
+	}
+
 	addr, err := net.ResolveIPAddr("ip", "vpc-my-es-sk5xpobbjxtur7njpsc7qplwlq.ap-northeast-1.es.amazonaws.com")
 	if err != nil {
 		fmt.Println("Resolve error ", err)
