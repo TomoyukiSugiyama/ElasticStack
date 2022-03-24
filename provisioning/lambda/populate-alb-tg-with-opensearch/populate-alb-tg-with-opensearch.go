@@ -72,6 +72,10 @@ func HandleLambdaEvent() {
 
 		fmt.Println("Same Ip")
 	} else {
+		var deregisterTarget types.TargetDescription
+		deregisterTarget.AvailabilityZone = outputTarget.TargetHealthDescriptions[0].Target.AvailabilityZone
+		deregisterTarget.Id = outputTarget.TargetHealthDescriptions[0].Target.Id
+		deregisterTarget.Port = outputTarget.TargetHealthDescriptions[0].Target.Port
 
 		id := addr.IP.String()
 		outputTarget.TargetHealthDescriptions[0].Target.Id = &id
@@ -79,9 +83,15 @@ func HandleLambdaEvent() {
 		targets := []types.TargetDescription{*outputTarget.TargetHealthDescriptions[0].Target}
 		fmt.Printf("Target Arn : %s\n", *newTarget.TargetGroupArn)
 		tginput := &elasticloadbalancingv2.RegisterTargetsInput{TargetGroupArn: newTarget.TargetGroupArn, Targets: targets}
+		deregisterTargets := []types.TargetDescription{deregisterTarget}
+		deregisterTargetInput := &elasticloadbalancingv2.DeregisterTargetsInput{TargetGroupArn: newTarget.TargetGroupArn, Targets: deregisterTargets}
 		_, err := svc.RegisterTargets(context.TODO(), tginput)
 		if err != nil {
 			log.Fatalf("failed to register, %v", err)
+		}
+		_, errDereg := svc.DeregisterTargets(context.TODO(), deregisterTargetInput)
+		if errDereg != nil {
+			log.Fatalf("failed to deregister, %v", errDereg)
 		}
 		fmt.Println("Defferent Ip")
 	}
