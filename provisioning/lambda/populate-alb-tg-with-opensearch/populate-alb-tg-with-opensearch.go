@@ -7,9 +7,10 @@ import (
 	"net"
 	"os"
 
-	runtime "github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
+	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 )
 
 func HandleLambdaEvent() {
@@ -35,6 +36,9 @@ func HandleLambdaEvent() {
 	}
 
 	var lbTargetIp string
+
+	var newTarget *types.TargetGroup
+	var outputTarget *elasticloadbalancingv2.DescribeTargetHealthOutput
 	for _, lb := range resp.LoadBalancers {
 		fmt.Printf("ARN : %s\n", *lb.LoadBalancerArn)
 		fmt.Printf("DNS name : %s\n", *lb.DNSName)
@@ -49,9 +53,11 @@ func HandleLambdaEvent() {
 			fmt.Printf("TargetGroupe name : %s\n", *tg.TargetGroupName)
 			fmt.Printf("TargetGroupe ARN : %s\n", *tg.TargetGroupArn)
 			fmt.Printf("TargetGroupe port : %d\n", *tg.Port)
-
 			inputhelth := &elasticloadbalancingv2.DescribeTargetHealthInput{TargetGroupArn: tg.TargetGroupArn}
+
 			result, err := svc.DescribeTargetHealth(context.TODO(), inputhelth)
+			newTarget = &tg
+			outputTarget = result
 			if err != nil {
 				log.Fatalf("failed to get target helth, %v", err)
 			}
@@ -63,12 +69,24 @@ func HandleLambdaEvent() {
 	}
 
 	if lbTargetIp == addr.IP.String() {
+
 		fmt.Println("Same Ip")
 	} else {
+
+		id := addr.IP.String()
+		outputTarget.TargetHealthDescriptions[0].Target.Id = &id
+		outputTarget.TargetHealthDescriptions[0].Target.AvailabilityZone = nil
+		targets := []types.TargetDescription{*outputTarget.TargetHealthDescriptions[0].Target}
+		fmt.Printf("Target Arn : %s\n", *newTarget.TargetGroupArn)
+		tginput := &elasticloadbalancingv2.RegisterTargetsInput{TargetGroupArn: newTarget.TargetGroupArn, Targets: targets}
+		_, err := svc.RegisterTargets(context.TODO(), tginput)
+		if err != nil {
+			log.Fatalf("failed to register, %v", err)
+		}
 		fmt.Println("Defferent Ip")
 	}
 }
 
 func main() {
-	runtime.Start(HandleLambdaEvent)
+	lambda.Start(HandleLambdaEvent)
 }
