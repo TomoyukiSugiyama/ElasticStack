@@ -145,9 +145,7 @@ func HandleLambdaEvent() {
 		const httpsPort = 443
 		RegisterSpecifiedTarget(svc, tg, opensearchAddr, httpsPort)
 		fmt.Println("Register new target")
-		return
 	}
-	fmt.Println("Already registered")
 
 	DeregisterUnheltyTargets(svc, tg)
 	fmt.Println("Deregister unhealty targets")
