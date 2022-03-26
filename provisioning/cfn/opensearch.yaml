@@ -11,10 +11,10 @@ Parameters:
   EngineVersion:
     Description: User-defined OpenSearch version
     Type: String
-    Default: OpenSearch_1.0
+    Default: OpenSearch_1.1
   InstanceType:
     Type: String
-    Default: m3.medium.search
+    Default: t3.small.search
   SubnetId:
     Type: String
   SecurityGroupId:
@@ -40,7 +40,7 @@ Resources:
         EBSEnabled: true
         Iops: 0
         VolumeSize: 10
-        VolumeType: standard
+        VolumeType: gp2
       AccessPolicies:
         Version: "2012-10-17"
         Statement:
