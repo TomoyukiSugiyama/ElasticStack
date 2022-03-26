@@ -11,7 +11,8 @@ import (
 )
 
 func echoResource(ctx context.Context, event cfn.Event) (physicalResourceID string, data map[string]interface{}, err error) {
-	if event.RequestType == "Delete" {
+	physicalResourceID = event.PhysicalResourceID
+	if event.RequestType == cfn.RequestDelete || event.RequestType == cfn.RequestUpdate {
 		return
 	}
 
