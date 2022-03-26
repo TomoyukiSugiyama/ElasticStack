@@ -1,3 +1,5 @@
+// main 指定したドメイン名を名前解決し、ALBのターゲットに追加します。
+// UnhealtyなALBのターゲットは削除します。
 package main
 
 import (
@@ -13,13 +15,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 )
 
-func ResolveIpAddress(domainEndpoint string) (resolvedIpAddress string) {
+func ResolveIpAddress(domainEndpoint string) (resolvedIpAddr string) {
 	ipAddr, err := net.ResolveIPAddr("ip", domainEndpoint)
 	if err != nil {
-		log.Fatalf("failed to resolve ip address %v", err)
+		log.Fatalf("failed to resolve ip address, %v", err)
 		os.Exit(1)
 	}
-	resolvedIpAddress = ipAddr.IP.String()
+	resolvedIpAddr = ipAddr.IP.String()
 	return
 }
 
@@ -112,6 +114,7 @@ func DeregisterUnheltyTargets(svc *elasticloadbalancingv2.Client, tg types.Targe
 	for _, tgh := range resp.TargetHealthDescriptions {
 		if tgh.TargetHealth.State == types.TargetHealthStateEnumUnhealthy {
 			DeregisterSpecifiedTarget(svc, tg, *tgh.Target.Id, *tgh.Target.Port)
+			fmt.Printf("DEREGISTER UnhealtyTarget.Id: %s\n", *tgh.Target.Id)
 		}
 	}
 }
@@ -128,27 +131,24 @@ func DeregisterSpecifiedTarget(svc *elasticloadbalancingv2.Client, tg types.Targ
 }
 
 func HandleLambdaEvent() {
-	opensearchAddr := ResolveIpAddress("vpc-my-es-sk5xpobbjxtur7njpsc7qplwlq.ap-northeast-1.es.amazonaws.com")
-	fmt.Printf("opensearch address: %s\n", opensearchAddr)
+	opensearchIpAddr := ResolveIpAddress("vpc-my-es-sk5xpobbjxtur7njpsc7qplwlq.ap-northeast-1.es.amazonaws.com")
+	fmt.Printf("GET OpensearchIpAddressddress: %s\n", opensearchIpAddr)
 
 	svc := Init()
 
 	lb := GetSpecifiedLoadbalancer(svc, "f-iot-alb")
-	fmt.Printf("loadbalancer name : %s\n", *lb.LoadBalancerName)
-	fmt.Printf("loadbalancer arn : %s\n", *lb.LoadBalancerArn)
+	fmt.Printf("GET LoadbalancerName: %s LoadbalancerArn: %s\n", *lb.LoadBalancerName, *lb.LoadBalancerArn)
 
 	tg := GetSpecifiedTargetGroup(svc, lb, "f-iot-alb-tg")
-	fmt.Printf("target group name : %s\n", *tg.TargetGroupName)
-	fmt.Printf("target group arn : %s\n", *tg.TargetGroupArn)
+	fmt.Printf("GET TargetGroupName: %s TargetGroupArn: %s\n", *tg.TargetGroupName, *tg.TargetGroupArn)
 
-	if !HasTarget(svc, tg, opensearchAddr) {
+	if !HasTarget(svc, tg, opensearchIpAddr) {
 		const httpsPort = 443
-		RegisterSpecifiedTarget(svc, tg, opensearchAddr, httpsPort)
-		fmt.Println("register new target")
+		RegisterSpecifiedTarget(svc, tg, opensearchIpAddr, httpsPort)
+		fmt.Println("REGISTER")
 	}
 
 	DeregisterUnheltyTargets(svc, tg)
-	fmt.Println("deregister unhealty targets")
 }
 
 func main() {
