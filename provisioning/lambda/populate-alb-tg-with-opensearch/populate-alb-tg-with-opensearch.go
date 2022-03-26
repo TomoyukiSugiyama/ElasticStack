@@ -72,27 +72,34 @@ func HandleLambdaEvent() {
 
 		fmt.Println("Same Ip")
 	} else {
-		var deregisterTarget types.TargetDescription
-		deregisterTarget.AvailabilityZone = outputTarget.TargetHealthDescriptions[0].Target.AvailabilityZone
-		deregisterTarget.Id = outputTarget.TargetHealthDescriptions[0].Target.Id
-		deregisterTarget.Port = outputTarget.TargetHealthDescriptions[0].Target.Port
-
+		fmt.Println("Register Target")
+		var registerTarget types.TargetDescription
 		id := addr.IP.String()
-		outputTarget.TargetHealthDescriptions[0].Target.Id = &id
-		outputTarget.TargetHealthDescriptions[0].Target.AvailabilityZone = nil
-		targets := []types.TargetDescription{*outputTarget.TargetHealthDescriptions[0].Target}
-		fmt.Printf("Target Arn : %s\n", *newTarget.TargetGroupArn)
-		tginput := &elasticloadbalancingv2.RegisterTargetsInput{TargetGroupArn: newTarget.TargetGroupArn, Targets: targets}
-		deregisterTargets := []types.TargetDescription{deregisterTarget}
-		deregisterTargetInput := &elasticloadbalancingv2.DeregisterTargetsInput{TargetGroupArn: newTarget.TargetGroupArn, Targets: deregisterTargets}
-		_, err := svc.RegisterTargets(context.TODO(), tginput)
+		for _, thd := range outputTarget.TargetHealthDescriptions {
+			registerTarget.AvailabilityZone = nil
+			registerTarget.Id = &id
+			registerTarget.Port = thd.Target.Port
+		}
+		registerTargets := []types.TargetDescription{registerTarget}
+		registerTargetInput := &elasticloadbalancingv2.RegisterTargetsInput{TargetGroupArn: newTarget.TargetGroupArn, Targets: registerTargets}
+		_, err := svc.RegisterTargets(context.TODO(), registerTargetInput)
 		if err != nil {
 			log.Fatalf("failed to register, %v", err)
 		}
+		fmt.Println("Deregister Target")
+		var deregisterTarget types.TargetDescription
+		for _, thd := range outputTarget.TargetHealthDescriptions {
+			deregisterTarget.AvailabilityZone = thd.Target.AvailabilityZone
+			deregisterTarget.Id = thd.Target.Id
+			deregisterTarget.Port = thd.Target.Port
+		}
+		deregisterTargets := []types.TargetDescription{deregisterTarget}
+		deregisterTargetInput := &elasticloadbalancingv2.DeregisterTargetsInput{TargetGroupArn: newTarget.TargetGroupArn, Targets: deregisterTargets}
 		_, errDereg := svc.DeregisterTargets(context.TODO(), deregisterTargetInput)
 		if errDereg != nil {
 			log.Fatalf("failed to deregister, %v", errDereg)
 		}
+
 		fmt.Println("Defferent Ip")
 	}
 }
