@@ -61,3 +61,23 @@ Resources:
         - Key: com.trim.f-iot
           Value: lambda
     Type: AWS::IAM::Role
+
+  EventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: pupulate atb target with opensearch
+      Name: populate-alb-tg-with-opensearch-rule
+      ScheduleExpression: cron(* * * * ? *)
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt Function.Arn
+          Id: lambda
+
+  EventPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref Function
+      Principal: events.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+      SourceArn: !GetAtt EventRule.Arn
