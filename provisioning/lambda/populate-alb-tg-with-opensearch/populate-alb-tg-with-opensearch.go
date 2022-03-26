@@ -1,3 +1,5 @@
+// main 指定したドメイン名を名前解決し、ALBのターゲットに追加します。
+// UnhealtyなALBのターゲットは削除します。
 package main
 
 import (
@@ -13,95 +15,140 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 )
 
-func HandleLambdaEvent() {
-	addr, err := net.ResolveIPAddr("ip", "vpc-my-es-sk5xpobbjxtur7njpsc7qplwlq.ap-northeast-1.es.amazonaws.com")
+func ResolveIpAddress(domainEndpoint string) (resolvedIpAddr string) {
+	ipAddr, err := net.ResolveIPAddr("ip", domainEndpoint)
 	if err != nil {
-		fmt.Println("Resolve error ", err)
+		log.Fatalf("failed to resolve ip address, %v", err)
 		os.Exit(1)
 	}
-	fmt.Println("Addr: ", addr)
+	resolvedIpAddr = ipAddr.IP.String()
+	return
+}
 
+func Init() (svc *elasticloadbalancingv2.Client) {
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {
-		log.Fatalf("unable to load SDK config, %v", err)
+		log.Fatalf("failed to load SDK config, %v", err)
+		os.Exit(1)
 	}
-	fmt.Println(cfg)
 
-	svc := elasticloadbalancingv2.NewFromConfig(cfg)
+	svc = elasticloadbalancingv2.NewFromConfig(cfg)
+	return
+}
 
+func GetSpecifiedLoadbalancer(svc *elasticloadbalancingv2.Client, loadBalancerName string) (target types.LoadBalancer) {
 	input := &elasticloadbalancingv2.DescribeLoadBalancersInput{}
 	resp, err := svc.DescribeLoadBalancers(context.TODO(), input)
 	if err != nil {
 		log.Fatalf("failed to get loadbalancers, %v", err)
+		os.Exit(1)
 	}
 
-	var lbTargetIp string
-
-	var newTarget *types.TargetGroup
-	var outputTarget *elasticloadbalancingv2.DescribeTargetHealthOutput
 	for _, lb := range resp.LoadBalancers {
-		fmt.Printf("ARN : %s\n", *lb.LoadBalancerArn)
-		fmt.Printf("DNS name : %s\n", *lb.DNSName)
-		fmt.Printf("LoadBalancer name : %s\n", *lb.LoadBalancerName)
-		inputtg := &elasticloadbalancingv2.DescribeTargetGroupsInput{LoadBalancerArn: lb.LoadBalancerArn}
-		tgs, err := svc.DescribeTargetGroups(context.TODO(), inputtg)
-		if err != nil {
-			log.Fatalf("failed to get target groups, %v", err)
-		}
-
-		for _, tg := range tgs.TargetGroups {
-			fmt.Printf("TargetGroupe name : %s\n", *tg.TargetGroupName)
-			fmt.Printf("TargetGroupe ARN : %s\n", *tg.TargetGroupArn)
-			fmt.Printf("TargetGroupe port : %d\n", *tg.Port)
-			inputhelth := &elasticloadbalancingv2.DescribeTargetHealthInput{TargetGroupArn: tg.TargetGroupArn}
-
-			result, err := svc.DescribeTargetHealth(context.TODO(), inputhelth)
-			newTarget = &tg
-			outputTarget = result
-			if err != nil {
-				log.Fatalf("failed to get target helth, %v", err)
-			}
-			for _, tgh := range result.TargetHealthDescriptions {
-				fmt.Printf("Target Id : %s\n", *tgh.Target.Id)
-				lbTargetIp = *tgh.Target.Id
-			}
+		if *lb.LoadBalancerName == loadBalancerName {
+			target = lb
+			return
 		}
 	}
+	log.Fatalf("failed to get specified loadbalancer")
+	os.Exit(1)
+	return
+}
 
-	if lbTargetIp == addr.IP.String() {
-
-		fmt.Println("Same Ip")
-	} else {
-		fmt.Println("Register Target")
-		var registerTarget types.TargetDescription
-		id := addr.IP.String()
-		for _, thd := range outputTarget.TargetHealthDescriptions {
-			registerTarget.AvailabilityZone = nil
-			registerTarget.Id = &id
-			registerTarget.Port = thd.Target.Port
-		}
-		registerTargets := []types.TargetDescription{registerTarget}
-		registerTargetInput := &elasticloadbalancingv2.RegisterTargetsInput{TargetGroupArn: newTarget.TargetGroupArn, Targets: registerTargets}
-		_, err := svc.RegisterTargets(context.TODO(), registerTargetInput)
-		if err != nil {
-			log.Fatalf("failed to register, %v", err)
-		}
-		fmt.Println("Deregister Target")
-		var deregisterTarget types.TargetDescription
-		for _, thd := range outputTarget.TargetHealthDescriptions {
-			deregisterTarget.AvailabilityZone = thd.Target.AvailabilityZone
-			deregisterTarget.Id = thd.Target.Id
-			deregisterTarget.Port = thd.Target.Port
-		}
-		deregisterTargets := []types.TargetDescription{deregisterTarget}
-		deregisterTargetInput := &elasticloadbalancingv2.DeregisterTargetsInput{TargetGroupArn: newTarget.TargetGroupArn, Targets: deregisterTargets}
-		_, errDereg := svc.DeregisterTargets(context.TODO(), deregisterTargetInput)
-		if errDereg != nil {
-			log.Fatalf("failed to deregister, %v", errDereg)
-		}
-
-		fmt.Println("Defferent Ip")
+func GetSpecifiedTargetGroup(svc *elasticloadbalancingv2.Client, loadBalancer types.LoadBalancer, targetGroupName string) (target types.TargetGroup) {
+	input := &elasticloadbalancingv2.DescribeTargetGroupsInput{LoadBalancerArn: loadBalancer.LoadBalancerArn}
+	resp, err := svc.DescribeTargetGroups(context.TODO(), input)
+	if err != nil {
+		log.Fatalf("failed to get target groups, %v", err)
+		os.Exit(1)
 	}
+
+	for _, tg := range resp.TargetGroups {
+		if *tg.TargetGroupName == targetGroupName {
+			target = tg
+			return
+		}
+	}
+	log.Fatalf("failed to get specified target group")
+	os.Exit(1)
+	return
+}
+
+func HasTarget(svc *elasticloadbalancingv2.Client, tg types.TargetGroup, ipAddr string) (hasTarget bool) {
+	input := &elasticloadbalancingv2.DescribeTargetHealthInput{TargetGroupArn: tg.TargetGroupArn}
+	resp, err := svc.DescribeTargetHealth(context.TODO(), input)
+	if err != nil {
+		log.Fatalf("failed to get target helth, %v", err)
+		os.Exit(1)
+	}
+
+	for _, tgh := range resp.TargetHealthDescriptions {
+		if *tgh.Target.Id == ipAddr {
+			hasTarget = true
+			return
+		}
+	}
+	hasTarget = false
+	return
+}
+
+func RegisterSpecifiedTarget(svc *elasticloadbalancingv2.Client, tg types.TargetGroup, addr string, port int32) {
+	registerTarget := types.TargetDescription{AvailabilityZone: nil, Id: &addr, Port: &port}
+	registerTargets := []types.TargetDescription{registerTarget}
+	registerTargetInput := &elasticloadbalancingv2.RegisterTargetsInput{TargetGroupArn: tg.TargetGroupArn, Targets: registerTargets}
+	_, err := svc.RegisterTargets(context.TODO(), registerTargetInput)
+	if err != nil {
+		log.Fatalf("failed to register, %v", err)
+		os.Exit(1)
+	}
+}
+
+func DeregisterUnheltyTargets(svc *elasticloadbalancingv2.Client, tg types.TargetGroup) {
+	input := &elasticloadbalancingv2.DescribeTargetHealthInput{TargetGroupArn: tg.TargetGroupArn}
+	resp, err := svc.DescribeTargetHealth(context.TODO(), input)
+	if err != nil {
+		log.Fatalf("failed to get target helth, %v", err)
+		os.Exit(1)
+	}
+
+	for _, tgh := range resp.TargetHealthDescriptions {
+		if tgh.TargetHealth.State == types.TargetHealthStateEnumUnhealthy {
+			DeregisterSpecifiedTarget(svc, tg, *tgh.Target.Id, *tgh.Target.Port)
+			fmt.Printf("DEREGISTER UnhealtyTarget.Id: %s\n", *tgh.Target.Id)
+		}
+	}
+}
+
+func DeregisterSpecifiedTarget(svc *elasticloadbalancingv2.Client, tg types.TargetGroup, addr string, port int32) {
+	deregisterTarget := types.TargetDescription{AvailabilityZone: nil, Id: &addr, Port: &port}
+	deregisterTargets := []types.TargetDescription{deregisterTarget}
+	deregisterTargetInput := &elasticloadbalancingv2.DeregisterTargetsInput{TargetGroupArn: tg.TargetGroupArn, Targets: deregisterTargets}
+	_, err := svc.DeregisterTargets(context.TODO(), deregisterTargetInput)
+	if err != nil {
+		log.Fatalf("failed to deregister, %v", err)
+		os.Exit(1)
+	}
+}
+
+func HandleLambdaEvent() {
+	opensearchIpAddr := ResolveIpAddress("vpc-my-es-sk5xpobbjxtur7njpsc7qplwlq.ap-northeast-1.es.amazonaws.com")
+	fmt.Printf("GET OpensearchIpAddressddress: %s\n", opensearchIpAddr)
+
+	svc := Init()
+
+	lb := GetSpecifiedLoadbalancer(svc, "f-iot-alb")
+	fmt.Printf("GET LoadbalancerName: %s LoadbalancerArn: %s\n", *lb.LoadBalancerName, *lb.LoadBalancerArn)
+
+	tg := GetSpecifiedTargetGroup(svc, lb, "f-iot-alb-tg")
+	fmt.Printf("GET TargetGroupName: %s TargetGroupArn: %s\n", *tg.TargetGroupName, *tg.TargetGroupArn)
+
+	if !HasTarget(svc, tg, opensearchIpAddr) {
+		const httpsPort = 443
+		RegisterSpecifiedTarget(svc, tg, opensearchIpAddr, httpsPort)
+		fmt.Println("REGISTER")
+	}
+
+	DeregisterUnheltyTargets(svc, tg)
 }
 
 func main() {
