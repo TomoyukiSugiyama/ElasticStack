@@ -81,7 +81,9 @@ Resources:
 
   LambdaBacked:
     Type: AWS::CloudFormation::Stack
-    DependsOn: Opensearch
+    DependsOn:
+      - Opensearch
+      - VpcEndpoint
     Properties:
       TemplateURL: lambda-backed.yaml
       Parameters:
