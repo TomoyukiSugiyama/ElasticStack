@@ -16,7 +16,7 @@ import (
 func ResolveIpAddress(domainEndpoint string) (resolvedIpAddress string) {
 	ipAddr, err := net.ResolveIPAddr("ip", domainEndpoint)
 	if err != nil {
-		fmt.Println("Resolve error ", err)
+		log.Fatalf("failed to resolve ip address %v", err)
 		os.Exit(1)
 	}
 	resolvedIpAddress = ipAddr.IP.String()
@@ -26,7 +26,7 @@ func ResolveIpAddress(domainEndpoint string) (resolvedIpAddress string) {
 func Init() (svc *elasticloadbalancingv2.Client) {
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {
-		log.Fatalf("unable to load SDK config, %v", err)
+		log.Fatalf("failed to load SDK config, %v", err)
 		os.Exit(1)
 	}
 
@@ -129,26 +129,26 @@ func DeregisterSpecifiedTarget(svc *elasticloadbalancingv2.Client, tg types.Targ
 
 func HandleLambdaEvent() {
 	opensearchAddr := ResolveIpAddress("vpc-my-es-sk5xpobbjxtur7njpsc7qplwlq.ap-northeast-1.es.amazonaws.com")
-	fmt.Printf("Opensearch address: %s\n", opensearchAddr)
+	fmt.Printf("opensearch address: %s\n", opensearchAddr)
 
 	svc := Init()
 
 	lb := GetSpecifiedLoadbalancer(svc, "f-iot-alb")
-	fmt.Printf("LoadBalancer name : %s\n", *lb.LoadBalancerName)
-	fmt.Printf("LoardBalancer arn : %s\n", *lb.LoadBalancerArn)
+	fmt.Printf("loadbalancer name : %s\n", *lb.LoadBalancerName)
+	fmt.Printf("loadbalancer arn : %s\n", *lb.LoadBalancerArn)
 
 	tg := GetSpecifiedTargetGroup(svc, lb, "f-iot-alb-tg")
-	fmt.Printf("TargetGroup name : %s\n", *tg.TargetGroupName)
-	fmt.Printf("TargetGroup arn : %s\n", *tg.TargetGroupArn)
+	fmt.Printf("target group name : %s\n", *tg.TargetGroupName)
+	fmt.Printf("target group arn : %s\n", *tg.TargetGroupArn)
 
 	if !HasTarget(svc, tg, opensearchAddr) {
 		const httpsPort = 443
 		RegisterSpecifiedTarget(svc, tg, opensearchAddr, httpsPort)
-		fmt.Println("Register new target")
+		fmt.Println("register new target")
 	}
 
 	DeregisterUnheltyTargets(svc, tg)
-	fmt.Println("Deregister unhealty targets")
+	fmt.Println("deregister unhealty targets")
 }
 
 func main() {
