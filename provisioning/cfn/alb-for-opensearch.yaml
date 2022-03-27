@@ -74,3 +74,14 @@ Resources:
       LoadBalancerArn: !Ref Alb
       Port: 80
       Protocol: HTTP
+
+# ------------------------------------------------------------------------------
+# Outputs
+# ------------------------------------------------------------------------------
+Outputs:
+  AlbId:
+    Value:
+      Ref: Alb
+  AlbTargetGroupId:
+    Value:
+      Ref: AlbTargetGroup

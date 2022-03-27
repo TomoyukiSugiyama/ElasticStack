@@ -8,6 +8,13 @@ Parameters:
     Type: String
   SecurityGroupId:
     Type: String
+  DomainEndpoint:
+    Type: String
+  AlbId:
+    Type: String
+  AlbTargetGroupId:
+    Type: String
+
 # ------------------------------------------------------------------------------
 # Resources
 # ------------------------------------------------------------------------------
@@ -29,6 +36,11 @@ Resources:
         SecurityGroupIds:
           - Ref: SecurityGroupId
         SubnetIds: !Split [",", !Ref SubnetIds]
+      Environment:
+        Variables:
+          DomainEndpoint: !Ref DomainEndpoint
+          AlbId: !Ref AlbId
+          AlbTargetGroupId: !Ref AlbTargetGroupId
 
   LambdaRole:
     Properties:

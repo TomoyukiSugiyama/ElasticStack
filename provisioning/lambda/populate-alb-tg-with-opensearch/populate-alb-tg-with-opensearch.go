@@ -36,7 +36,7 @@ func Init() (svc *elasticloadbalancingv2.Client) {
 	return
 }
 
-func GetSpecifiedLoadbalancer(svc *elasticloadbalancingv2.Client, loadBalancerName string) (target types.LoadBalancer) {
+func GetSpecifiedLoadbalancer(svc *elasticloadbalancingv2.Client, loadBalancerId string) (target types.LoadBalancer) {
 	input := &elasticloadbalancingv2.DescribeLoadBalancersInput{}
 	resp, err := svc.DescribeLoadBalancers(context.TODO(), input)
 	if err != nil {
@@ -45,7 +45,7 @@ func GetSpecifiedLoadbalancer(svc *elasticloadbalancingv2.Client, loadBalancerNa
 	}
 
 	for _, lb := range resp.LoadBalancers {
-		if *lb.LoadBalancerName == loadBalancerName {
+		if *lb.LoadBalancerArn == loadBalancerId {
 			target = lb
 			return
 		}
@@ -55,7 +55,7 @@ func GetSpecifiedLoadbalancer(svc *elasticloadbalancingv2.Client, loadBalancerNa
 	return
 }
 
-func GetSpecifiedTargetGroup(svc *elasticloadbalancingv2.Client, loadBalancer types.LoadBalancer, targetGroupName string) (target types.TargetGroup) {
+func GetSpecifiedTargetGroup(svc *elasticloadbalancingv2.Client, loadBalancer types.LoadBalancer, targetGroupId string) (target types.TargetGroup) {
 	input := &elasticloadbalancingv2.DescribeTargetGroupsInput{LoadBalancerArn: loadBalancer.LoadBalancerArn}
 	resp, err := svc.DescribeTargetGroups(context.TODO(), input)
 	if err != nil {
@@ -64,7 +64,7 @@ func GetSpecifiedTargetGroup(svc *elasticloadbalancingv2.Client, loadBalancer ty
 	}
 
 	for _, tg := range resp.TargetGroups {
-		if *tg.TargetGroupName == targetGroupName {
+		if *tg.TargetGroupArn == targetGroupId {
 			target = tg
 			return
 		}
@@ -131,15 +131,20 @@ func DeregisterSpecifiedTarget(svc *elasticloadbalancingv2.Client, tg types.Targ
 }
 
 func HandleLambdaEvent() {
-	opensearchIpAddr := ResolveIpAddress("vpc-my-es-sk5xpobbjxtur7njpsc7qplwlq.ap-northeast-1.es.amazonaws.com")
+	domainEndpoint := os.Getenv("DomainEndpoint")
+	albId := os.Getenv("AlbId")
+	albTargetGroupId := os.Getenv("AlbTargetGroupId")
+	fmt.Printf("GET ENV DomainEndpoint: %s AlbId: %s AlbTargetGroupId: %s\n", domainEndpoint, albId, albTargetGroupId)
+
+	opensearchIpAddr := ResolveIpAddress(domainEndpoint)
 	fmt.Printf("GET OpensearchIpAddressddress: %s\n", opensearchIpAddr)
 
 	svc := Init()
 
-	lb := GetSpecifiedLoadbalancer(svc, "f-iot-alb")
+	lb := GetSpecifiedLoadbalancer(svc, albId)
 	fmt.Printf("GET LoadbalancerName: %s LoadbalancerArn: %s\n", *lb.LoadBalancerName, *lb.LoadBalancerArn)
 
-	tg := GetSpecifiedTargetGroup(svc, lb, "f-iot-alb-tg")
+	tg := GetSpecifiedTargetGroup(svc, lb, albTargetGroupId)
 	fmt.Printf("GET TargetGroupName: %s TargetGroupArn: %s\n", *tg.TargetGroupName, *tg.TargetGroupArn)
 
 	if !HasTarget(svc, tg, opensearchIpAddr) {
