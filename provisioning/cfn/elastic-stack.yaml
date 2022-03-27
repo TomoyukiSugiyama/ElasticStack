@@ -64,7 +64,7 @@ Resources:
 
   Lambda:
     Type: AWS::CloudFormation::Stack
-    DependsOn: LambdaBacked
+    DependsOn: AlbForOpensearch
     Properties:
       TemplateURL: lambda.yaml
       Parameters:
@@ -78,6 +78,9 @@ Resources:
             ],
           ]
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.FargateSecurityGroupId
+        DomainEndpoint: !GetAtt Opensearch.Outputs.DomainEndpoint
+        AlbId: !GetAtt AlbForOpensearch.Outputs.AlbId
+        AlbTargetGroupId: !GetAtt AlbForOpensearch.Outputs.AlbTargetGroupId
 
   LambdaBacked:
     Type: AWS::CloudFormation::Stack
@@ -97,6 +100,7 @@ Resources:
             ],
           ]
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.FargateSecurityGroupId
+        DomainEndpoint: !GetAtt Opensearch.Outputs.DomainEndpoint
 
   # LogstashFargate:
   #   Type: AWS::CloudFormation::Stack

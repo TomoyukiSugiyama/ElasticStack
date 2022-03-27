@@ -15,7 +15,8 @@ func echoResource(ctx context.Context, event cfn.Event) (physicalResourceID stri
 		return
 	}
 
-	addr, err := net.ResolveIPAddr("ip", "vpc-my-es-sk5xpobbjxtur7njpsc7qplwlq.ap-northeast-1.es.amazonaws.com")
+	domainEndpoint, _ := event.ResourceProperties["DomainEndpoint"].(string)
+	addr, err := net.ResolveIPAddr("ip", domainEndpoint)
 	if err != nil {
 		fmt.Println("Resolve error ", err)
 		os.Exit(1)
