@@ -42,7 +42,7 @@ Resources:
         Ref: Vpc
       CidrBlock: !Select
         - 0
-        - Fn::Cidr: [!GetAtt Vpc.CidrBlock, 4, 12]
+        - Fn::Cidr: [!GetAtt Vpc.CidrBlock, 6, 12]
       AvailabilityZone: !Select
         - 0
         - Fn::GetAZs: !Ref AWS::Region
@@ -56,7 +56,7 @@ Resources:
         Ref: Vpc
       CidrBlock: !Select
         - 1
-        - Fn::Cidr: [!GetAtt Vpc.CidrBlock, 4, 12]
+        - Fn::Cidr: [!GetAtt Vpc.CidrBlock, 6, 12]
       AvailabilityZone: !Select
         - 1
         - Fn::GetAZs: !Ref AWS::Region
@@ -70,7 +70,7 @@ Resources:
         Ref: Vpc
       CidrBlock: !Select
         - 2
-        - Fn::Cidr: [!GetAtt Vpc.CidrBlock, 4, 12]
+        - Fn::Cidr: [!GetAtt Vpc.CidrBlock, 6, 12]
       AvailabilityZone: !Select
         - 2
         - Fn::GetAZs: !Ref AWS::Region
@@ -84,7 +84,7 @@ Resources:
         Ref: Vpc
       CidrBlock: !Select
         - 3
-        - Fn::Cidr: [!GetAtt Vpc.CidrBlock, 4, 12]
+        - Fn::Cidr: [!GetAtt Vpc.CidrBlock, 6, 12]
       AvailabilityZone: !Select
         - 0
         - Fn::GetAZs: !Ref AWS::Region
@@ -92,6 +92,21 @@ Resources:
       Tags:
         - Key: Name
           Value: !Join [" ", [!Ref AWS::StackName, PublicSubnet1]]
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: Vpc
+      CidrBlock: !Select
+        - 4
+        - Fn::Cidr: [!GetAtt Vpc.CidrBlock, 6, 12]
+      AvailabilityZone: !Select
+        - 1
+        - Fn::GetAZs: !Ref AWS::Region
+      MapPublicIpOnLaunch: True
+      Tags:
+        - Key: Name
+          Value: !Join [" ", [!Ref AWS::StackName, PublicSubnet2]]
   # RoutTable
   PrivateRouteTable:
     Type: AWS::EC2::RouteTable
@@ -154,6 +169,9 @@ Outputs:
   PublicSubnet1Id:
     Value:
       Ref: PublicSubnet1
+  PublicSubnet2Id:
+    Value:
+      Ref: PublicSubnet2
   PrivateRouteTableId:
     Value:
       Ref: PrivateRouteTable
