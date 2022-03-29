@@ -104,6 +104,9 @@ Resources:
 
   LogstashFargate:
     Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - Opensearch
+      - VpcEndpoint
     Properties:
       TemplateURL: logstash-fargate.yaml
       Parameters:
