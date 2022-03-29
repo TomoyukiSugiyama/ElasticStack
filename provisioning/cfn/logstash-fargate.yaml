@@ -10,6 +10,14 @@ Parameters:
     Type: String
   SecurityGroupId:
     Type: String
+  LbTargetGroupId:
+    Type: String
+  ContainerName:
+    Type: String
+    Default: logstash
+  ContainerPort:
+    Type: Integer
+    Default: 5044
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -45,6 +53,10 @@ Resources:
         Type: ECS
       DesiredCount: 1
       LaunchType: FARGATE
+      LoadBalancers:
+        ContainerName: !Ref ContainerName
+        ContainerPort: !Ref ContainerPort
+        TargetGroupArn: !Ref LbTargetGroupId
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: DISABLED
@@ -114,7 +126,7 @@ Resources:
               awslogs-stream-prefix: ecs
           Name: logstash
           PortMappings:
-            - ContainerPort: 5044
+            - ContainerPort: !Ref ContainerPort
       Cpu: "2048"
       ExecutionRoleArn:
         Ref: LogstashTaskExecutionRole
