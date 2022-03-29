@@ -16,7 +16,7 @@ Parameters:
     Type: String
     Default: logstash
   ContainerPort:
-    Type: Integer
+    Type: Number
     Default: 5044
 
 # ------------------------------------------------------------------------------
@@ -54,9 +54,9 @@ Resources:
       DesiredCount: 1
       LaunchType: FARGATE
       LoadBalancers:
-        ContainerName: !Ref ContainerName
-        ContainerPort: !Ref ContainerPort
-        TargetGroupArn: !Ref LbTargetGroupId
+        - ContainerName: !Ref ContainerName
+          ContainerPort: !Ref ContainerPort
+          TargetGroupArn: !Ref LbTargetGroupId
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: DISABLED
