@@ -7,14 +7,19 @@ Parameters:
   NlbName:
     Type: String
     Default: f-iot-nlb
-  NlbTargetGroupName:
+  NlbForLogstashTargetGroupName:
     Type: String
-    Default: f-iot-nlb-tg
+    Default: nlb-for-logstash-tg
+  NlbForAlbTargetGroupName:
+    Type: String
+    Default: nlb-for-alb-tg
   VpcId:
     Type: AWS::EC2::VPC::Id
   SubnetIds:
     Type: String
   SecurityGroupId:
+    Type: String
+  AlbId:
     Type: String
 
 # ------------------------------------------------------------------------------
@@ -36,7 +41,7 @@ Resources:
           Value: !Join [" ", [!Ref AWS::StackName, Nlb]]
       Type: network
 
-  NlbTargetGroup:
+  NlbForLogstashTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckEnabled: true
@@ -47,23 +52,56 @@ Resources:
       HealthyThresholdCount: 3
       UnhealthyThresholdCount: 3
       IpAddressType: ipv4
-      Name: !Ref NlbTargetGroupName
+      Name: !Ref NlbForLogstashTargetGroupName
       Port: 5044
       Protocol: TCP
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, NlbTargetGroup]]
+          Value: !Join [" ", [!Ref AWS::StackName, NlbForLogstashTargetGroup]]
       TargetType: ip
       VpcId: !Ref VpcId
 
-  NlbListener:
+  NlbForLogstashListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       DefaultActions:
         - Type: forward
-          TargetGroupArn: !Ref NlbTargetGroup
+          TargetGroupArn: !Ref NlbForLogstashTargetGroup
       LoadBalancerArn: !Ref Nlb
       Port: 5044
+      Protocol: TCP
+
+  NlbForAlbTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPort: 80
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 6
+      HealthyThresholdCount: 3
+      UnhealthyThresholdCount: 3
+      IpAddressType: ipv4
+      Name: !Ref NlbForAlbTargetGroupName
+      Port: 80
+      Protocol: TCP
+      Tags:
+        - Key: Name
+          Value: !Join [" ", [!Ref AWS::StackName, NlbForAlbTargetGroup]]
+      Targets:
+        - Id: !Ref AlbId
+          Port: 80
+      TargetType: alb
+      VpcId: !Ref VpcId
+
+  NlbForAlbListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref NlbForAlbTargetGroup
+      LoadBalancerArn: !Ref Nlb
+      Port: 80
       Protocol: TCP
 
 # ------------------------------------------------------------------------------
@@ -75,4 +113,4 @@ Outputs:
       Ref: Nlb
   NlbTargetGroupId:
     Value:
-      Ref: NlbTargetGroup
+      Ref: NlbForLogstashTargetGroup

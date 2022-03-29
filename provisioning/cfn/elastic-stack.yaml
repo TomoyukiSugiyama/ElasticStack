@@ -158,6 +158,7 @@ Resources:
             ],
           ]
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.SecurityGroupId
+        AlbId: !GetAtt AlbForOpensearch.Outputs.AlbId
 
 # ------------------------------------------------------------------------------
 # Outputs
