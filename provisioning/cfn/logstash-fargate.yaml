@@ -8,6 +8,8 @@ Parameters:
     Type: AWS::EC2::VPC::Id
   SubnetIds:
     Type: String
+  SecurityGroupId:
+    Type: String
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -26,25 +28,6 @@ Resources:
         - Key: com.docker.compose.project
           Value: ecs
     Type: AWS::ECS::Cluster
-  DefaultNetwork:
-    Properties:
-      GroupDescription: ecs Security Group for default network
-      Tags:
-        - Key: com.docker.compose.project
-          Value: ecs
-        - Key: com.docker.compose.network
-          Value: ecs_default
-      VpcId: !Ref VpcId
-    Type: AWS::EC2::SecurityGroup
-  DefaultNetworkIngress:
-    Properties:
-      Description: Allow communication within network default
-      GroupId:
-        Ref: DefaultNetwork
-      IpProtocol: "-1"
-      SourceSecurityGroupId:
-        Ref: DefaultNetwork
-    Type: AWS::EC2::SecurityGroupIngress
   LogGroup:
     Properties:
       LogGroupName: /docker-compose/ecs
@@ -66,7 +49,7 @@ Resources:
         AwsvpcConfiguration:
           AssignPublicIp: DISABLED
           SecurityGroups:
-            - Ref: DefaultNetwork
+            - Ref: SecurityGroupId
           Subnets: !Split [",", !Ref SubnetIds]
       PlatformVersion: 1.4.0
       PropagateTags: SERVICE
@@ -130,6 +113,8 @@ Resources:
                 Ref: AWS::Region
               awslogs-stream-prefix: ecs
           Name: logstash
+          PortMappings:
+            - ContainerPort: 5044
       Cpu: "2048"
       ExecutionRoleArn:
         Ref: LogstashTaskExecutionRole

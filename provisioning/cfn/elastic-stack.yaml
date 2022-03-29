@@ -59,7 +59,7 @@ Resources:
               !GetAtt Network.Outputs.PrivateSubnet3Id,
             ],
           ]
-        SecurityGroupId: !GetAtt SecurityGroup.Outputs.FargateSecurityGroupId
+        SecurityGroupId: !GetAtt SecurityGroup.Outputs.VpcEndpointSecurityGroupId
         PrivateRouteTableId: !GetAtt Network.Outputs.PrivateRouteTableId
 
   Lambda:
@@ -77,7 +77,7 @@ Resources:
               !GetAtt Network.Outputs.PrivateSubnet3Id,
             ],
           ]
-        SecurityGroupId: !GetAtt SecurityGroup.Outputs.FargateSecurityGroupId
+        SecurityGroupId: !GetAtt SecurityGroup.Outputs.VpcEndpointSecurityGroupId
         DomainEndpoint: !GetAtt Opensearch.Outputs.DomainEndpoint
         AlbId: !GetAtt AlbForOpensearch.Outputs.AlbId
         AlbTargetGroupId: !GetAtt AlbForOpensearch.Outputs.AlbTargetGroupId
@@ -99,24 +99,25 @@ Resources:
               !GetAtt Network.Outputs.PrivateSubnet3Id,
             ],
           ]
-        SecurityGroupId: !GetAtt SecurityGroup.Outputs.FargateSecurityGroupId
+        SecurityGroupId: !GetAtt SecurityGroup.Outputs.VpcEndpointSecurityGroupId
         DomainEndpoint: !GetAtt Opensearch.Outputs.DomainEndpoint
 
-  # LogstashFargate:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: logstash-fargate.yaml
-  #     Parameters:
-  #       VpcId: !GetAtt Network.Outputs.VpcId
-  #       SubnetIds:
-  #         !Join [
-  #           ",",
-  #           [
-  #             !GetAtt Network.Outputs.PrivateSubnet1Id,
-  #             !GetAtt Network.Outputs.PrivateSubnet2Id,
-  #             !GetAtt Network.Outputs.PrivateSubnet3Id,
-  #           ],
-  #         ]
+  LogstashFargate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: logstash-fargate.yaml
+      Parameters:
+        VpcId: !GetAtt Network.Outputs.VpcId
+        SubnetIds:
+          !Join [
+            ",",
+            [
+              !GetAtt Network.Outputs.PrivateSubnet1Id,
+              !GetAtt Network.Outputs.PrivateSubnet2Id,
+              !GetAtt Network.Outputs.PrivateSubnet3Id,
+            ],
+          ]
+        SecurityGroupId: !GetAtt SecurityGroup.Outputs.FargateSecurityGroupId
 
   AlbForOpensearch:
     Type: AWS::CloudFormation::Stack

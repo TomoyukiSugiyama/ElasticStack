@@ -51,7 +51,7 @@ Resources:
   OpenSearchSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Security Group
+      GroupDescription: Security Group for Opensearch
       VpcId: !Ref VpcId
       Tags:
         - Key: Name
@@ -64,11 +64,28 @@ Resources:
       FromPort: 443
       ToPort: 443
       CidrIp: !Ref VpcCidrBlock
+  # VpcEndpointSecurityGroup
+  VpcEndpointSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group for VpcEndpoint
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: !Join [" ", [!Ref AWS::StackName, SecurityGroup, VpcEndpoint]]
+  VpcEndpointSecurityGroupHTTPinbound:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref VpcEndpointSecurityGroup
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      CidrIp: !Ref VpcCidrBlock
   # FargateSecurityGroup
   FargateSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Security Group
+      GroupDescription: Security Group for Fargate
       VpcId: !Ref VpcId
       Tags:
         - Key: Name
@@ -81,6 +98,14 @@ Resources:
       FromPort: 443
       ToPort: 443
       CidrIp: !Ref VpcCidrBlock
+  FargateSecurityGroupTCPinbound:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref FargateSecurityGroup
+      IpProtocol: tcp
+      FromPort: 5044
+      ToPort: 5044
+      CidrIp: !Ref VpcCidrBlock
 
 # ------------------------------------------------------------------------------
 # Outputs
@@ -92,6 +117,9 @@ Outputs:
   OpenSearchSecurityGroupId:
     Value:
       Ref: OpenSearchSecurityGroup
+  VpcEndpointSecurityGroupId:
+    Value:
+      Ref: VpcEndpointSecurityGroup
   FargateSecurityGroupId:
     Value:
       Ref: FargateSecurityGroup
