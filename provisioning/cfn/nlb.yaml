@@ -1,0 +1,78 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: ALB
+# ------------------------------------------------------------------------------
+# Parameters
+# ------------------------------------------------------------------------------
+Parameters:
+  NlbName:
+    Type: String
+    Default: f-iot-nlb
+  NlbTargetGroupName:
+    Type: String
+    Default: f-iot-nlb-tg
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  SubnetIds:
+    Type: String
+  SecurityGroupId:
+    Type: String
+
+# ------------------------------------------------------------------------------
+# Resources
+# ------------------------------------------------------------------------------
+Resources:
+  Nlb:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      IpAddressType: ipv4
+      Name: !Ref NlbName
+      Scheme: internal
+      SubnetMappings:
+        - SubnetId: !Select [0, !Split [",", !Ref SubnetIds]]
+        - SubnetId: !Select [1, !Split [",", !Ref SubnetIds]]
+        - SubnetId: !Select [2, !Split [",", !Ref SubnetIds]]
+      Tags:
+        - Key: Name
+          Value: !Join [" ", [!Ref AWS::StackName, Nlb]]
+      Type: network
+
+  NlbTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPort: 5044
+      HealthCheckProtocol: TCP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 3
+      UnhealthyThresholdCount: 3
+      IpAddressType: ipv4
+      Name: !Ref NlbTargetGroupName
+      Port: 5044
+      Protocol: TCP
+      Tags:
+        - Key: Name
+          Value: !Join [" ", [!Ref AWS::StackName, NlbTargetGroup]]
+      TargetType: ip
+      VpcId: !Ref VpcId
+
+  NlbListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref NlbTargetGroup
+      LoadBalancerArn: !Ref Nlb
+      Port: 5044
+      Protocol: TCP
+
+# ------------------------------------------------------------------------------
+# Outputs
+# ------------------------------------------------------------------------------
+Outputs:
+  NlbId:
+    Value:
+      Ref: Nlb
+  NlbTargetGroupId:
+    Value:
+      Ref: NlbTargetGroup
