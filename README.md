@@ -44,14 +44,14 @@ export AWS_REGION="ap-northeast-1"
 
 # create a new repository and get repositoryUri
 export ECR_URI=$(aws ecr create-repository \
-  --repository-name test \
+  --repository-name f-iot-rep \
   --region $AWS_REGION \
   --query 'repository.repositoryUri' \
   --output text)
 
 # get repositoryUri from existing repository
 export ECR_URI=$(aws ecr describe-repositories \
-  --repository-names test \
+  --repository-names f-iot-rep \
   --query 'repositories[].repositoryUri' \
   --output text)
 
