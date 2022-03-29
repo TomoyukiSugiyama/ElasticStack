@@ -121,6 +121,7 @@ Resources:
             ],
           ]
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.FargateSecurityGroupId
+        LbTargetGroupId: !GetAtt Nlb.Outputs.NlbTargetGroupId
 
   AlbForOpensearch:
     Type: AWS::CloudFormation::Stack
@@ -140,6 +141,23 @@ Resources:
           ]
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.SecurityGroupId
         TargetIp: !GetAtt LambdaBacked.Outputs.IpAddr
+
+  Nlb:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: nlb.yaml
+      Parameters:
+        VpcId: !GetAtt Network.Outputs.VpcId
+        SubnetIds:
+          !Join [
+            ",",
+            [
+              !GetAtt Network.Outputs.PrivateSubnet1Id,
+              !GetAtt Network.Outputs.PrivateSubnet2Id,
+              !GetAtt Network.Outputs.PrivateSubnet3Id,
+            ],
+          ]
+        SecurityGroupId: !GetAtt SecurityGroup.Outputs.SecurityGroupId
 
 # ------------------------------------------------------------------------------
 # Outputs
