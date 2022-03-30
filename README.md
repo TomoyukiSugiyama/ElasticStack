@@ -91,7 +91,7 @@ $ cfn-stack-ops delete elastic-stack-xxxxxxxxxxxxxxxxx-artifact
 $ cfn-stack-ops delete test-stack
 ```
 
-## Utility
+## TOOLS
 
 * S3
 ```shell
