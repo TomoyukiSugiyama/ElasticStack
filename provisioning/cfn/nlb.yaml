@@ -17,8 +17,6 @@ Parameters:
     Type: AWS::EC2::VPC::Id
   SubnetIds:
     Type: String
-  SecurityGroupId:
-    Type: String
   AlbId:
     Type: String
 

@@ -82,26 +82,6 @@ Resources:
         AlbId: !GetAtt AlbForOpensearch.Outputs.AlbId
         AlbTargetGroupId: !GetAtt AlbForOpensearch.Outputs.AlbTargetGroupId
 
-  LambdaBacked:
-    Type: AWS::CloudFormation::Stack
-    DependsOn:
-      - Opensearch
-      - VpcEndpoint
-    Properties:
-      TemplateURL: lambda-backed.yaml
-      Parameters:
-        SubnetIds:
-          !Join [
-            ",",
-            [
-              !GetAtt Network.Outputs.PrivateSubnet1Id,
-              !GetAtt Network.Outputs.PrivateSubnet2Id,
-              !GetAtt Network.Outputs.PrivateSubnet3Id,
-            ],
-          ]
-        SecurityGroupId: !GetAtt SecurityGroup.Outputs.VpcEndpointSecurityGroupId
-        DomainEndpoint: !GetAtt Opensearch.Outputs.DomainEndpoint
-
   LogstashFargate:
     Type: AWS::CloudFormation::Stack
     DependsOn:
@@ -125,7 +105,6 @@ Resources:
 
   AlbForOpensearch:
     Type: AWS::CloudFormation::Stack
-    DependsOn: LambdaBacked
     Properties:
       TemplateURL: alb-for-opensearch.yaml
       Parameters:
@@ -139,8 +118,7 @@ Resources:
               !GetAtt Network.Outputs.PrivateSubnet3Id,
             ],
           ]
-        SecurityGroupId: !GetAtt SecurityGroup.Outputs.SecurityGroupId
-        TargetIp: !GetAtt LambdaBacked.Outputs.IpAddr
+        SecurityGroupId: !GetAtt SecurityGroup.Outputs.AlbSecurityGroupId
 
   Nlb:
     Type: AWS::CloudFormation::Stack
@@ -157,7 +135,6 @@ Resources:
               !GetAtt Network.Outputs.PrivateSubnet3Id,
             ],
           ]
-        SecurityGroupId: !GetAtt SecurityGroup.Outputs.SecurityGroupId
         AlbId: !GetAtt AlbForOpensearch.Outputs.AlbId
 
 # ------------------------------------------------------------------------------

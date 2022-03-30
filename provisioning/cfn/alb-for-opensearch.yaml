@@ -16,8 +16,7 @@ Parameters:
     Type: String
   SecurityGroupId:
     Type: String
-  TargetIp:
-    Type: String
+
 # ------------------------------------------------------------------------------
 # Resources
 # ------------------------------------------------------------------------------
@@ -54,13 +53,6 @@ Resources:
       Tags:
         - Key: Name
           Value: !Join [" ", [!Ref AWS::StackName, AlbTargetGroup]]
-      Targets:
-        - AvailabilityZone: !Select
-            - 0
-            - Fn::GetAZs: !Ref AWS::Region
-          Id: !Ref TargetIp
-          Port: 443
-
       TargetType: ip
       UnhealthyThresholdCount: 2
       VpcId: !Ref VpcId
