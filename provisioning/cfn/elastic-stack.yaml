@@ -41,7 +41,15 @@ Resources:
     Properties:
       TemplateURL: opensearch.yaml
       Parameters:
-        SubnetId: !GetAtt Network.Outputs.PrivateSubnet1Id
+        SubnetIds:
+          !Join [
+            ",",
+            [
+              !GetAtt Network.Outputs.PrivateSubnet1Id,
+              !GetAtt Network.Outputs.PrivateSubnet2Id,
+              !GetAtt Network.Outputs.PrivateSubnet3Id,
+            ],
+          ]
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.OpenSearchSecurityGroupId
 
   VpcEndpoint:
