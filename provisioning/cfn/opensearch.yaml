@@ -15,7 +15,7 @@ Parameters:
   InstanceType:
     Type: String
     Default: t3.small.search
-  SubnetId:
+  SubnetIds:
     Type: String
   SecurityGroupId:
     Type: String
@@ -33,9 +33,15 @@ Resources:
       EngineVersion:
         Ref: EngineVersion
       ClusterConfig:
-        InstanceCount: 1
+        InstanceCount: 3
         InstanceType:
           Ref: InstanceType
+        DedicatedMasterEnabled: true
+        DedicatedMasterType: !Ref InstanceType
+        DedicatedMasterCount: 3
+        ZoneAwarenessEnabled: true
+        ZoneAwarenessConfig:
+          AvailabilityZoneCount: 3
       EBSOptions:
         EBSEnabled: true
         Iops: 0
@@ -51,13 +57,11 @@ Resources:
             Resource: !Sub "arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/${DomainName}/*"
       AdvancedOptions:
         rest.action.multi.allow_explicit_index: true
-        override_main_response_version: true
       Tags:
         - Key: Name
           Value: !Join [" ", [!Ref AWS::StackName, OpenSearch]]
       VPCOptions:
-        SubnetIds:
-          - Ref: SubnetId
+        SubnetIds: !Split [",", !Ref SubnetIds]
         SecurityGroupIds:
           - Ref: SecurityGroupId
 
