@@ -69,14 +69,3 @@ Resources:
       SubnetIds: !Split [",", !Ref SubnetIds]
       SecurityGroupIds:
         - !Ref SecurityGroupId
-
-  CloudformationEndpoint:
-    Type: AWS::EC2::VPCEndpoint
-    Properties:
-      ServiceName: !Sub "com.amazonaws.${AWS::Region}.cloudformation"
-      VpcEndpointType: Interface
-      PrivateDnsEnabled: true
-      VpcId: !Ref VpcId
-      SubnetIds: !Split [",", !Ref SubnetIds]
-      SecurityGroupIds:
-        - !Ref SecurityGroupId
