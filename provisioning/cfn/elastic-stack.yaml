@@ -29,6 +29,7 @@ Resources:
 
   SpringBoard:
     Type: AWS::CloudFormation::Stack
+    DependsOn: Elb
     Properties:
       TemplateURL: ec2.yaml
       Parameters:
@@ -38,6 +39,7 @@ Resources:
 
   Opensearch:
     Type: AWS::CloudFormation::Stack
+    DependsOn: Elb
     Properties:
       TemplateURL: opensearch.yaml
       Parameters:
@@ -54,6 +56,7 @@ Resources:
 
   VpcEndpoint:
     Type: AWS::CloudFormation::Stack
+    DependsOn: Elb
     Properties:
       TemplateURL: vpc-endpoint.yaml
       Parameters:
@@ -72,7 +75,7 @@ Resources:
 
   Lambda:
     Type: AWS::CloudFormation::Stack
-    DependsOn: AlbForOpensearch
+    DependsOn: Elb
     Properties:
       TemplateURL: lambda.yaml
       Parameters:
@@ -87,12 +90,13 @@ Resources:
           ]
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.VpcEndpointSecurityGroupId
         DomainEndpoint: !GetAtt Opensearch.Outputs.DomainEndpoint
-        AlbId: !GetAtt AlbForOpensearch.Outputs.AlbId
-        AlbTargetGroupId: !GetAtt AlbForOpensearch.Outputs.AlbTargetGroupId
+        AlbId: !GetAtt Elb.Outputs.AlbId
+        AlbTargetGroupId: !GetAtt Elb.Outputs.AlbTargetGroupId
 
   LogstashFargate:
     Type: AWS::CloudFormation::Stack
     DependsOn:
+      - Elb
       - Opensearch
       - VpcEndpoint
     Properties:
@@ -109,12 +113,29 @@ Resources:
             ],
           ]
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.FargateSecurityGroupId
-        LbTargetGroupId: !GetAtt Nlb.Outputs.NlbTargetGroupId
+        LbTargetGroupId: !GetAtt Elb.Outputs.NlbTargetGroupId
 
-  AlbForOpensearch:
+  # AlbForOpensearch:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: alb-for-opensearch.yaml
+  #     Parameters:
+  #       VpcId: !GetAtt Network.Outputs.VpcId
+  #       SubnetIds:
+  #         !Join [
+  #           ",",
+  #           [
+  #             !GetAtt Network.Outputs.PrivateSubnet1Id,
+  #             !GetAtt Network.Outputs.PrivateSubnet2Id,
+  #             !GetAtt Network.Outputs.PrivateSubnet3Id,
+  #           ],
+  #         ]
+  #       SecurityGroupId: !GetAtt SecurityGroup.Outputs.AlbSecurityGroupId
+
+  Elb:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: alb-for-opensearch.yaml
+      TemplateURL: elb.yaml
       Parameters:
         VpcId: !GetAtt Network.Outputs.VpcId
         SubnetIds:
@@ -127,23 +148,6 @@ Resources:
             ],
           ]
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.AlbSecurityGroupId
-
-  Nlb:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: nlb.yaml
-      Parameters:
-        VpcId: !GetAtt Network.Outputs.VpcId
-        SubnetIds:
-          !Join [
-            ",",
-            [
-              !GetAtt Network.Outputs.PrivateSubnet1Id,
-              !GetAtt Network.Outputs.PrivateSubnet2Id,
-              !GetAtt Network.Outputs.PrivateSubnet3Id,
-            ],
-          ]
-        AlbId: !GetAtt AlbForOpensearch.Outputs.AlbId
 
 # ------------------------------------------------------------------------------
 # Outputs

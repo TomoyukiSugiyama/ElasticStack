@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: NLB
+Description: Elb
 # ------------------------------------------------------------------------------
 # Parameters
 # ------------------------------------------------------------------------------
@@ -13,11 +13,17 @@ Parameters:
   NlbForAlbTargetGroupName:
     Type: String
     Default: nlb-for-alb-tg
+  AlbName:
+    Type: String
+    Default: f-iot-alb
+  AlbTargetGroupName:
+    Type: String
+    Default: f-iot-alb-tg
   VpcId:
     Type: AWS::EC2::VPC::Id
   SubnetIds:
     Type: String
-  AlbId:
+  SecurityGroupId:
     Type: String
 
 # ------------------------------------------------------------------------------
@@ -35,13 +41,15 @@ Resources:
       Scheme: internal
       SubnetMappings:
         - SubnetId: !Select [0, !Split [",", !Ref SubnetIds]]
+          PrivateIPv4Address: 172.31.0.100
         - SubnetId: !Select [1, !Split [",", !Ref SubnetIds]]
+          PrivateIPv4Address: 172.31.16.100
         - SubnetId: !Select [2, !Split [",", !Ref SubnetIds]]
+          PrivateIPv4Address: 172.31.32.100
       Tags:
         - Key: Name
           Value: !Join [" ", [!Ref AWS::StackName, Nlb]]
       Type: network
-
   NlbForLogstashTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -61,7 +69,6 @@ Resources:
           Value: !Join [" ", [!Ref AWS::StackName, NlbForLogstashTargetGroup]]
       TargetType: ip
       VpcId: !Ref VpcId
-
   NlbForLogstashListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -71,7 +78,6 @@ Resources:
       LoadBalancerArn: !Ref Nlb
       Port: 5044
       Protocol: TCP
-
   NlbForAlbTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -90,11 +96,10 @@ Resources:
         - Key: Name
           Value: !Join [" ", [!Ref AWS::StackName, NlbForAlbTargetGroup]]
       Targets:
-        - Id: !Ref AlbId
+        - Id: !Ref Alb
           Port: 80
       TargetType: alb
       VpcId: !Ref VpcId
-
   NlbForAlbListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -104,6 +109,51 @@ Resources:
       LoadBalancerArn: !Ref Nlb
       Port: 80
       Protocol: TCP
+  Alb:
+    DependsOn:
+      - Nlb
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      IpAddressType: ipv4
+      Name: !Ref AlbName
+      Scheme: internal
+      SecurityGroups:
+        - Ref: SecurityGroupId
+      Subnets: !Split [",", !Ref SubnetIds]
+      Tags:
+        - Key: Name
+          Value: !Join [" ", [!Ref AWS::StackName, Alb]]
+      Type: application
+  AlbTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /
+      HealthCheckPort: 443
+      HealthCheckProtocol: HTTPS
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 5
+      IpAddressType: ipv4
+      Name: !Ref AlbTargetGroupName
+      Port: 443
+      Protocol: HTTPS
+      ProtocolVersion: HTTP1
+      Tags:
+        - Key: Name
+          Value: !Join [" ", [!Ref AWS::StackName, AlbTargetGroup]]
+      TargetType: ip
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref VpcId
+  AlbListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref AlbTargetGroup
+      LoadBalancerArn: !Ref Alb
+      Port: 80
+      Protocol: HTTP
 
 # ------------------------------------------------------------------------------
 # Outputs
@@ -115,3 +165,9 @@ Outputs:
   NlbTargetGroupId:
     Value:
       Ref: NlbForLogstashTargetGroup
+  AlbId:
+    Value:
+      Ref: Alb
+  AlbTargetGroupId:
+    Value:
+      Ref: AlbTargetGroup
