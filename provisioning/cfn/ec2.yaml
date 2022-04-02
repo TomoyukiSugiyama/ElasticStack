@@ -38,5 +38,4 @@ Resources:
 # ------------------------------------------------------------------------------
 Outputs:
   EC2InstanceId:
-    Value:
-      Ref: EC2Instance
+    Value: !Ref EC2Instance

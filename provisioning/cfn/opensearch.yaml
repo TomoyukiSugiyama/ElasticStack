@@ -28,14 +28,11 @@ Resources:
   OpenSearchServiceDomain:
     Type: AWS::OpenSearchService::Domain
     Properties:
-      DomainName:
-        Ref: DomainName
-      EngineVersion:
-        Ref: EngineVersion
+      DomainName: !Ref DomainName
+      EngineVersion: !Ref EngineVersion
       ClusterConfig:
         InstanceCount: 3
-        InstanceType:
-          Ref: InstanceType
+        InstanceType: !Ref InstanceType
         DedicatedMasterEnabled: true
         DedicatedMasterType: !Ref InstanceType
         DedicatedMasterCount: 3
@@ -63,19 +60,13 @@ Resources:
       VPCOptions:
         SubnetIds: !Split [",", !Ref SubnetIds]
         SecurityGroupIds:
-          - Ref: SecurityGroupId
+          - !Ref SecurityGroupId
 
 # ------------------------------------------------------------------------------
 # Outputs
 # ------------------------------------------------------------------------------
 Outputs:
   Arn:
-    Value:
-      "Fn::GetAtt":
-        - OpenSearchServiceDomain
-        - Arn
+    Value: !GetAtt OpenSearchServiceDomain.Arn
   DomainEndpoint:
-    Value:
-      "Fn::GetAtt":
-        - OpenSearchServiceDomain
-        - DomainEndpoint
+    Value: !GetAtt OpenSearchServiceDomain.DomainEndpoint

@@ -79,8 +79,7 @@ Resources:
       Port: 5044
       Protocol: TCP
   NlbForAlbTargetGroup:
-    DependsOn:
-      - AlbListener
+    DependsOn: AlbListener
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckEnabled: true
@@ -113,14 +112,13 @@ Resources:
       Protocol: TCP
   Alb:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-    DependsOn:
-      - Nlb
+    DependsOn: Nlb
     Properties:
       IpAddressType: ipv4
       Name: !Ref AlbName
       Scheme: internal
       SecurityGroups:
-        - Ref: SecurityGroupId
+        - !Ref SecurityGroupId
       Subnets: !Split [",", !Ref SubnetIds]
       Tags:
         - Key: Name
@@ -162,14 +160,10 @@ Resources:
 # ------------------------------------------------------------------------------
 Outputs:
   NlbId:
-    Value:
-      Ref: Nlb
+    Value: !Ref Nlb
   NlbTargetGroupId:
-    Value:
-      Ref: NlbForLogstashTargetGroup
+    Value: !Ref NlbForLogstashTargetGroup
   AlbId:
-    Value:
-      Ref: Alb
+    Value: !Ref Alb
   AlbTargetGroupId:
-    Value:
-      Ref: AlbTargetGroup
+    Value: !Ref AlbTargetGroup

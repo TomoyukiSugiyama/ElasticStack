@@ -33,14 +33,13 @@ Resources:
         Mode: Active
       VpcConfig:
         SecurityGroupIds:
-          - Ref: SecurityGroupId
+          - !Ref SecurityGroupId
         SubnetIds: !Split [",", !Ref SubnetIds]
       Environment:
         Variables:
           DomainEndpoint: !Ref DomainEndpoint
           AlbId: !Ref AlbId
           AlbTargetGroupId: !Ref AlbTargetGroupId
-
   LambdaRole:
     Properties:
       AssumeRolePolicyDocument:
@@ -72,7 +71,6 @@ Resources:
         - Key: com.trim.f-iot
           Value: lambda
     Type: AWS::IAM::Role
-
   EventRule:
     Type: AWS::Events::Rule
     Properties:
@@ -83,7 +81,6 @@ Resources:
       Targets:
         - Arn: !GetAtt Function.Arn
           Id: lambda
-
   EventPermission:
     Type: AWS::Lambda::Permission
     Properties:

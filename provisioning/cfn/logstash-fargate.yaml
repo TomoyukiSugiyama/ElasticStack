@@ -42,10 +42,7 @@ Resources:
     Type: AWS::Logs::LogGroup
   LogstashService:
     Properties:
-      Cluster:
-        Fn::GetAtt:
-          - Cluster
-          - Arn
+      Cluster: !GetAtt Cluster.Arn
       DeploymentConfiguration:
         MaximumPercent: 200
         MinimumHealthyPercent: 100
@@ -61,23 +58,19 @@ Resources:
         AwsvpcConfiguration:
           AssignPublicIp: DISABLED
           SecurityGroups:
-            - Ref: SecurityGroupId
+            - !Ref SecurityGroupId
           Subnets: !Split [",", !Ref SubnetIds]
       PlatformVersion: 1.4.0
       PropagateTags: SERVICE
       SchedulingStrategy: REPLICA
       ServiceRegistries:
-        - RegistryArn:
-            Fn::GetAtt:
-              - LogstashServiceDiscoveryEntry
-              - Arn
+        - RegistryArn: !GetAtt LogstashServiceDiscoveryEntry.Arn
       Tags:
         - Key: com.docker.compose.project
           Value: ecs
         - Key: com.docker.compose.service
           Value: logstash
-      TaskDefinition:
-        Ref: LogstashTaskDefinition
+      TaskDefinition: !Ref LogstashTaskDefinition
     Type: AWS::ECS::Service
   LogstashServiceDiscoveryEntry:
     Properties:
@@ -90,8 +83,7 @@ Resources:
       HealthCheckCustomConfig:
         FailureThreshold: 1
       Name: logstash
-      NamespaceId:
-        Ref: CloudMap
+      NamespaceId: !Ref CloudMap
     Type: AWS::ServiceDiscovery::Service
   LogstashTaskDefinition:
     Properties:
@@ -104,10 +96,8 @@ Resources:
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group:
-                Ref: LogGroup
-              awslogs-region:
-                Ref: AWS::Region
+              awslogs-group: !Ref LogGroup
+              awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: ecs
           Name: Logstash_ResolvConf_InitContainer
         - DependsOn:
@@ -119,17 +109,14 @@ Resources:
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group:
-                Ref: LogGroup
-              awslogs-region:
-                Ref: AWS::Region
+              awslogs-group: !Ref LogGroup
+              awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: ecs
           Name: logstash
           PortMappings:
             - ContainerPort: !Ref ContainerPort
       Cpu: "2048"
-      ExecutionRoleArn:
-        Ref: LogstashTaskExecutionRole
+      ExecutionRoleArn: !Ref LogstashTaskExecutionRole
       Family: ecs-logstash
       Memory: "4096"
       NetworkMode: awsvpc
