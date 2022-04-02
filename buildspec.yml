@@ -19,6 +19,6 @@ phases:
       - cd $CODEBUILD_SRC_DIR
       - $CODEBUILD_SRC_DIR/provisioning/helper-scripts/cfn-stack-ops.sh package provisioning/cfn/elastic-stack.yaml $S3_BUCKET_CFN_NAME artifact.yaml
 
-  artifacts:
-    files:
-      - artifact.yaml
+artifacts:
+  files:
+    - artifact.yaml
