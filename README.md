@@ -1,30 +1,27 @@
 # ElasticStack
-test
 
 ## Deployment
 ![](https://codebuild.ap-northeast-1.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiaTAyaDcrSmJHQ29RNTc2VmExYkk3Y2p4RmFHT1pZa2R4WlJrQno4WHl0dlU2T0hoZEpuQThCVG1URXk1ems1SE9RbjRSTEdtOUFWRWRST0JVR1h3aGFNPSIsIml2UGFyYW1ldGVyU3BlYyI6IkNuZnMwTDlxMTdXdnZ5K08iLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=main)
 
 ## Setting
-
-```sh
+```bash
 # cat ~/.zshrc
 
 alias cfn-stack-ops="/path/to/ElasticStack/provisioning/helper-scripts/cfn-stack-ops.sh $1"
 alias s3-ops="/path/to/ElasticStack/provisioning/helper-scripts/s3-ops.sh $1"
 ```
 
-## Deploy CFn
-
+## Build CFn
 1. Create s3 bucket
-```shell
+```bash
 $ s3-ops create elastic-stack-xxxxxxxxxxxxxxxxx-artifact
-$ export S3_BACKET="elastic-stack-xxxxxxxxxxxxxxxxx-artifact"
+$ export S3_BUCKET_CFN_NAME="elastic-stack-xxxxxxxxxxxxxxxxx-artifact"
 ```
 
 2. Package
-```shell
+```bash
 $ mkdir provisioning/artifacts
-$ cfn-stack-ops package provisioning/cfn/elastic-stack.yaml $S3_BACKET provisioning/artifacts/artifact.yaml
+$ cfn-stack-ops package provisioning/cfn/elastic-stack.yaml $S3_BUCKET_CFN_NAME provisioning/artifacts/artifact.yaml
 aws cloudformation package --template-file provisioning/cfn/elastic-stack.yaml --s3-bucket elastic-stack-xxxxxxxxxxxxxxxxx-artifact --output-template-file provisioning/artifacts/artifact.yaml
 Uploading to XXXXXXXXXXXXXXXXXXXXXXXXXXXX.template  1669 / 1669.0  (100.00%)
 Successfully packaged artifacts and wrote output template to file provisioning/artifacts/artifact.yaml.
@@ -32,8 +29,8 @@ Execute the following command to deploy the packaged template
 aws cloudformation deploy --template-file /path/to/ElasticStack/provisioning/artifacts/artifact.yaml --stack-name <YOUR STACK NAME>
 ```
 
-3. Deploy
-```shell
+3. Push cfn to s3 bucket
+```bash
 $ cfn-stack-ops deploy test-stack provisioning/artifacts/artifact.yaml
 aws cloudformation deploy --stack-name test-stack --template-file provisioning/artifacts/artifact.yaml
 
@@ -42,9 +39,10 @@ Waiting for stack create/update to complete
 Successfully created/updated stack - test-stack
 ```
 
-## Deploy ECS
+## Build ECS
 
-```sh
+1. Create s3 bucket and set env
+```bash
 export AWS_REGION="ap-northeast-1"
 
 # create a new repository and get repositoryUri
@@ -66,29 +64,42 @@ export AWS_VPC=$(aws cloudformation describe-stacks \
   --output text)
 ```
 
-deploy docker image
+2. Build images and push it to ecr
 ```bash
-(cd provisioning/ecs ; ./deploy-container-image-to-ecr.sh)
+$ cd provisioning/ecs
+$ ./deploy-container-image-to-ecr.sh
 ```
 
-check
+3. Check
 ```bash
 $ aws ecr list-images --repository-name test | jq '.imageIds | .[].imageTag'
 "ecs-serchdomain-sidecar"
 "logstash"
 ```
 
-deploy ecs
+## Build Lambda
+1. Create s3 bucket
 ```bash
-docker context use myecs
-docker compose up
+$ s3-ops create lambda-xxxxxxxxxxxxxxxxx-artifact
+$ export S3_BUCKET_LAMBDA_NAME="lambda-xxxxxxxxxxxxxxxxx-artifact"
+```
+
+2. Build
+```bash
+$ cd provisioning/lambda
+$ ./build.sh
+```
+
+3. Push artifact to s3 
+```bash
+$ s3-ops push $S3_BUCKET_LAMBDA_NAME populate-alb-tg-with-opensearch/populate-alb-tg-with-opensearch.zip
 ```
 
 ## Delete
 
 * Delete s3 bucket
 ```shell
-$ cfn-stack-ops delete elastic-stack-xxxxxxxxxxxxxxxxx-artifact
+$ cfn-stack-ops delete $S3_BUCKET_CFN_NAME
 ```
 
 * Delete stack
