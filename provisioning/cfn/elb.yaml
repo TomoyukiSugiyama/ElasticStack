@@ -79,6 +79,8 @@ Resources:
       Port: 5044
       Protocol: TCP
   NlbForAlbTargetGroup:
+    DependsOn:
+      - AlbListener
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckEnabled: true
@@ -110,9 +112,9 @@ Resources:
       Port: 80
       Protocol: TCP
   Alb:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     DependsOn:
       - Nlb
-    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       IpAddressType: ipv4
       Name: !Ref AlbName
