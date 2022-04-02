@@ -5,9 +5,6 @@ phases:
     runtime-versions:
       golang: 1.14
 
-  pre_build:
-    commands:
-      - echo Nothing to do in the pre_build phase...
   build:
     commands:
       - echo Build lambda
@@ -21,6 +18,7 @@ phases:
       - echo Build cloudformation
       - cd $CODEBUILD_SRC_DIR
       - $CODEBUILD_SRC_DIR/provisioning/helper-scripts/cfn-stack-ops.sh package provisioning/cfn/elastic-stack.yaml $S3_BUCKET_CFN_NAME artifact.yaml
-  post_build:
-    commands:
-      - echo Build completed on `date`
+
+  artifacts:
+    files:
+      - artifact.yaml
