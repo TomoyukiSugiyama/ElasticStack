@@ -38,8 +38,7 @@ Resources:
   PrivateSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId:
-        Ref: Vpc
+      VpcId: !Ref Vpc
       CidrBlock: !Select
         - 0
         - Fn::Cidr: [!GetAtt Vpc.CidrBlock, 6, 12]
@@ -52,8 +51,7 @@ Resources:
   PrivateSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId:
-        Ref: Vpc
+      VpcId: !Ref Vpc
       CidrBlock: !Select
         - 1
         - Fn::Cidr: [!GetAtt Vpc.CidrBlock, 6, 12]
@@ -66,8 +64,7 @@ Resources:
   PrivateSubnet3:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId:
-        Ref: Vpc
+      VpcId: !Ref Vpc
       CidrBlock: !Select
         - 2
         - Fn::Cidr: [!GetAtt Vpc.CidrBlock, 6, 12]
@@ -80,8 +77,7 @@ Resources:
   PublicSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId:
-        Ref: Vpc
+      VpcId: !Ref Vpc
       CidrBlock: !Select
         - 3
         - Fn::Cidr: [!GetAtt Vpc.CidrBlock, 6, 12]
@@ -95,8 +91,7 @@ Resources:
   PublicSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId:
-        Ref: Vpc
+      VpcId: !Ref Vpc
       CidrBlock: !Select
         - 4
         - Fn::Cidr: [!GetAtt Vpc.CidrBlock, 6, 12]
@@ -155,23 +150,16 @@ Resources:
 # ------------------------------------------------------------------------------
 Outputs:
   VpcId:
+    Value: !Ref Vpc
+  PrivateSubnetIds:
     Value:
-      Ref: Vpc
-  PrivateSubnet1Id:
-    Value:
-      Ref: PrivateSubnet1
-  PrivateSubnet2Id:
-    Value:
-      Ref: PrivateSubnet2
-  PrivateSubnet3Id:
-    Value:
-      Ref: PrivateSubnet3
+      !Join [
+        ",",
+        [!Ref PrivateSubnet1, !Ref PrivateSubnet2, !Ref PrivateSubnet3],
+      ]
   PublicSubnet1Id:
-    Value:
-      Ref: PublicSubnet1
+    Value: !Ref PublicSubnet1
   PublicSubnet2Id:
-    Value:
-      Ref: PublicSubnet2
+    Value: !Ref PublicSubnet2
   PrivateRouteTableId:
-    Value:
-      Ref: PrivateRouteTable
+    Value: !Ref PrivateRouteTable

@@ -129,17 +129,12 @@ Resources:
 # ------------------------------------------------------------------------------
 Outputs:
   SecurityGroupId:
-    Value:
-      Ref: SecurityGroup
+    Value: !Ref SecurityGroup
   OpenSearchSecurityGroupId:
-    Value:
-      Ref: OpenSearchSecurityGroup
+    Value: !Ref OpenSearchSecurityGroup
   VpcEndpointSecurityGroupId:
-    Value:
-      Ref: VpcEndpointSecurityGroup
+    Value: !Ref VpcEndpointSecurityGroup
   FargateSecurityGroupId:
-    Value:
-      Ref: FargateSecurityGroup
+    Value: !Ref FargateSecurityGroup
   AlbSecurityGroupId:
-    Value:
-      Ref: AlbSecurityGroup
+    Value: !Ref AlbSecurityGroup

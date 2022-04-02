@@ -27,7 +27,6 @@ Resources:
       SubnetIds: !Split [",", !Ref SubnetIds]
       SecurityGroupIds:
         - !Ref SecurityGroupId
-
   EcrApiEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
@@ -38,7 +37,6 @@ Resources:
       SubnetIds: !Split [",", !Ref SubnetIds]
       SecurityGroupIds:
         - !Ref SecurityGroupId
-
   S3Endpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
@@ -47,7 +45,6 @@ Resources:
       VpcId: !Ref VpcId
       RouteTableIds:
         - !Ref PrivateRouteTableId
-
   LogsEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
@@ -58,7 +55,6 @@ Resources:
       SubnetIds: !Split [",", !Ref SubnetIds]
       SecurityGroupIds:
         - !Ref SecurityGroupId
-
   ElasticLoadBalancingEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:

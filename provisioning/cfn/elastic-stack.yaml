@@ -18,7 +18,6 @@ Resources:
       TemplateURL: network.yaml
       Parameters:
         VpcCidrBlock: !Ref VpcCidrBlock
-
   SecurityGroup:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -26,7 +25,6 @@ Resources:
       Parameters:
         VpcId: !GetAtt Network.Outputs.VpcId
         VpcCidrBlock: !Ref VpcCidrBlock
-
   SpringBoard:
     Type: AWS::CloudFormation::Stack
     DependsOn: Elb
@@ -36,24 +34,14 @@ Resources:
         KeyName: elastic-stack
         SubnetId: !GetAtt Network.Outputs.PublicSubnet1Id
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.SecurityGroupId
-
   Opensearch:
     Type: AWS::CloudFormation::Stack
     DependsOn: Elb
     Properties:
       TemplateURL: opensearch.yaml
       Parameters:
-        SubnetIds:
-          !Join [
-            ",",
-            [
-              !GetAtt Network.Outputs.PrivateSubnet1Id,
-              !GetAtt Network.Outputs.PrivateSubnet2Id,
-              !GetAtt Network.Outputs.PrivateSubnet3Id,
-            ],
-          ]
+        SubnetIds: !GetAtt Network.Outputs.PrivateSubnetIds
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.OpenSearchSecurityGroupId
-
   VpcEndpoint:
     Type: AWS::CloudFormation::Stack
     DependsOn: Elb
@@ -61,38 +49,20 @@ Resources:
       TemplateURL: vpc-endpoint.yaml
       Parameters:
         VpcId: !GetAtt Network.Outputs.VpcId
-        SubnetIds:
-          !Join [
-            ",",
-            [
-              !GetAtt Network.Outputs.PrivateSubnet1Id,
-              !GetAtt Network.Outputs.PrivateSubnet2Id,
-              !GetAtt Network.Outputs.PrivateSubnet3Id,
-            ],
-          ]
+        SubnetIds: !GetAtt Network.Outputs.PrivateSubnetIds
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.VpcEndpointSecurityGroupId
         PrivateRouteTableId: !GetAtt Network.Outputs.PrivateRouteTableId
-
   Lambda:
     Type: AWS::CloudFormation::Stack
     DependsOn: Elb
     Properties:
       TemplateURL: lambda.yaml
       Parameters:
-        SubnetIds:
-          !Join [
-            ",",
-            [
-              !GetAtt Network.Outputs.PrivateSubnet1Id,
-              !GetAtt Network.Outputs.PrivateSubnet2Id,
-              !GetAtt Network.Outputs.PrivateSubnet3Id,
-            ],
-          ]
+        SubnetIds: !GetAtt Network.Outputs.PrivateSubnetIds
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.VpcEndpointSecurityGroupId
         DomainEndpoint: !GetAtt Opensearch.Outputs.DomainEndpoint
         AlbId: !GetAtt Elb.Outputs.AlbId
         AlbTargetGroupId: !GetAtt Elb.Outputs.AlbTargetGroupId
-
   LogstashFargate:
     Type: AWS::CloudFormation::Stack
     DependsOn:
@@ -103,33 +73,16 @@ Resources:
       TemplateURL: logstash-fargate.yaml
       Parameters:
         VpcId: !GetAtt Network.Outputs.VpcId
-        SubnetIds:
-          !Join [
-            ",",
-            [
-              !GetAtt Network.Outputs.PrivateSubnet1Id,
-              !GetAtt Network.Outputs.PrivateSubnet2Id,
-              !GetAtt Network.Outputs.PrivateSubnet3Id,
-            ],
-          ]
+        SubnetIds: !GetAtt Network.Outputs.PrivateSubnetIds
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.FargateSecurityGroupId
         LbTargetGroupId: !GetAtt Elb.Outputs.NlbTargetGroupId
-
   Elb:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: elb.yaml
       Parameters:
         VpcId: !GetAtt Network.Outputs.VpcId
-        SubnetIds:
-          !Join [
-            ",",
-            [
-              !GetAtt Network.Outputs.PrivateSubnet1Id,
-              !GetAtt Network.Outputs.PrivateSubnet2Id,
-              !GetAtt Network.Outputs.PrivateSubnet3Id,
-            ],
-          ]
+        SubnetIds: !GetAtt Network.Outputs.PrivateSubnetIds
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.AlbSecurityGroupId
 
 # ------------------------------------------------------------------------------
