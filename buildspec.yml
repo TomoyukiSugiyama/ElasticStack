@@ -3,7 +3,7 @@ version: 0.2
 phases:
   install:
     commands:
-      - echo Nothing to do inthe install phase...
+      - echo $AWS_REGION
   pre_build:
     commands:
       - echo Nothing to do in the pre_build phase...
