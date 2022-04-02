@@ -3,13 +3,13 @@ version: 0.2
 phases:
   install:
     commands:
-      - echo $AWS_REGION
+      - echo Nothing to do
   pre_build:
     commands:
       - echo Nothing to do in the pre_build phase...
   build:
     commands:
-      - echo Build started on `date`
+      - ./provisioning/helper-scripts/cfn-stack-ops.sh package provisioning/cfn/elastic-stack.yaml $S3_BACKET artifact.yaml
   post_build:
     commands:
       - echo Build completed on `date`

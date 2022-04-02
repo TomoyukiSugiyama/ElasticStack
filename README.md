@@ -18,12 +18,13 @@ alias s3-ops="/path/to/ElasticStack/provisioning/helper-scripts/s3-ops.sh $1"
 1. Create s3 bucket
 ```shell
 $ s3-ops create elastic-stack-xxxxxxxxxxxxxxxxx-artifact
+$ export S3_BACKET="elastic-stack-xxxxxxxxxxxxxxxxx-artifact"
 ```
 
 2. Package
 ```shell
 $ mkdir provisioning/artifacts
-$ cfn-stack-ops package provisioning/cfn/elastic-stack.yaml elastic-stack-xxxxxxxxxxxxxxxxx-artifact provisioning/artifacts/artifact.yaml
+$ cfn-stack-ops package provisioning/cfn/elastic-stack.yaml $S3_BACKET provisioning/artifacts/artifact.yaml
 aws cloudformation package --template-file provisioning/cfn/elastic-stack.yaml --s3-bucket elastic-stack-xxxxxxxxxxxxxxxxx-artifact --output-template-file provisioning/artifacts/artifact.yaml
 Uploading to XXXXXXXXXXXXXXXXXXXXXXXXXXXX.template  1669 / 1669.0  (100.00%)
 Successfully packaged artifacts and wrote output template to file provisioning/artifacts/artifact.yaml.
