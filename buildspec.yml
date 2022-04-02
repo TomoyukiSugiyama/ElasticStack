@@ -15,7 +15,7 @@ phases:
       - ./build.sh
       - $CODEBUILD_SRC_DIR/provisioning/helper-scripts/s3-ops.sh push $S3_BUCKET_LAMBDA_NAME populate-alb-tg-with-opensearch/populate-alb-tg-with-opensearch.zip
       - echo Build container
-      - export ECR_URI=$(aws ecr describe-repositories --repository-names f-iot-rep --query 'repositories[].repositoryUri' --output text
+      - export ECR_URI=$(aws ecr describe-repositories --repository-names f-iot-rep --query 'repositories[].repositoryUri' --output text)
       - cd $CODEBUILD_SRC_DIR/provisioning/ecs
       - ./deploy-container-image-to-ecr.sh
       - echo Build cloudformation
