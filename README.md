@@ -40,7 +40,6 @@ Successfully created/updated stack - test-stack
 ```
 
 ## Build ECS
-
 1. Create s3 bucket and set env
 ```bash
 export AWS_REGION="ap-northeast-1"
@@ -95,20 +94,7 @@ $ ./build.sh
 $ s3-ops push $S3_BUCKET_LAMBDA_NAME populate-alb-tg-with-opensearch/populate-alb-tg-with-opensearch.zip
 ```
 
-## Delete
-
-* Delete s3 bucket
-```shell
-$ cfn-stack-ops delete $S3_BUCKET_CFN_NAME
-```
-
-* Delete stack
-```shell
-$ cfn-stack-ops delete test-stack
-```
-
 ## TOOLS
-
 * S3
 ```shell
 $ s3-ops 
