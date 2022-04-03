@@ -29,7 +29,7 @@ phases:
       - echo Run validation check
       - $CODEBUILD_SRC_DIR/provisioning/helper-scripts/cfn-stack-ops.sh validate artifact.yaml
       - echo Run cfn-lint
-      - cfn-lint -t $CODEBUILD_SRC_DIR/provisioning/*
+      - cfn-lint -t $CODEBUILD_SRC_DIR/provisioning/cfn/*
 
 artifacts:
   files:
