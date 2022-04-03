@@ -54,7 +54,6 @@ Resources:
         PrivateRouteTableId: !GetAtt Network.Outputs.PrivateRouteTableId
   Lambda:
     Type: AWS::CloudFormation::Stack
-    DependsOn: Elb
     Properties:
       TemplateURL: lambda.yaml
       Parameters:
@@ -66,7 +65,6 @@ Resources:
   LogstashFargate:
     Type: AWS::CloudFormation::Stack
     DependsOn:
-      - Elb
       - Opensearch
       - VpcEndpoint
     Properties:

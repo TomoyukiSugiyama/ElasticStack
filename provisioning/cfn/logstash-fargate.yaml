@@ -116,7 +116,7 @@ Resources:
           PortMappings:
             - ContainerPort: !Ref ContainerPort
       Cpu: "2048"
-      ExecutionRoleArn: !Ref LogstashTaskExecutionRole
+      ExecutionRoleArn: !GetAtt LogstashTaskExecutionRole.Arn
       Family: ecs-logstash
       Memory: "4096"
       NetworkMode: awsvpc

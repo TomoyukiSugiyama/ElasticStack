@@ -4,6 +4,8 @@ phases:
   install:
     runtime-versions:
       golang: 1.14
+    commands:
+      - pip install cfn-lint
 
   build:
     commands:
