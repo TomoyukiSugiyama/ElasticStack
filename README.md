@@ -106,7 +106,7 @@ $ s3-ops push $S3_BUCKET_LAMBDA_NAME populate-alb-tg-with-opensearch/populate-al
 
 ## TOOLS
 * S3
-```shell
+```bash
 $ s3-ops 
 
 Usage: /path/to/ElasticStack/provisioning/helper-scripts/s3-ops.sh MODE ARGS
@@ -119,7 +119,7 @@ push      s3-name     zip-file-path
 ```
 
 * Cloudformation
-```shell
+```bash
 $ cfn-stack-ops
 
 Usage: /path/to/ElasticStack/provisioning/helper-scripts/cfn-stack-ops.sh MODE ARGS
@@ -137,6 +137,6 @@ delete    stack-name
 
 # SSH tunnel
 
-```
-ssh -i ~/.ssh/your-key.pem ec2-user@your-ec2-instance-public-ip -N -L 9200:vpc-domain-name.region.es.amazonaws.com:443
+```bash
+$ sh -i ~/.ssh/your-key.pem ec2-user@your-ec2-instance-public-ip -N -L 9200:vpc-domain-name.region.es.amazonaws.com:443
 ```
