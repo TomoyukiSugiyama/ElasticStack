@@ -44,6 +44,11 @@ Create stack from s3 bucket
 $ cfn-stack-ops create test-stack $S3_BUCKET_CFN_NAME
 ```
 
+Update stack from s3 bucket
+```bash
+$ cfn-stack-ops update test-stack $S3_BUCKET_CFN_NAME
+```
+
 ## Build ECS
 1. Create s3 bucket and set env
 ```bash
