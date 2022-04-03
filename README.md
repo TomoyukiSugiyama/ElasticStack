@@ -105,7 +105,7 @@ Mode:     Args:
 list      
 create    s3-name
 delete    s3-name
-push      s3-name     file-path
+push      s3-name     zip-file-path
 ```
 
 * Cloudformation
@@ -115,13 +115,13 @@ $ cfn-stack-ops
 Usage: /path/to/ElasticStack/provisioning/helper-scripts/cfn-stack-ops.sh MODE ARGS
 
 Mode:     Args:
-create    stack-name path-to-cfn-template-file [param1=val1 param2=val2]
-update    stack-name path-to-cfn-template-file [param1=val1 param2=val2]
+create    stack-name s3-bucket [param1=val1 param2=val2]
+update    stack-name s3-bucket [param1=val1 param2=val2]
 package   path-to-cfn-template-file s3-bucket output-template-file
 deploy    stack-name path-to-cfn-template-filee
 list      
 describe  stack-name
-validate  path-to-cfn-template-file
+validate  s3-bucket
 delete    stack-name
 ```
 
