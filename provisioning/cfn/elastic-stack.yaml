@@ -88,6 +88,10 @@ Resources:
       TemplateURL: vpc-flow-log.yaml
       Parameters:
         VpcId: !GetAtt Network.Outputs.VpcId
+  GuardDuty:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: guard-duty.yaml
 
 # ------------------------------------------------------------------------------
 # Outputs
