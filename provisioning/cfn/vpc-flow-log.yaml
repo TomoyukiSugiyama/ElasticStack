@@ -16,7 +16,7 @@ Resources:
     Properties:
       DeliverLogsPermissionArn: !GetAtt VpcFlowLogRole.Arn
       LogDestinationType: cloud-watch-logs
-      LogGroupName: !Ref LogGroupName
+      LogGroupName: !Ref VpcFlowLogGroupName
       ResourceId: !Ref VpcId
       ResourceType: VPC
       TrafficType: ALL
