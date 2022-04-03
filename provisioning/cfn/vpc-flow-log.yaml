@@ -16,7 +16,6 @@ Parameters:
 Resources:
   VpcFlowLog:
     Type: AWS::EC2::FlowLog
-    DependsOn: LogGroup
     Properties:
       DeliverLogsPermissionArn: !GetAtt VpcFlowLogRole.Arn
       LogDestinationType: cloud-watch-logs
@@ -52,7 +51,3 @@ Resources:
         - Key: name
           Value: flow-log
     Type: AWS::IAM::Role
-  LogGroup:
-    Properties:
-      LogGroupName: /aws/flow-log
-    Type: AWS::Logs::LogGroup
