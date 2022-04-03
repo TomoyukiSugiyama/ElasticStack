@@ -29,7 +29,7 @@ Resources:
             Condition: {}
             Effect: Allow
             Principal:
-              Service: ec2.amazonaws.com
+              Service: vpc-flow-logs.amazonaws.com
         Version: 2012-10-17
       Policies:
         - PolicyName: FIoTElasticLoadBalancingAccessPolicy
@@ -38,8 +38,11 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - "logs:Create*"
-                  - "logs:Put*"
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                  - "logs:DescribeLogGroups"
+                  - "logs:DescribeLogStreams"
                 Resource: "*"
       Tags:
         - Key: name
