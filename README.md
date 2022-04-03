@@ -39,6 +39,11 @@ Waiting for stack create/update to complete
 Successfully created/updated stack - test-stack
 ```
 
+Create stack from s3 bucket
+```bash
+$ cfn-stack-ops create test-stack $S3_BUCKET_CFN_NAME
+```
+
 ## Build ECS
 1. Create s3 bucket and set env
 ```bash
