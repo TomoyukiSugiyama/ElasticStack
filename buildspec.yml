@@ -32,7 +32,3 @@ phases:
       - $CODEBUILD_SRC_DIR/provisioning/helper-scripts/cfn-stack-ops.sh validate $S3_BUCKET_CFN_NAME
       - echo Run cfn-lint
       - cfn-lint -t $CODEBUILD_SRC_DIR/provisioning/cfn/*
-
-artifacts:
-  files:
-    - artifact.yaml
