@@ -49,7 +49,7 @@ Resources:
           Value: flow-log
     Type: AWS::IAM::Role
 
-  LogGroupName:
+  VpcFlowLogGroupName:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 7
