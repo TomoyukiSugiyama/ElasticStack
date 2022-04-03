@@ -6,9 +6,6 @@ Description: VPC FlowLog
 Parameters:
   VpcId:
     Type: AWS::EC2::VPC::Id
-  LogGroupName:
-    Type: String
-    Default: /aws/flow-log
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -16,11 +13,10 @@ Parameters:
 Resources:
   VpcFlowLog:
     Type: AWS::EC2::FlowLog
-    DependsOn: LogGroup
     Properties:
       DeliverLogsPermissionArn: !GetAtt VpcFlowLogRole.Arn
       LogDestinationType: cloud-watch-logs
-      LogGroupName: !Ref LogGroupName
+      LogGroupName: !Ref VpcFlowLogGroup
       ResourceId: !Ref VpcId
       ResourceType: VPC
       TrafficType: ALL
@@ -52,7 +48,8 @@ Resources:
         - Key: name
           Value: flow-log
     Type: AWS::IAM::Role
-  LogGroup:
-    Properties:
-      LogGroupName: /aws/flow-log
+
+  VpcFlowLogGroup:
     Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 7
