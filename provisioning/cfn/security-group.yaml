@@ -22,7 +22,7 @@ Resources:
       VpcId: !Ref VpcId
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, SecurityGroup, EC2]]
+          Value: !Join [" ", [!Ref "AWS::StackName", SecurityGroup, EC2]]
   SecurityGroupHTTPSinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -55,7 +55,7 @@ Resources:
       VpcId: !Ref VpcId
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, SecurityGroup, OpenSearch]]
+          Value: !Join [" ", [!Ref "AWS::StackName", SecurityGroup, OpenSearch]]
   OpenSearchSecurityGroupHTTPinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -72,7 +72,8 @@ Resources:
       VpcId: !Ref VpcId
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, SecurityGroup, VpcEndpoint]]
+          Value:
+            !Join [" ", [!Ref "AWS::StackName", SecurityGroup, VpcEndpoint]]
   VpcEndpointSecurityGroupHTTPinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -89,7 +90,7 @@ Resources:
       VpcId: !Ref VpcId
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, SecurityGroup, Fargate]]
+          Value: !Join [" ", [!Ref "AWS::StackName", SecurityGroup, Fargate]]
   FargateSecurityGroupHTTPinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -114,7 +115,7 @@ Resources:
       VpcId: !Ref VpcId
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, SecurityGroup, Alb]]
+          Value: !Join [" ", [!Ref "AWS::StackName", SecurityGroup, Alb]]
   AlbSecurityGroupHTTPinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
