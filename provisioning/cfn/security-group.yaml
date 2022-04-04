@@ -115,14 +115,6 @@ Resources:
       Tags:
         - Key: Name
           Value: !Join [" ", [!Ref "AWS::StackName", SecurityGroup, Fargate]]
-  FargateSecurityGroupHTTPSinbound:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref FargateSecurityGroup
-      IpProtocol: tcp
-      FromPort: 443
-      ToPort: 443
-      CidrIp: !Ref VpcCidrBlock
   FargateSecurityGroupTCPinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -138,6 +130,14 @@ Resources:
       IpProtocol: tcp
       FromPort: 443
       ToPort: 443
+      CidrIp: !Ref VpcCidrBlock
+  FargateSecurityGroupDNSoutbound:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !Ref FargateSecurityGroup
+      IpProtocol: tcp
+      FromPort: 53
+      ToPort: 53
       CidrIp: !Ref VpcCidrBlock
   # AlbSecurityGroup
   AlbSecurityGroup:
