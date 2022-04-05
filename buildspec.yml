@@ -5,7 +5,7 @@ phases:
     on-failure: ABORT
     runtime-versions:
       golang: 1.14
-      ruby: 2.6
+      ruby: 2.7
     commands:
       - export ECR_URI=$(aws ecr describe-repositories --repository-names f-iot-rep --query 'repositories[].repositoryUri' --output text)
       - pip install cfn-lint
