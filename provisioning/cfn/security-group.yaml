@@ -26,6 +26,7 @@ Resources:
   SecurityGroupSSHinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
+      Description: "Allowing access from local pc."
       GroupId: !Ref SecurityGroup
       IpProtocol: tcp
       FromPort: 22
@@ -34,6 +35,7 @@ Resources:
   SecurityGroupHTTPoutbound:
     Type: AWS::EC2::SecurityGroupEgress
     Properties:
+      Description: "Allowing access to alb."
       GroupId: !Ref SecurityGroup
       IpProtocol: tcp
       FromPort: 80
@@ -42,6 +44,7 @@ Resources:
   SecurityGroupTCPoutbound:
     Type: AWS::EC2::SecurityGroupEgress
     Properties:
+      Description: "Allowing access to logstash."
       GroupId: !Ref SecurityGroup
       IpProtocol: tcp
       FromPort: 5044
@@ -59,6 +62,7 @@ Resources:
   OpenSearchSecurityGroupHTTPSinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
+      Description: "Allowing access from logstash and alb."
       GroupId: !Ref OpenSearchSecurityGroup
       IpProtocol: tcp
       FromPort: 443
@@ -67,6 +71,7 @@ Resources:
   OpenSearchSecurityGroupHTTPSoutbound:
     Type: AWS::EC2::SecurityGroupEgress
     Properties:
+      Description: "Allowing access to logstash and alb."
       GroupId: !Ref OpenSearchSecurityGroup
       IpProtocol: tcp
       FromPort: 443
@@ -85,6 +90,7 @@ Resources:
   VpcEndpointSecurityGroupHTTPSinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
+      Description: "Allowing access from internal resources of vpc."
       GroupId: !Ref VpcEndpointSecurityGroup
       IpProtocol: tcp
       FromPort: 443
@@ -93,6 +99,7 @@ Resources:
   VpcEndpointSecurityGroupHTTPSoutbound:
     Type: AWS::EC2::SecurityGroupEgress
     Properties:
+      Description: "Allowing access to internal resources of vpc."
       GroupId: !Ref VpcEndpointSecurityGroup
       IpProtocol: tcp
       FromPort: 443
@@ -110,6 +117,7 @@ Resources:
   FargateSecurityGroupTCPinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
+      Description: "Allowing access from ec2."
       GroupId: !Ref FargateSecurityGroup
       IpProtocol: tcp
       FromPort: 5044
@@ -118,6 +126,7 @@ Resources:
   FargateSecurityGroupHTTPSoutbound:
     Type: AWS::EC2::SecurityGroupEgress
     Properties:
+      Description: "Allowing access to s3 gateway vpc endpoint and opensearch."
       GroupId: !Ref FargateSecurityGroup
       IpProtocol: tcp
       FromPort: 443
@@ -126,6 +135,7 @@ Resources:
   FargateSecurityGroupDNSoutbound:
     Type: AWS::EC2::SecurityGroupEgress
     Properties:
+      Description: "Allowing access to route53."
       GroupId: !Ref FargateSecurityGroup
       IpProtocol: tcp
       FromPort: 53
@@ -143,6 +153,7 @@ Resources:
   AlbSecurityGroupHTTPinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
+      Description: "Allowing access from ec2."
       GroupId: !Ref AlbSecurityGroup
       IpProtocol: tcp
       FromPort: 80
@@ -151,6 +162,7 @@ Resources:
   AlbSecurityGroupHTTPSoutbound:
     Type: AWS::EC2::SecurityGroupEgress
     Properties:
+      Description: "Allowing access to opensearch."
       GroupId: !Ref AlbSecurityGroup
       IpProtocol: tcp
       FromPort: 443

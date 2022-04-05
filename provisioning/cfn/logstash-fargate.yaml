@@ -24,23 +24,25 @@ Parameters:
 # ------------------------------------------------------------------------------
 Resources:
   CloudMap:
+    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
     Properties:
       Description: Service Map for Docker Compose project ecs
       Name: ecs.local
       Vpc: !Ref VpcId
-    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
   Cluster:
+    Type: AWS::ECS::Cluster
     Properties:
       ClusterName: ecs
       Tags:
         - Key: com.docker.compose.project
           Value: ecs
-    Type: AWS::ECS::Cluster
   LogGroup:
-    Properties:
-      LogGroupName: /docker-compose/ecs
     Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /docker/ecs
+      RetentionInDays: 7
   LogstashService:
+    Type: AWS::ECS::Service
     Properties:
       Cluster: !GetAtt Cluster.Arn
       DeploymentConfiguration:
@@ -71,8 +73,8 @@ Resources:
         - Key: com.docker.compose.service
           Value: logstash
       TaskDefinition: !Ref LogstashTaskDefinition
-    Type: AWS::ECS::Service
   LogstashServiceDiscoveryEntry:
+    Type: AWS::ServiceDiscovery::Service
     Properties:
       Description: '"logstash" service discovery entry in Cloud Map'
       DnsConfig:
@@ -84,8 +86,8 @@ Resources:
         FailureThreshold: 1
       Name: logstash
       NamespaceId: !Ref CloudMap
-    Type: AWS::ServiceDiscovery::Service
   LogstashTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
     Properties:
       ContainerDefinitions:
         - Command:
@@ -122,8 +124,8 @@ Resources:
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
-    Type: AWS::ECS::TaskDefinition
   LogstashTaskExecutionRole:
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -142,4 +144,3 @@ Resources:
           Value: ecs
         - Key: com.docker.compose.service
           Value: logstash
-    Type: AWS::IAM::Role
