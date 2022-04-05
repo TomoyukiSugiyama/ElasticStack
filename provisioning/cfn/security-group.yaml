@@ -31,14 +31,22 @@ Resources:
       FromPort: 22
       ToPort: 22
       CidrIp: 0.0.0.0/0
-  SecurityGroupSSHoutbound:
+  SecurityGroupHTTPoutbound:
     Type: AWS::EC2::SecurityGroupEgress
     Properties:
       GroupId: !Ref SecurityGroup
       IpProtocol: tcp
-      FromPort: 22
-      ToPort: 22
-      CidrIp: 0.0.0.0/0
+      FromPort: 80
+      ToPort: 80
+      CidrIp: !Ref VpcCidrBlock
+  SecurityGroupTCPoutbound:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !Ref SecurityGroup
+      IpProtocol: tcp
+      FromPort: 5044
+      ToPort: 5044
+      CidrIp: !Ref VpcCidrBlock
   # OpenSearchSecurityGroup
   OpenSearchSecurityGroup:
     Type: AWS::EC2::SecurityGroup
