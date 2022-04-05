@@ -22,23 +22,7 @@ Resources:
       VpcId: !Ref VpcId
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, SecurityGroup, EC2]]
-  SecurityGroupHTTPSinbound:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref SecurityGroup
-      IpProtocol: tcp
-      FromPort: 443
-      ToPort: 443
-      CidrIp: 0.0.0.0/0
-  SecurityGroupHTTPinbound:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref SecurityGroup
-      IpProtocol: tcp
-      FromPort: 80
-      ToPort: 80
-      CidrIp: 0.0.0.0/0
+          Value: !Join [" ", [!Ref "AWS::StackName", SecurityGroup, EC2]]
   SecurityGroupSSHinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -47,6 +31,22 @@ Resources:
       FromPort: 22
       ToPort: 22
       CidrIp: 0.0.0.0/0
+  SecurityGroupHTTPoutbound:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !Ref SecurityGroup
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      CidrIp: !Ref VpcCidrBlock
+  SecurityGroupTCPoutbound:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !Ref SecurityGroup
+      IpProtocol: tcp
+      FromPort: 5044
+      ToPort: 5044
+      CidrIp: !Ref VpcCidrBlock
   # OpenSearchSecurityGroup
   OpenSearchSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -55,9 +55,17 @@ Resources:
       VpcId: !Ref VpcId
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, SecurityGroup, OpenSearch]]
-  OpenSearchSecurityGroupHTTPinbound:
+          Value: !Join [" ", [!Ref "AWS::StackName", SecurityGroup, OpenSearch]]
+  OpenSearchSecurityGroupHTTPSinbound:
     Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref OpenSearchSecurityGroup
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      CidrIp: !Ref VpcCidrBlock
+  OpenSearchSecurityGroupHTTPSoutbound:
+    Type: AWS::EC2::SecurityGroupEgress
     Properties:
       GroupId: !Ref OpenSearchSecurityGroup
       IpProtocol: tcp
@@ -72,9 +80,18 @@ Resources:
       VpcId: !Ref VpcId
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, SecurityGroup, VpcEndpoint]]
-  VpcEndpointSecurityGroupHTTPinbound:
+          Value:
+            !Join [" ", [!Ref "AWS::StackName", SecurityGroup, VpcEndpoint]]
+  VpcEndpointSecurityGroupHTTPSinbound:
     Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref VpcEndpointSecurityGroup
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      CidrIp: !Ref VpcCidrBlock
+  VpcEndpointSecurityGroupHTTPSoutbound:
+    Type: AWS::EC2::SecurityGroupEgress
     Properties:
       GroupId: !Ref VpcEndpointSecurityGroup
       IpProtocol: tcp
@@ -89,15 +106,7 @@ Resources:
       VpcId: !Ref VpcId
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, SecurityGroup, Fargate]]
-  FargateSecurityGroupHTTPinbound:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref FargateSecurityGroup
-      IpProtocol: tcp
-      FromPort: 443
-      ToPort: 443
-      CidrIp: !Ref VpcCidrBlock
+          Value: !Join [" ", [!Ref "AWS::StackName", SecurityGroup, Fargate]]
   FargateSecurityGroupTCPinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -105,6 +114,22 @@ Resources:
       IpProtocol: tcp
       FromPort: 5044
       ToPort: 5044
+      CidrIp: !Ref VpcCidrBlock
+  FargateSecurityGroupHTTPSoutbound:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !Ref FargateSecurityGroup
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      CidrIp: 0.0.0.0/0
+  FargateSecurityGroupDNSoutbound:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !Ref FargateSecurityGroup
+      IpProtocol: tcp
+      FromPort: 53
+      ToPort: 53
       CidrIp: !Ref VpcCidrBlock
   # AlbSecurityGroup
   AlbSecurityGroup:
@@ -114,7 +139,7 @@ Resources:
       VpcId: !Ref VpcId
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, SecurityGroup, Alb]]
+          Value: !Join [" ", [!Ref "AWS::StackName", SecurityGroup, Alb]]
   AlbSecurityGroupHTTPinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -122,6 +147,14 @@ Resources:
       IpProtocol: tcp
       FromPort: 80
       ToPort: 80
+      CidrIp: !Ref VpcCidrBlock
+  AlbSecurityGroupHTTPSoutbound:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !Ref AlbSecurityGroup
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
       CidrIp: !Ref VpcCidrBlock
 
 # ------------------------------------------------------------------------------

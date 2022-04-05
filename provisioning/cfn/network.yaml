@@ -21,14 +21,14 @@ Resources:
       EnableDnsSupport: true
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, VPC]]
+          Value: !Join [" ", [!Ref "AWS::StackName", VPC]]
   # Gateway
   InternetGateway:
     Type: AWS::EC2::InternetGateway
     Properties:
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, InternetGateway]]
+          Value: !Join [" ", [!Ref "AWS::StackName", InternetGateway]]
   InternetGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
@@ -47,7 +47,7 @@ Resources:
         - Fn::GetAZs: !Ref AWS::Region
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, PrivateSubnet1]]
+          Value: !Join [" ", [!Ref "AWS::StackName", PrivateSubnet1]]
   PrivateSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
@@ -60,7 +60,7 @@ Resources:
         - Fn::GetAZs: !Ref AWS::Region
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, PrivateSubnet2]]
+          Value: !Join [" ", [!Ref "AWS::StackName", PrivateSubnet2]]
   PrivateSubnet3:
     Type: AWS::EC2::Subnet
     Properties:
@@ -73,7 +73,7 @@ Resources:
         - Fn::GetAZs: !Ref AWS::Region
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, PrivateSubnet3]]
+          Value: !Join [" ", [!Ref "AWS::StackName", PrivateSubnet3]]
   PublicSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -87,7 +87,7 @@ Resources:
       MapPublicIpOnLaunch: True
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, PublicSubnet1]]
+          Value: !Join [" ", [!Ref "AWS::StackName", PublicSubnet1]]
   PublicSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
@@ -101,7 +101,7 @@ Resources:
       MapPublicIpOnLaunch: True
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, PublicSubnet2]]
+          Value: !Join [" ", [!Ref "AWS::StackName", PublicSubnet2]]
   # RoutTable
   PrivateRouteTable:
     Type: AWS::EC2::RouteTable
@@ -109,14 +109,14 @@ Resources:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, PrivateRouteTable]]
+          Value: !Join [" ", [!Ref "AWS::StackName", PrivateRouteTable]]
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref Vpc
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, PublicRouteTable]]
+          Value: !Join [" ", [!Ref "AWS::StackName", PublicRouteTable]]
   Route:
     Type: AWS::EC2::Route
     Properties:

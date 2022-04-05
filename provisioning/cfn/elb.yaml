@@ -48,7 +48,7 @@ Resources:
           PrivateIPv4Address: 172.31.32.100
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, Nlb]]
+          Value: !Join [" ", [!Ref "AWS::StackName", Nlb]]
       Type: network
   NlbForLogstashTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -66,7 +66,7 @@ Resources:
       Protocol: TCP
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, NlbForLogstashTargetGroup]]
+          Value: !Join [" ", [!Ref "AWS::StackName", NlbForLogstashTargetGroup]]
       TargetType: ip
       VpcId: !Ref VpcId
   NlbForLogstashListener:
@@ -95,7 +95,7 @@ Resources:
       Protocol: TCP
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, NlbForAlbTargetGroup]]
+          Value: !Join [" ", [!Ref "AWS::StackName", NlbForAlbTargetGroup]]
       Targets:
         - Id: !Ref Alb
           Port: 80
@@ -122,7 +122,7 @@ Resources:
       Subnets: !Split [",", !Ref SubnetIds]
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, Alb]]
+          Value: !Join [" ", [!Ref "AWS::StackName", Alb]]
       Type: application
   AlbTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -141,7 +141,7 @@ Resources:
       ProtocolVersion: HTTP1
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, AlbTargetGroup]]
+          Value: !Join [" ", [!Ref "AWS::StackName", AlbTargetGroup]]
       TargetType: ip
       UnhealthyThresholdCount: 2
       VpcId: !Ref VpcId

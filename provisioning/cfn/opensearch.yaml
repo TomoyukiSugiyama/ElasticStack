@@ -56,7 +56,7 @@ Resources:
         rest.action.multi.allow_explicit_index: true
       Tags:
         - Key: Name
-          Value: !Join [" ", [!Ref AWS::StackName, OpenSearch]]
+          Value: !Join [" ", [!Ref "AWS::StackName", OpenSearch]]
       VPCOptions:
         SubnetIds: !Split [",", !Ref SubnetIds]
         SecurityGroupIds:
