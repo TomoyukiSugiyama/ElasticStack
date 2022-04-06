@@ -131,43 +131,41 @@ Resources:
         RestrictPublicBuckets: true
       VersioningConfiguration:
         Status: Enabled
-  # NlbLogS3BucketPolicy:
-  #   Type: AWS::S3::BucketPolicy
-  #   Properties:
-  #     Bucket: !Ref NlbLogS3Bucket
-  #     PolicyDocument:
-  #       Version: 2012-10-17
-  #       Statement:
-  #         - Sid: AWSLogDeliveryWrite
-  #           Effect: Allow
-  #           Action:
-  #             - s3:PutObject
-  #           Resource:
-  #             - !Sub "arn:aws:s3:::${NlbLogS3Bucket}/*"
-  #           Principal:
-  #             Service: delivery.logs.amazonaws.com
-  #           Condition:
-  #             StringEquals:
-  #               s3:x-amz-acl: bucket-owner-full-control
-  #         - Sid: AWSLogDeliveryAclCheck
-  #           Effect: Allow
-  #           Action:
-  #             - s3:GetBucketAcl
-  #           Resource:
-  #             - !Sub "arn:aws:s3:::${NlbLogS3Bucket}"
-  #           Principal:
-  #             Service: delivery.logs.amazonaws.com
-  #         - Sid: AddPerm
-  #           Effect: Allow
-  #           Action:
-  #             - s3:PutObject
-  #           Resource:
-  #             - !Sub "arn:aws:s3:::${NlbLogS3Bucket}/*"
-  #           Principal:
-  #             AWS: !FindInMap
-  #               - S3Config
-  #               - !Ref "AWS::Region"
-  #               - BucketPrincipal
+  NlbLogS3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref NlbLogS3Bucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AWSLogDeliveryWrite
+            Effect: Allow
+            Action:
+              - s3:PutObject
+            Resource:
+              - !Sub "arn:aws:s3:::${NlbLogS3Bucket}/*"
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:user/tomoyuki"
+            Condition:
+              StringEquals:
+                s3:x-amz-acl: bucket-owner-full-control
+          - Sid: AddPerm
+            Effect: Allow
+            Action:
+              - s3:PutObject
+            Resource:
+              - !Sub "arn:aws:s3:::${NlbLogS3Bucket}/*"
+            Principal:
+              Service: delivery.logs.amazonaws.com
+          - Sid: AWSLogDeliveryAclCheck
+            Effect: Allow
+            Action:
+              - s3:GetBucketAcl
+            Resource:
+              - !Sub "arn:aws:s3:::${NlbLogS3Bucket}"
+            Principal:
+              Service: delivery.logs.amazonaws.com
+
   Alb:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     DependsOn: Nlb
