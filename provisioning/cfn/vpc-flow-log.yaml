@@ -48,9 +48,35 @@ Resources:
         - Key: name
           Value: flow-log
     Type: AWS::IAM::Role
-
   VpcFlowLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: /vpc/flowlog
+      KmsKeyId: !GetAtt VpcFlowLogKey.Arn
+      LogGroupName: /f-iot/flow-logs
       RetentionInDays: 7
+  VpcFlowLogKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: symmetric KMS key
+      EnableKeyRotation: true
+      PendingWindowInDays: 20
+      KeyPolicy:
+        Version: 2012-10-17
+        Id: key-flow-log-1
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:user/tomoyuki.sugiyama"
+            Action: "kms:*"
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: !Sub "logs.${AWS::Region}.amazonaws.com"
+            Action:
+              - "kms:Encrypt*"
+              - "kms:Decrypt*"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:Describe*"
+            Resource: "*"

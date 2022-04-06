@@ -36,11 +36,6 @@ Resources:
       Tags:
         - Key: com.docker.compose.project
           Value: ecs
-  LogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: /docker/ecs
-      RetentionInDays: 7
   LogstashService:
     Type: AWS::ECS::Service
     Properties:
@@ -144,3 +139,35 @@ Resources:
           Value: ecs
         - Key: com.docker.compose.service
           Value: logstash
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      KmsKeyId: !GetAtt FargateLogKey.Arn
+      LogGroupName: /f-iot/ecs
+      RetentionInDays: 7
+  FargateLogKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: symmetric KMS key
+      EnableKeyRotation: true
+      PendingWindowInDays: 20
+      KeyPolicy:
+        Version: 2012-10-17
+        Id: key-flow-log-1
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:user/tomoyuki.sugiyama"
+            Action: "kms:*"
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: !Sub "logs.${AWS::Region}.amazonaws.com"
+            Action:
+              - "kms:Encrypt*"
+              - "kms:Decrypt*"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:Describe*"
+            Resource: "*"
