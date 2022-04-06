@@ -4,18 +4,12 @@ Description: Elb
 # Parameters
 # ------------------------------------------------------------------------------
 Parameters:
-  NlbName:
-    Type: String
-    Default: f-iot-nlb
   NlbForLogstashTargetGroupName:
     Type: String
     Default: nlb-for-logstash-tg
   NlbForAlbTargetGroupName:
     Type: String
     Default: nlb-for-alb-tg
-  AlbName:
-    Type: String
-    Default: f-iot-alb
   AlbTargetGroupName:
     Type: String
     Default: f-iot-alb-tg
@@ -37,7 +31,6 @@ Resources:
       LoadBalancerAttributes:
         - Key: load_balancing.cross_zone.enabled
           Value: true
-      Name: !Ref NlbName
       Scheme: internal
       SubnetMappings:
         - SubnetId: !Select [0, !Split [",", !Ref SubnetIds]]
@@ -115,7 +108,6 @@ Resources:
     DependsOn: Nlb
     Properties:
       IpAddressType: ipv4
-      Name: !Ref AlbName
       Scheme: internal
       SecurityGroups:
         - !Ref SecurityGroupId
