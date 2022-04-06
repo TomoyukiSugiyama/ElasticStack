@@ -54,13 +54,13 @@ Resources:
             Resource: !Sub "arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/${DomainName}/*"
       AdvancedOptions:
         rest.action.multi.allow_explicit_index: true
-      Tags:
-        - Key: Name
-          Value: !Join [" ", [!Ref "AWS::StackName", OpenSearch]]
       VPCOptions:
         SubnetIds: !Split [",", !Ref SubnetIds]
         SecurityGroupIds:
           - !Ref SecurityGroupId
+      Tags:
+        - Key: f-iot.opensearch.service
+          Value: OpenSearch
 
 # ------------------------------------------------------------------------------
 # Outputs

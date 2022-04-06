@@ -30,8 +30,8 @@ Resources:
           GroupSet:
             - !Ref SecurityGroupId
       Tags:
-        - Key: Name
-          Value: !Join [" ", [!Ref "AWS::StackName", EC2]]
+        - Key: f-iot.ec2.service
+          Value: EC2
 
 # ------------------------------------------------------------------------------
 # Outputs

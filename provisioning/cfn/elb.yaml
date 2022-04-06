@@ -46,10 +46,10 @@ Resources:
           PrivateIPv4Address: 172.31.16.100
         - SubnetId: !Select [2, !Split [",", !Ref SubnetIds]]
           PrivateIPv4Address: 172.31.32.100
-      Tags:
-        - Key: Name
-          Value: !Join [" ", [!Ref "AWS::StackName", Nlb]]
       Type: network
+      Tags:
+        - Key: f-iot.elb.service
+          Value: Nlb
   NlbForLogstashTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -64,11 +64,11 @@ Resources:
       Name: !Ref NlbForLogstashTargetGroupName
       Port: 5044
       Protocol: TCP
-      Tags:
-        - Key: Name
-          Value: !Join [" ", [!Ref "AWS::StackName", NlbForLogstashTargetGroup]]
       TargetType: ip
       VpcId: !Ref VpcId
+      Tags:
+        - Key: f-iot.elb.service
+          Value: NlbForLogstashTargetGroup
   NlbForLogstashListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -93,14 +93,14 @@ Resources:
       Name: !Ref NlbForAlbTargetGroupName
       Port: 80
       Protocol: TCP
-      Tags:
-        - Key: Name
-          Value: !Join [" ", [!Ref "AWS::StackName", NlbForAlbTargetGroup]]
       Targets:
         - Id: !Ref Alb
           Port: 80
       TargetType: alb
       VpcId: !Ref VpcId
+      Tags:
+        - Key: f-iot.elb.service
+          Value: NlbForAlbTargetGroup
   NlbForAlbListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -120,10 +120,10 @@ Resources:
       SecurityGroups:
         - !Ref SecurityGroupId
       Subnets: !Split [",", !Ref SubnetIds]
-      Tags:
-        - Key: Name
-          Value: !Join [" ", [!Ref "AWS::StackName", Alb]]
       Type: application
+      Tags:
+        - Key: f-iot.elb.service
+          Value: Alb
   AlbTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -139,12 +139,12 @@ Resources:
       Port: 443
       Protocol: HTTPS
       ProtocolVersion: HTTP1
-      Tags:
-        - Key: Name
-          Value: !Join [" ", [!Ref "AWS::StackName", AlbTargetGroup]]
       TargetType: ip
       UnhealthyThresholdCount: 2
       VpcId: !Ref VpcId
+      Tags:
+        - Key: f-iot.elb.service
+          Value: AlbTargetGroup
   AlbListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:

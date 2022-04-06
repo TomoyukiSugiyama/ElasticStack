@@ -21,8 +21,8 @@ Resources:
       GroupDescription: Security Group
       VpcId: !Ref VpcId
       Tags:
-        - Key: Name
-          Value: !Join [" ", [!Ref "AWS::StackName", SecurityGroup, EC2]]
+        - Key: f-iot.security-group.service
+          Value: SecurityGroup
   SecurityGroupSSHinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -57,8 +57,8 @@ Resources:
       GroupDescription: Security Group for Opensearch
       VpcId: !Ref VpcId
       Tags:
-        - Key: Name
-          Value: !Join [" ", [!Ref "AWS::StackName", SecurityGroup, OpenSearch]]
+        - Key: f-iot.security-group.service
+          Value: OpenSearchSecurityGroup
   OpenSearchSecurityGroupHTTPSinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -84,9 +84,8 @@ Resources:
       GroupDescription: Security Group for VpcEndpoint
       VpcId: !Ref VpcId
       Tags:
-        - Key: Name
-          Value:
-            !Join [" ", [!Ref "AWS::StackName", SecurityGroup, VpcEndpoint]]
+        - Key: f-iot.security-group.service
+          Value: VpcEndpointSecurityGroup
   VpcEndpointSecurityGroupHTTPSinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -112,8 +111,8 @@ Resources:
       GroupDescription: Security Group for Fargate
       VpcId: !Ref VpcId
       Tags:
-        - Key: Name
-          Value: !Join [" ", [!Ref "AWS::StackName", SecurityGroup, Fargate]]
+        - Key: f-iot.security-group.service
+          Value: FargateSecurityGroup
   FargateSecurityGroupTCPinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -148,8 +147,8 @@ Resources:
       GroupDescription: Security Group for Alb
       VpcId: !Ref VpcId
       Tags:
-        - Key: Name
-          Value: !Join [" ", [!Ref "AWS::StackName", SecurityGroup, Alb]]
+        - Key: f-iot.security-group.service
+          Value: AlbSecurityGroup
   AlbSecurityGroupHTTPinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
