@@ -148,7 +148,7 @@ Resources:
             Resource:
               - !Sub "arn:aws:s3:::${NlbLogS3Bucket}/*"
             Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:user/tomoyuki"
+              AWS: "arn:aws:iam::582318560864:root"
             Condition:
               StringEquals:
                 s3:x-amz-acl: bucket-owner-full-control
@@ -255,7 +255,7 @@ Resources:
   #           Resource:
   #             - !Sub "arn:aws:s3:::${AlbLogS3Bucket}/*"
   #           Principal:
-  #             AWS: !Sub "arn:aws:iam::${AWS::AccountId}:user/tomoyuki"
+  #             AWS: !Sub "arn:aws:iam::582318560864:root"
   #           Condition:
   #             StringEquals:
   #               s3:x-amz-acl: bucket-owner-full-control
