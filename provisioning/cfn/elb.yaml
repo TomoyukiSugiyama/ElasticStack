@@ -110,9 +110,7 @@ Resources:
   NlbLogS3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      AccessControl: Private
-      LoggingConfiguration:
-        DestinationBucketName: !Ref LoggingBucket
+      AccessControl: LogDeliveryWrite
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
@@ -133,27 +131,43 @@ Resources:
         RestrictPublicBuckets: true
       VersioningConfiguration:
         Status: Enabled
-  LoggingBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      AccessControl: LogDeliveryWrite
-  NlbLogS3BucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref NlbLogS3Bucket
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Action:
-              - "s3:PutObject"
-            Effect: Allow
-            Resource: !Join
-              - ""
-              - - "arn:aws:s3:::"
-                - !Ref NlbLogS3Bucket
-                - /*
-            Principal:
-              Service: "s3.amazonaws.com"
+  # NlbLogS3BucketPolicy:
+  #   Type: AWS::S3::BucketPolicy
+  #   Properties:
+  #     Bucket: !Ref NlbLogS3Bucket
+  #     PolicyDocument:
+  #       Version: 2012-10-17
+  #       Statement:
+  #         - Sid: AWSLogDeliveryWrite
+  #           Effect: Allow
+  #           Action:
+  #             - s3:PutObject
+  #           Resource:
+  #             - !Sub "arn:aws:s3:::${NlbLogS3Bucket}/*"
+  #           Principal:
+  #             Service: delivery.logs.amazonaws.com
+  #           Condition:
+  #             StringEquals:
+  #               s3:x-amz-acl: bucket-owner-full-control
+  #         - Sid: AWSLogDeliveryAclCheck
+  #           Effect: Allow
+  #           Action:
+  #             - s3:GetBucketAcl
+  #           Resource:
+  #             - !Sub "arn:aws:s3:::${NlbLogS3Bucket}"
+  #           Principal:
+  #             Service: delivery.logs.amazonaws.com
+  #         - Sid: AddPerm
+  #           Effect: Allow
+  #           Action:
+  #             - s3:PutObject
+  #           Resource:
+  #             - !Sub "arn:aws:s3:::${NlbLogS3Bucket}/*"
+  #           Principal:
+  #             AWS: !FindInMap
+  #               - S3Config
+  #               - !Ref "AWS::Region"
+  #               - BucketPrincipal
   Alb:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     DependsOn: Nlb
