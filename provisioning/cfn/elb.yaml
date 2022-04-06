@@ -165,17 +165,16 @@ Resources:
               - !Sub "arn:aws:s3:::${NlbLogS3Bucket}"
             Principal:
               Service: delivery.logs.amazonaws.com
-
   Alb:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     DependsOn: Nlb
     Properties:
       IpAddressType: ipv4
-      # LoadBalancerAttributes:
-      #   - Key: access_logs.s3.enabled
-      #     Value: true
-      #   - Key: access_logs.s3.bucket
-      #     Value: !Ref AlbLogS3Bucket
+      LoadBalancerAttributes:
+        - Key: access_logs.s3.enabled
+          Value: true
+        - Key: access_logs.s3.bucket
+          Value: !Ref AlbLogS3Bucket
       Scheme: internal
       SecurityGroups:
         - !Ref SecurityGroupId
@@ -214,49 +213,65 @@ Resources:
       LoadBalancerArn: !Ref Alb
       Port: 80
       Protocol: HTTP
-  # AlbLogS3Bucket:
-  #   Type: AWS::S3::Bucket
-  #   Properties:
-  #     AccessControl: Private
-  #     LoggingConfiguration:
-  #       DestinationBucketName: !Sub "alb-accesslogs-logging-${AWS::Region}-${AWS::AccountId}"
-  #     BucketEncryption:
-  #       ServerSideEncryptionConfiguration:
-  #         - ServerSideEncryptionByDefault:
-  #             SSEAlgorithm: AES256
-  #     BucketName: !Sub "alb-accesslogs-${AWS::Region}-${AWS::AccountId}"
-  #     LifecycleConfiguration:
-  #       Rules:
-  #         - Id: AutoDelete
-  #           Status: Enabled
-  #           ExpirationInDays: 14
-  #         - Id: NoncurrentVersionExpiration
-  #           Status: Enabled
-  #           NoncurrentVersionExpirationInDays: 7
-  #     PublicAccessBlockConfiguration:
-  #       BlockPublicAcls: true
-  #       BlockPublicPolicy: true
-  #       IgnorePublicAcls: true
-  #       RestrictPublicBuckets: true
-  #     VersioningConfiguration:
-  #       Status: Enabled
-  # AlbLogS3BucketPolicy:
-  #   Type: AWS::S3::BucketPolicy
-  #   Properties:
-  #     Bucket: !Ref AlbLogS3Bucket
-  #     PolicyDocument:
-  #       Version: 2012-10-17
-  #       Statement:
-  #         - Action:
-  #             - "s3:GetObject"
-  #           Effect: Allow
-  #           Resource: !Join
-  #             - ""
-  #             - - "arn:aws:s3:::"
-  #               - !Ref AlbLogS3Bucket
-  #               - /*
-  #           Principal:
-  #             Service: "s3.amazonaws.com"
+  AlbLogS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: LogDeliveryWrite
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      BucketName: !Sub "alb-accesslogs-${AWS::Region}-${AWS::AccountId}"
+      LifecycleConfiguration:
+        Rules:
+          - Id: AutoDelete
+            Status: Enabled
+            ExpirationInDays: 14
+          - Id: NoncurrentVersionExpiration
+            Status: Enabled
+            NoncurrentVersionExpirationInDays: 7
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+  AlbLogS3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref AlbLogS3Bucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AWSLogDeliveryWrite
+            Effect: Allow
+            Action:
+              - s3:PutObject
+            Resource:
+              - !Sub "arn:aws:s3:::${AlbLogS3Bucket}/*"
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:user/tomoyuki"
+            Condition:
+              StringEquals:
+                s3:x-amz-acl: bucket-owner-full-control
+          - Sid: AddPerm
+            Effect: Allow
+            Action:
+              - s3:PutObject
+            Resource:
+              - !Sub "arn:aws:s3:::${AlbLogS3Bucket}/*"
+            Principal:
+              Service: delivery.logs.amazonaws.com
+          - Sid: AWSLogDeliveryAclCheck
+            Effect: Allow
+            Action:
+              - s3:GetBucketAcl
+            Resource:
+              - !Sub "arn:aws:s3:::${AlbLogS3Bucket}"
+            Principal:
+              Service: delivery.logs.amazonaws.com
+
 # ------------------------------------------------------------------------------
 # Outputs
 # ------------------------------------------------------------------------------
