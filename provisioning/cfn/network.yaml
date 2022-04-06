@@ -201,7 +201,7 @@ Resources:
           - Sid: Enable IAM User Permissions
             Effect: Allow
             Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:user/tomoyuki.sugiyama"
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:user/tomoyuki"
             Action: "kms:*"
             Resource: "*"
           - Effect: Allow
