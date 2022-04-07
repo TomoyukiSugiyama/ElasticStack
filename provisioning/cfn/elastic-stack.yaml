@@ -82,12 +82,6 @@ Resources:
         VpcId: !GetAtt Network.Outputs.VpcId
         SubnetIds: !GetAtt Network.Outputs.PrivateSubnetIds
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.AlbSecurityGroupId
-  VpcFlowLog:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: vpc-flow-log.yaml
-      Parameters:
-        VpcId: !GetAtt Network.Outputs.VpcId
   GuardDuty:
     Type: AWS::CloudFormation::Stack
     Properties:

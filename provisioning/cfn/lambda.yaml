@@ -28,6 +28,7 @@ Resources:
         S3Bucket: lambda-ces09iuin3ybh1kmv0fp-artifact
         S3Key: populate-alb-tg-with-opensearch.zip
       Runtime: go1.x
+      ReservedConcurrentExecutions: 1
       Timeout: 5
       TracingConfig:
         Mode: Active
@@ -41,6 +42,7 @@ Resources:
           AlbId: !Ref AlbId
           AlbTargetGroupId: !Ref AlbTargetGroupId
   LambdaRole:
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -64,13 +66,15 @@ Resources:
                   - "elasticloadbalancing:DescribeLoadBalancers"
                   - "elasticloadbalancing:DescribeTargetHealth"
                   - "elasticloadbalancing:DescribeTargetGroups"
+                Resource: "*"
+              - Effect: Allow
+                Action:
                   - "elasticloadbalancing:RegisterTargets"
                   - "elasticloadbalancing:DeregisterTargets"
-                Resource: "*"
+                Resource: !Ref AlbTargetGroupId
       Tags:
-        - Key: com.trim.f-iot
-          Value: lambda
-    Type: AWS::IAM::Role
+        - Key: f-iot.rambda.service
+          Value: LambdaRole
   EventRule:
     Type: AWS::Events::Rule
     Properties:

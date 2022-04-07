@@ -24,23 +24,20 @@ Parameters:
 # ------------------------------------------------------------------------------
 Resources:
   CloudMap:
+    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
     Properties:
       Description: Service Map for Docker Compose project ecs
       Name: ecs.local
       Vpc: !Ref VpcId
-    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
   Cluster:
+    Type: AWS::ECS::Cluster
     Properties:
       ClusterName: ecs
       Tags:
-        - Key: com.docker.compose.project
-          Value: ecs
-    Type: AWS::ECS::Cluster
-  LogGroup:
-    Properties:
-      LogGroupName: /docker-compose/ecs
-    Type: AWS::Logs::LogGroup
+        - Key: f-iot.logstash-fargate.service
+          Value: Cluster
   LogstashService:
+    Type: AWS::ECS::Service
     Properties:
       Cluster: !GetAtt Cluster.Arn
       DeploymentConfiguration:
@@ -66,13 +63,11 @@ Resources:
       ServiceRegistries:
         - RegistryArn: !GetAtt LogstashServiceDiscoveryEntry.Arn
       Tags:
-        - Key: com.docker.compose.project
-          Value: ecs
-        - Key: com.docker.compose.service
-          Value: logstash
+        - Key: f-iot.logstash-fargate.service
+          Value: LogstashService
       TaskDefinition: !Ref LogstashTaskDefinition
-    Type: AWS::ECS::Service
   LogstashServiceDiscoveryEntry:
+    Type: AWS::ServiceDiscovery::Service
     Properties:
       Description: '"logstash" service discovery entry in Cloud Map'
       DnsConfig:
@@ -84,8 +79,8 @@ Resources:
         FailureThreshold: 1
       Name: logstash
       NamespaceId: !Ref CloudMap
-    Type: AWS::ServiceDiscovery::Service
   LogstashTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
     Properties:
       ContainerDefinitions:
         - Command:
@@ -122,8 +117,8 @@ Resources:
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
-    Type: AWS::ECS::TaskDefinition
   LogstashTaskExecutionRole:
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -138,8 +133,37 @@ Resources:
         - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
         - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
       Tags:
-        - Key: com.docker.compose.project
-          Value: ecs
-        - Key: com.docker.compose.service
-          Value: logstash
-    Type: AWS::IAM::Role
+        - Key: f-iot.logstash-fargate.service
+          Value: LogstashTaskExecutionRole
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      KmsKeyId: !GetAtt FargateLogKey.Arn
+      LogGroupName: /f-iot/ecs
+      RetentionInDays: 7
+  FargateLogKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: symmetric KMS key
+      EnableKeyRotation: true
+      PendingWindowInDays: 20
+      KeyPolicy:
+        Version: 2012-10-17
+        Id: key-flow-log-1
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:user/tomoyuki"
+            Action: "kms:*"
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: !Sub "logs.${AWS::Region}.amazonaws.com"
+            Action:
+              - "kms:Encrypt*"
+              - "kms:Decrypt*"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:Describe*"
+            Resource: "*"
