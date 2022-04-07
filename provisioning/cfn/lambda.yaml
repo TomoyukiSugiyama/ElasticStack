@@ -66,9 +66,12 @@ Resources:
                   - "elasticloadbalancing:DescribeLoadBalancers"
                   - "elasticloadbalancing:DescribeTargetHealth"
                   - "elasticloadbalancing:DescribeTargetGroups"
+                Resource: "*"
+              - Effect: Allow
+                Action:
                   - "elasticloadbalancing:RegisterTargets"
                   - "elasticloadbalancing:DeregisterTargets"
-                Resource: !Ref AlbId
+                Resource: !Ref AlbTargetGroupId
       Tags:
         - Key: f-iot.rambda.service
           Value: LambdaRole
