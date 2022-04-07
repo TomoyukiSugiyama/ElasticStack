@@ -13,9 +13,6 @@ Parameters:
   AlbTargetGroupName:
     Type: String
     Default: f-iot-alb-tg
-  AlbName:
-    Type: String
-    Default: f-iot-alb
   VpcId:
     Type: AWS::EC2::VPC::Id
   SubnetIds:
@@ -171,7 +168,6 @@ Resources:
     DependsOn: Nlb
     Properties:
       IpAddressType: ipv4
-      Name: !Ref AlbName
       LoadBalancerAttributes:
         - Key: access_logs.s3.enabled
           Value: true
