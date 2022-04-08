@@ -34,8 +34,8 @@ Resources:
     Properties:
       ClusterName: ecs
       Tags:
-        - Key: f-iot.logstash-fargate.service
-          Value: Cluster
+        - Key: f-iot.service.name
+          Value: ecs-cluster
   LogstashService:
     Type: AWS::ECS::Service
     Properties:
@@ -63,8 +63,8 @@ Resources:
       ServiceRegistries:
         - RegistryArn: !GetAtt LogstashServiceDiscoveryEntry.Arn
       Tags:
-        - Key: f-iot.logstash-fargate.service
-          Value: LogstashService
+        - Key: f-iot.service.name
+          Value: logstash-serrvice
       TaskDefinition: !Ref LogstashTaskDefinition
   LogstashServiceDiscoveryEntry:
     Type: AWS::ServiceDiscovery::Service
@@ -133,8 +133,8 @@ Resources:
         - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
         - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
       Tags:
-        - Key: f-iot.logstash-fargate.service
-          Value: LogstashTaskExecutionRole
+        - Key: f-iot.service.name
+          Value: logstash-task-execution-role
   LogGroup:
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Retain

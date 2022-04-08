@@ -30,8 +30,8 @@ Resources:
           GroupSet:
             - !Ref SecurityGroupId
       Tags:
-        - Key: f-iot.ec2.service
-          Value: EC2
+        - Key: f-iot.service.name
+          Value: maintenance-server
 
 # ------------------------------------------------------------------------------
 # Outputs

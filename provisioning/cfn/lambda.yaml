@@ -73,8 +73,8 @@ Resources:
                   - "elasticloadbalancing:DeregisterTargets"
                 Resource: !Ref AlbTargetGroupId
       Tags:
-        - Key: f-iot.rambda.service
-          Value: LambdaRole
+        - Key: f-iot.service.name
+          Value: lambda-role
   EventRule:
     Type: AWS::Events::Rule
     Properties:
