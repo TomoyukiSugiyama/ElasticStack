@@ -18,7 +18,7 @@ Resources:
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Security Group
+      GroupDescription: Security Group for EC2
       VpcId: !Ref VpcId
       Tags:
         - Key: f-iot.security-group.service
