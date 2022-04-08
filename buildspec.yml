@@ -14,8 +14,6 @@ phases:
       - chmod +x $CODEBUILD_SRC_DIR/provisioning/ecs/deploy-container-image-to-ecr.sh
       - chmod +x $CODEBUILD_SRC_DIR/provisioning/helper-scripts/s3-ops.sh
       - chmod +x $CODEBUILD_SRC_DIR/provisioning/helper-scripts/cfn-stack-ops.sh
-      - alias cfn-stack-ops="$CODEBUILD_SRC_DIR/provisioning/helper-scripts/cfn-stack-ops.sh $1"
-      - alias s3-ops="$CODEBUILD_SRC_DIR/provisioning/helper-scripts/s3-ops.sh $1"
 
   build:
     on-failure: ABORT
@@ -23,21 +21,21 @@ phases:
       - echo Build lambda
       - cd $CODEBUILD_SRC_DIR/provisioning/lambda
       - ./build.sh
-      - s3-ops push $S3_BUCKET_LAMBDA_NAME populate-alb-tg-with-opensearch/populate-alb-tg-with-opensearch.zip
+      - $CODEBUILD_SRC_DIR/provisioning/helper-scripts/s3-ops.sh push $S3_BUCKET_LAMBDA_NAME populate-alb-tg-with-opensearch/populate-alb-tg-with-opensearch.zip
       - echo Build container
       - cd $CODEBUILD_SRC_DIR/provisioning/ecs
       - ./deploy-container-image-to-ecr.sh
       - echo Build cloudformation
       - cd $CODEBUILD_SRC_DIR
-      - cfn-stack-ops package provisioning/cfn/elastic-stack.yaml $S3_BUCKET_CFN_NAME artifact.yaml
+      - $CODEBUILD_SRC_DIR/provisioning/helper-scripts/cfn-stack-ops.sh package provisioning/cfn/elastic-stack.yaml $S3_BUCKET_CFN_NAME artifact.yaml
 
   post_build:
     on-failure: ABORT
     commands:
       - echo Upload artifact.yaml
-      - s3-ops push $S3_BUCKET_CFN_NAME artifact.yaml
+      - $CODEBUILD_SRC_DIR/provisioning/helper-scripts/s3-ops.sh push $S3_BUCKET_CFN_NAME artifact.yaml
       - echo Run cfn validation
-      - cfn-stack-ops validate $S3_BUCKET_CFN_NAME
+      - $CODEBUILD_SRC_DIR/provisioning/helper-scripts/cfn-stack-ops.sh validate $S3_BUCKET_CFN_NAME
       - echo Run cfn-lint
       - cfn-lint -t $CODEBUILD_SRC_DIR/provisioning/cfn/*
       - echo Run cfn-nag_scan
