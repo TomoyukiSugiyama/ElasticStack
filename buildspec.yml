@@ -23,7 +23,7 @@ phases:
       - echo Build lambda
       - cd $CODEBUILD_SRC_DIR/provisioning/lambda
       - ./build.sh
-      - cfn-s3-ops push $S3_BUCKET_LAMBDA_NAME populate-alb-tg-with-opensearch/populate-alb-tg-with-opensearch.zip
+      - s3-ops push $S3_BUCKET_LAMBDA_NAME populate-alb-tg-with-opensearch/populate-alb-tg-with-opensearch.zip
       - echo Build container
       - cd $CODEBUILD_SRC_DIR/provisioning/ecs
       - ./deploy-container-image-to-ecr.sh
@@ -35,7 +35,7 @@ phases:
     on-failure: ABORT
     commands:
       - echo Upload artifact.yaml
-      - cfn-s3-ops push $S3_BUCKET_CFN_NAME artifact.yaml
+      - s3-ops push $S3_BUCKET_CFN_NAME artifact.yaml
       - echo Run cfn validation
       - cfn-stack-ops validate $S3_BUCKET_CFN_NAME
       - echo Run cfn-lint
