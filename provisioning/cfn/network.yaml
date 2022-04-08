@@ -184,12 +184,15 @@ Resources:
     Type: AWS::IAM::Role
   VpcFlowLogGroup:
     Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       KmsKeyId: !GetAtt VpcFlowLogKey.Arn
-      LogGroupName: /f-iot/flow-logs
       RetentionInDays: 7
   VpcFlowLogKey:
     Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       Description: symmetric KMS key
       EnableKeyRotation: true

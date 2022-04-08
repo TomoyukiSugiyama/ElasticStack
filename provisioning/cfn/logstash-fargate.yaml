@@ -137,19 +137,22 @@ Resources:
           Value: LogstashTaskExecutionRole
   LogGroup:
     Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       KmsKeyId: !GetAtt FargateLogKey.Arn
-      LogGroupName: /f-iot/ecs
       RetentionInDays: 7
   FargateLogKey:
     Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       Description: symmetric KMS key
       EnableKeyRotation: true
       PendingWindowInDays: 20
       KeyPolicy:
         Version: 2012-10-17
-        Id: key-flow-log-1
+        Id: key-fargate-1
         Statement:
           - Sid: Enable IAM User Permissions
             Effect: Allow
