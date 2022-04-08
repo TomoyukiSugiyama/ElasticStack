@@ -45,8 +45,8 @@ Resources:
           PrivateIPv4Address: 172.31.32.100
       Type: network
       Tags:
-        - Key: f-iot.elb.service
-          Value: Nlb
+        - Key: f-iot.service.name
+          Value: nlb
   NlbForLogstashTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -64,8 +64,8 @@ Resources:
       TargetType: ip
       VpcId: !Ref VpcId
       Tags:
-        - Key: f-iot.elb.service
-          Value: NlbForLogstashTargetGroup
+        - Key: f-iot.service.name
+          Value: nlb-for-logstash-target-group
   NlbForLogstashListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -96,8 +96,8 @@ Resources:
       TargetType: alb
       VpcId: !Ref VpcId
       Tags:
-        - Key: f-iot.elb.service
-          Value: NlbForAlbTargetGroup
+        - Key: f-iot.service.name
+          Value: nlb-for-alb-target-group
   NlbForAlbListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -179,8 +179,8 @@ Resources:
       Subnets: !Split [",", !Ref SubnetIds]
       Type: application
       Tags:
-        - Key: f-iot.elb.service
-          Value: Alb
+        - Key: f-iot.service.name
+          Value: alb
   AlbTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -200,8 +200,8 @@ Resources:
       UnhealthyThresholdCount: 2
       VpcId: !Ref VpcId
       Tags:
-        - Key: f-iot.elb.service
-          Value: AlbTargetGroup
+        - Key: f-iot.service.name
+          Value: alb-target-group
   AlbListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:

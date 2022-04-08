@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: 2010-09-09
+AWSTemplateFormatVersion: "2010-09-09"
 Description: Logstash Fargate
 # ------------------------------------------------------------------------------
 # Parameters
@@ -34,8 +34,8 @@ Resources:
     Properties:
       ClusterName: ecs
       Tags:
-        - Key: f-iot.logstash-fargate.service
-          Value: Cluster
+        - Key: f-iot.service.name
+          Value: ecs-cluster
   LogstashService:
     Type: AWS::ECS::Service
     Properties:
@@ -63,8 +63,8 @@ Resources:
       ServiceRegistries:
         - RegistryArn: !GetAtt LogstashServiceDiscoveryEntry.Arn
       Tags:
-        - Key: f-iot.logstash-fargate.service
-          Value: LogstashService
+        - Key: f-iot.service.name
+          Value: logstash-serrvice
       TaskDefinition: !Ref LogstashTaskDefinition
   LogstashServiceDiscoveryEntry:
     Type: AWS::ServiceDiscovery::Service
@@ -133,23 +133,26 @@ Resources:
         - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
         - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
       Tags:
-        - Key: f-iot.logstash-fargate.service
-          Value: LogstashTaskExecutionRole
+        - Key: f-iot.service.name
+          Value: logstash-task-execution-role
   LogGroup:
     Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       KmsKeyId: !GetAtt FargateLogKey.Arn
-      LogGroupName: /f-iot/ecs
       RetentionInDays: 7
   FargateLogKey:
     Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       Description: symmetric KMS key
       EnableKeyRotation: true
       PendingWindowInDays: 20
       KeyPolicy:
         Version: 2012-10-17
-        Id: key-flow-log-1
+        Id: key-fargate-1
         Statement:
           - Sid: Enable IAM User Permissions
             Effect: Allow
