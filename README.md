@@ -1,6 +1,6 @@
 # ElasticStack
 
-![](https://codebuild.ap-northeast-1.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiaTAyaDcrSmJHQ29RNTc2VmExYkk3Y2p4RmFHT1pZa2R4WlJrQno4WHl0dlU2T0hoZEpuQThCVG1URXk1ems1SE9RbjRSTEdtOUFWRWRST0JVR1h3aGFNPSIsIml2UGFyYW1ldGVyU3BlYyI6IkNuZnMwTDlxMTdXdnZ5K08iLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=main)
+![](https://codebuild.ap-northeast-1.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoickNjQlcrckNSS0xkUGJPUFVkWUdBSlJVcmZwc2NnTWZld2tZVEFLZ2pCR1E3bEdHV1VmS0plYnFKNWJvYmRWeWErSDUrc2hNeERxYTB1RllxOGpvY0E0PSIsIml2UGFyYW1ldGVyU3BlYyI6ImZhU1FGQjNCUkRIbnJST0YiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=main)
 
 ## Setting
 ```bash
