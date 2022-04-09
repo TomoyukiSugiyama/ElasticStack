@@ -45,7 +45,7 @@ Resources:
         MinimumHealthyPercent: 100
       DeploymentController:
         Type: ECS
-      DesiredCount: 1
+      DesiredCount: 2
       LaunchType: FARGATE
       LoadBalancers:
         - ContainerName: !Ref ContainerName
