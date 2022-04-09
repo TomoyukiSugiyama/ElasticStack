@@ -207,12 +207,6 @@ Resources:
               AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
             Action: "kms:*"
             Resource: "*"
-          - Sid: Enable CFn Permissions
-            Effect: Allow
-            Principal:
-              Service: "cloudformation.amazonaws.com"
-            Action: "kms:*"
-            Resource: "*"
           - Effect: Allow
             Principal:
               Service: !Sub "logs.${AWS::Region}.amazonaws.com"
