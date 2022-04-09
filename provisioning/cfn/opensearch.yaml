@@ -46,7 +46,7 @@ Resources:
         VolumeType: gp2
       EncryptionAtRestOptions:
         Enabled: true
-        KmsKeyId: !GetAtt OpenSearchKey.KeyId
+        KmsKeyId: aws/es
       AccessPolicies:
         Version: "2012-10-17"
         Statement:
@@ -64,32 +64,32 @@ Resources:
       Tags:
         - Key: f-iot.opensearch.service
           Value: OpenSearch
-  OpenSearchKey:
-    Type: AWS::KMS::Key
-    Properties:
-      Description: symmetric KMS key
-      EnableKeyRotation: true
-      PendingWindowInDays: 20
-      KeyPolicy:
-        Version: 2012-10-17
-        Id: key-open-search-1
-        Statement:
-          - Sid: Enable IAM User Permissions
-            Effect: Allow
-            Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:user/tomoyuki"
-            Action: "kms:*"
-            Resource: "*"
-          - Effect: Allow
-            Principal:
-              Service: !Sub "logs.${AWS::Region}.amazonaws.com"
-            Action:
-              - "kms:Encrypt*"
-              - "kms:Decrypt*"
-              - "kms:ReEncrypt*"
-              - "kms:GenerateDataKey*"
-              - "kms:Describe*"
-            Resource: "*"
+  # OpenSearchKey:
+  #   Type: AWS::KMS::Key
+  #   Properties:
+  #     Description: symmetric KMS key
+  #     EnableKeyRotation: true
+  #     PendingWindowInDays: 20
+  #     KeyPolicy:
+  #       Version: 2012-10-17
+  #       Id: key-open-search-1
+  #       Statement:
+  #         - Sid: Enable IAM User Permissions
+  #           Effect: Allow
+  #           Principal:
+  #             AWS: !Sub "arn:aws:iam::${AWS::AccountId}:user/tomoyuki"
+  #           Action: "kms:*"
+  #           Resource: "*"
+  #         - Effect: Allow
+  #           Principal:
+  #             Service: !Sub "logs.${AWS::Region}.amazonaws.com"
+  #           Action:
+  #             - "kms:Encrypt*"
+  #             - "kms:Decrypt*"
+  #             - "kms:ReEncrypt*"
+  #             - "kms:GenerateDataKey*"
+  #             - "kms:Describe*"
+  #           Resource: "*"
 
 # ------------------------------------------------------------------------------
 # Outputs
