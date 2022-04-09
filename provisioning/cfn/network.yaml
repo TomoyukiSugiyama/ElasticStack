@@ -196,7 +196,7 @@ Resources:
     Properties:
       Description: symmetric KMS key
       EnableKeyRotation: true
-      PendingWindowInDays: 20
+      PendingWindowInDays: 7
       KeyPolicy:
         Version: 2012-10-17
         Id: key-flow-log-1
