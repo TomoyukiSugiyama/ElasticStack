@@ -40,3 +40,7 @@ phases:
       - cfn-lint -t $CODEBUILD_SRC_DIR/provisioning/cfn/*
       - echo Run cfn-nag_scan
       - cfn_nag_scan --input-path $CODEBUILD_SRC_DIR/provisioning/cfn/
+
+artifacts:
+  files:
+    - artifact.yaml
