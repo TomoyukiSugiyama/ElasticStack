@@ -191,6 +191,8 @@ Resources:
       RetentionInDays: 7
   VpcFlowLogKey:
     Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       Description: symmetric KMS key
       EnableKeyRotation: true
@@ -202,7 +204,7 @@ Resources:
           - Sid: Enable IAM User Permissions
             Effect: Allow
             Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:user/tomoyuki"
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
             Action: "kms:*"
             Resource: "*"
           - Effect: Allow

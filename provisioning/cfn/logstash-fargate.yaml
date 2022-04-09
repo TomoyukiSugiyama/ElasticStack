@@ -144,10 +144,12 @@ Resources:
       RetentionInDays: 7
   FargateLogKey:
     Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       Description: symmetric KMS key
       EnableKeyRotation: true
-      PendingWindowInDays: 20
+      PendingWindowInDays: 7
       KeyPolicy:
         Version: 2012-10-17
         Id: key-fargate-1
@@ -155,7 +157,7 @@ Resources:
           - Sid: Enable IAM User Permissions
             Effect: Allow
             Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:user/tomoyuki"
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
             Action: "kms:*"
             Resource: "*"
           - Effect: Allow
