@@ -1,7 +1,7 @@
 # ElasticStack
 
 ## Deployment
-![](https://codebuild.ap-northeast-1.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiaTAyaDcrSmJHQ29RNTc2VmExYkk3Y2p4RmFHT1pZa2R4WlJrQno4WHl0dlU2T0hoZEpuQThCVG1URXk1ems1SE9RbjRSTEdtOUFWRWRST0JVR1h3aGFNPSIsIml2UGFyYW1ldGVyU3BlYyI6IkNuZnMwTDlxMTdXdnZ5K08iLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=main)
+![](https://codebuild.ap-northeast-1.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiRnc1MjZTTS9oMGR6QXpCdVlKbVhyR0xROHlab2E1MUE5VHdJVTJ5aXI3RVJyWnJzUEVqVkpkeHNiUkdSUFNxTGJlaExpY3BDVmMxYjA4RkltQ0pIMWVvPSIsIml2UGFyYW1ldGVyU3BlYyI6IlpkVTZMMVVjZmhwMHF3MjkiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=main)
 
 ## Setting
 ```bash
