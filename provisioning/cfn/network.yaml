@@ -217,6 +217,13 @@ Resources:
               - "kms:GenerateDataKey*"
               - "kms:Describe*"
             Resource: "*"
+  KeyAlias:
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Type: "AWS::KMS::Alias"
+    Properties:
+      AliasName: "alias/vpc-flow-log"
+      TargetKeyId: !Ref VpcFlowLogKey
 
 # ------------------------------------------------------------------------------
 # Outputs
