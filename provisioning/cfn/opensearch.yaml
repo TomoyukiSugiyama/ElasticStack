@@ -46,7 +46,7 @@ Resources:
         VolumeType: gp2
       EncryptionAtRestOptions:
         Enabled: true
-        KmsKeyId: !GetAtt OpenSearchKey.KeyId
+        KmsKeyId: 9b75607c-8ff7-48eb-9735-dc64340759a7
       AccessPolicies:
         Version: "2012-10-17"
         Statement:
@@ -64,41 +64,6 @@ Resources:
       Tags:
         - Key: f-iot.opensearch.service
           Value: OpenSearch
-  OpenSearchKey:
-    Type: AWS::KMS::Key
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      Description: symmetric KMS key
-      EnableKeyRotation: true
-      PendingWindowInDays: 7
-      KeyPolicy:
-        Version: 2012-10-17
-        Id: key-open-search-1
-        Statement:
-          - Sid: Enable IAM User Permissions
-            Effect: Allow
-            Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
-            Action: "kms:*"
-            Resource: "*"
-          - Effect: Allow
-            Principal:
-              Service: !Sub "logs.${AWS::Region}.amazonaws.com"
-            Action:
-              - "kms:Encrypt*"
-              - "kms:Decrypt*"
-              - "kms:ReEncrypt*"
-              - "kms:GenerateDataKey*"
-              - "kms:Describe*"
-            Resource: "*"
-  KeyAlias:
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Type: "AWS::KMS::Alias"
-    Properties:
-      AliasName: "alias/opensearch"
-      TargetKeyId: !Ref OpenSearchKey
 
 # ------------------------------------------------------------------------------
 # Outputs
