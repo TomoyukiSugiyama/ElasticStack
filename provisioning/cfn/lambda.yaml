@@ -93,3 +93,10 @@ Resources:
       Principal: events.amazonaws.com
       SourceAccount: !Ref AWS::AccountId
       SourceArn: !GetAtt EventRule.Arn
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${Function}
+      RetentionInDays: 7
