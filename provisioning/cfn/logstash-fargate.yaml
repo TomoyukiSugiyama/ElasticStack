@@ -235,4 +235,5 @@ Resources:
                   - iam:CreateServiceLinkedRole
                 Resource: !Sub "arn:aws:iam::${AWS::AccountId}:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService"
                 Condition:
-                  StringLike: "ecs.application-autoscaling.amazonaws.com"
+                  StringLike:
+                    iam:AWSServiceName: "ecs.application-autoscaling.amazonaws.com"
