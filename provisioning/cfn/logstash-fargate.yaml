@@ -232,11 +232,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - cloudwatch:DescribeAlarms
-                  - cloudwatch:PutMetricAlarm
-                Resource: arn:aws:cloudwatch:*
-              - Effect: Allow
-                Action:
-                  - ecs:DescribeServices
-                  - ecs:UpdateService
-                Resource: arn:aws:ecs:*
+                  - iam:CreateServiceLinkedRole
+                Resource: !Sub "arn:aws:iam::${AWS::AccountId}:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService"
+                Condition:
+                  StringLike: "ecs.application-autoscaling.amazonaws.com"
