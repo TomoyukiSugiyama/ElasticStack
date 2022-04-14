@@ -74,6 +74,41 @@ Resources:
     Properties:
       AliasName: "alias/vpc-flow-log"
       TargetKeyId: !Ref VpcFlowLogKey
+  LambdaKey:
+    Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Description: symmetric KMS key
+      EnableKeyRotation: true
+      PendingWindowInDays: 7
+      KeyPolicy:
+        Version: 2012-10-17
+        Id: key-lambda-1
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: !Sub "logs.${AWS::Region}.amazonaws.com"
+            Action:
+              - "kms:Encrypt*"
+              - "kms:Decrypt*"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:Describe*"
+            Resource: "*"
+  LambdaKeyAlias:
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Type: "AWS::KMS::Alias"
+    Properties:
+      AliasName: "alias/lambda"
+      TargetKeyId: !Ref LambdaKey
   OpenSearchKey:
     Type: AWS::KMS::Key
     DeletionPolicy: Retain
