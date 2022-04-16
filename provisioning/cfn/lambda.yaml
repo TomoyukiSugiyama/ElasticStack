@@ -98,5 +98,6 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
+      KmsKeyId: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/7ebbf783-d740-4ba1-9926-82185903ffe8"
       LogGroupName: !Sub /aws/lambda/${Function}
       RetentionInDays: 7

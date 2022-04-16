@@ -33,6 +33,14 @@ Resources:
     Type: AWS::ECS::Cluster
     Properties:
       ClusterName: ecs
+      CapacityProviders:
+        - FARGATE
+        - FARGATE_SPOT
+      DefaultCapacityProviderStrategy:
+        - CapacityProvider: FARGATE
+          Weight: 1
+        - CapacityProvider: FARGATE_SPOT
+          Weight: 1
       Tags:
         - Key: f-iot.service.name
           Value: ecs-cluster
@@ -232,11 +240,8 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - cloudwatch:DescribeAlarms
-                  - cloudwatch:PutMetricAlarm
-                Resource: arn:aws:cloudwatch:*
-              - Effect: Allow
-                Action:
-                  - ecs:DescribeServices
-                  - ecs:UpdateService
-                Resource: arn:aws:ecs:*
+                  - iam:CreateServiceLinkedRole
+                Resource: !Sub "arn:aws:iam::${AWS::AccountId}:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService"
+                Condition:
+                  StringLike:
+                    iam:AWSServiceName: "ecs.application-autoscaling.amazonaws.com"
