@@ -18,6 +18,7 @@
 - pipeline.id: test
   pipeline.workers: 1
   pipeline.batch.size: 1
+  pipeline.ecs_compatibility: disabled
   config.string: |
     input { beats { port => 5044 } }
     filter { sleep { time => 1 } }
