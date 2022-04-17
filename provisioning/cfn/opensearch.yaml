@@ -46,7 +46,7 @@ Resources:
         VolumeType: gp2
       EncryptionAtRestOptions:
         Enabled: true
-        KmsKeyId: 9b75607c-8ff7-48eb-9735-dc64340759a7
+        KmsKeyId: cbbcaaca-c57e-44d7-bc80-f48929f1dd95
       AccessPolicies:
         Version: "2012-10-17"
         Statement:
