@@ -57,6 +57,7 @@ Resources:
             Resource: !Sub "arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/${DomainName}/*"
       AdvancedOptions:
         rest.action.multi.allow_explicit_index: true
+        override_main_response_version: true
       VPCOptions:
         SubnetIds: !Split [",", !Ref SubnetIds]
         SecurityGroupIds:
