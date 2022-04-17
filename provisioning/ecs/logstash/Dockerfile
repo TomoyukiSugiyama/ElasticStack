@@ -1,4 +1,4 @@
-FROM docker.elastic.co/logstash/logstash:7.16.3
+FROM opensearchproject/logstash-oss-with-opensearch-output-plugin:7.16.2
 LABEL maintainer Tomoyuki Sugiyama <tomoyuki.sugiyama.j7u@jpgr.denso.com>
 
 COPY ./config /usr/share/logstash/config
