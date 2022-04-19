@@ -38,8 +38,10 @@ Resources:
         - FARGATE_SPOT
       DefaultCapacityProviderStrategy:
         - CapacityProvider: FARGATE
+          Base: 2
           Weight: 1
         - CapacityProvider: FARGATE_SPOT
+          Base: 0
           Weight: 1
       Tags:
         - Key: f-iot.service.name
