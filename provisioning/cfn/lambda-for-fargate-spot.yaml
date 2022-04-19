@@ -1,0 +1,78 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Lambda for fargate spot
+# ------------------------------------------------------------------------------
+# Parameters
+# ------------------------------------------------------------------------------
+# Parameters:
+#   SubnetIds:
+#     Type: String
+#   SecurityGroupId:
+#     Type: String
+#   NlbTargetGroupId:
+#     Type: String
+# ------------------------------------------------------------------------------
+# Resources
+# ------------------------------------------------------------------------------
+Resources:
+  # Function:
+  #   Type: AWS::Lambda::Function
+  #   Properties:
+  #     Handler: populate-alb-tg-with-opensearch
+  #     Role: !GetAtt LambdaRole.Arn
+  #     Code:
+  #       S3Bucket: lambda-ces09iuin3ybh1kmv0fp-artifact
+  #       S3Key: populate-alb-tg-with-opensearch.zip
+  #     Runtime: go1.x
+  #     ReservedConcurrentExecutions: 1
+  #     Timeout: 5
+  #     TracingConfig:
+  #       Mode: Active
+  #     VpcConfig:
+  #       SecurityGroupIds:
+  #         - !Ref SecurityGroupId
+  #       SubnetIds: !Split [",", !Ref SubnetIds]
+  # LambdaRole:
+  #   Type: AWS::IAM::Role
+  #   Properties:
+  #     AssumeRolePolicyDocument:
+  #       Statement:
+  #         - Action:
+  #             - sts:AssumeRole
+  #           Condition: {}
+  #           Effect: Allow
+  #           Principal:
+  #             Service: lambda.amazonaws.com
+  #       Version: 2012-10-17
+  #     ManagedPolicyArns:
+  #       - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+  #       - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+  #     Policies:
+  #       - PolicyName: FIoTElasticLoadBalancingAccessPolicy
+  #         PolicyDocument:
+  #           Version: "2012-10-17"
+  #           Statement:
+  #             - Effect: Allow
+  #               Action:
+  #                 - "elasticloadbalancing:DescribeLoadBalancers"
+  #                 - "elasticloadbalancing:DescribeTargetHealth"
+  #                 - "elasticloadbalancing:DescribeTargetGroups"
+  #               Resource: "*"
+  #             - Effect: Allow
+  #               Action:
+  #                 - "elasticloadbalancing:RegisterTargets"
+  #                 - "elasticloadbalancing:DeregisterTargets"
+  #               Resource: !Ref NlbTargetGroupId
+  #     Tags:
+  #       - Key: f-iot.service.name
+  #         Value: lambda-role
+  EventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: pupulate atb target with opensearch
+      Name: detach-ecs-from-nlb
+      EventPattern:
+        source:
+          - aws.ecs
+        detail-type:
+          - ECS Task State Change
+      State: ENABLED
