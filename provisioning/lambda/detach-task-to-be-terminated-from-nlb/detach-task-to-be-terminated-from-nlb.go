@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
@@ -130,7 +131,8 @@ func DeregisterSpecifiedTarget(svc *elasticloadbalancingv2.Client, tg types.Targ
 	}
 }
 
-func HandleLambdaEvent() {
+func HandleLambdaEvent(_ context.Context, event events.CloudWatchEvent) {
+	//event.Detail
 	domainEndpoint := os.Getenv("DomainEndpoint")
 	albId := os.Getenv("AlbId")
 	albTargetGroupId := os.Getenv("AlbTargetGroupId")
