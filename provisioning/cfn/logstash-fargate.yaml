@@ -63,7 +63,6 @@ Resources:
       DeploymentController:
         Type: ECS
       DesiredCount: 3
-      LaunchType: FARGATE
       LoadBalancers:
         - ContainerName: !Ref ContainerName
           ContainerPort: !Ref ContainerPort
