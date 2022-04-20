@@ -42,20 +42,27 @@ Resources:
           Weight: 1
         - CapacityProvider: FARGATE_SPOT
           Base: 0
-          Weight: 1
+          Weight: 2
       Tags:
         - Key: f-iot.service.name
           Value: ecs-cluster
   LogstashService:
     Type: AWS::ECS::Service
     Properties:
+      CapacityProviderStrategy:
+        - CapacityProvider: FARGATE
+          Base: 2
+          Weight: 1
+        - CapacityProvider: FARGATE_SPOT
+          Base: 0
+          Weight: 2
       Cluster: !GetAtt Cluster.Arn
       DeploymentConfiguration:
         MaximumPercent: 200
         MinimumHealthyPercent: 100
       DeploymentController:
         Type: ECS
-      DesiredCount: 2
+      DesiredCount: 3
       LaunchType: FARGATE
       LoadBalancers:
         - ContainerName: !Ref ContainerName
@@ -247,3 +254,10 @@ Resources:
                 Condition:
                   StringLike:
                     iam:AWSServiceName: "ecs.application-autoscaling.amazonaws.com"
+
+# ------------------------------------------------------------------------------
+# Outputs
+# ------------------------------------------------------------------------------
+Outputs:
+  ClusterId:
+    Value: !GetAtt Cluster.Arn

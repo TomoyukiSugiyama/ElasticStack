@@ -4,14 +4,17 @@ Description: Lambda for fargate spot
 # Parameters
 # ------------------------------------------------------------------------------
 Parameters:
-  ClusterId:
-    Type: String
   SubnetIds:
     Type: String
   SecurityGroupId:
     Type: String
+  NlbId:
+    Type: String
   NlbTargetGroupId:
     Type: String
+  ClusterId:
+    Type: String
+
 # ------------------------------------------------------------------------------
 # Resources
 # ------------------------------------------------------------------------------
@@ -19,11 +22,11 @@ Resources:
   Function:
     Type: AWS::Lambda::Function
     Properties:
-      Handler: populate-alb-tg-with-opensearch
+      Handler: detach-task-to-be-terminated-from-nlb
       Role: !GetAtt LambdaRole.Arn
       Code:
         S3Bucket: lambda-ces09iuin3ybh1kmv0fp-artifact
-        S3Key: populate-alb-tg-with-opensearch.zip
+        S3Key: detach-task-to-be-terminated-from-nlb.zip
       Runtime: go1.x
       ReservedConcurrentExecutions: 1
       Timeout: 5
@@ -33,8 +36,11 @@ Resources:
         SecurityGroupIds:
           - !Ref SecurityGroupId
         SubnetIds: !Split [",", !Ref SubnetIds]
+      Environment:
+        Variables:
+          NlbId: !Ref NlbId
+          NlbTargetGroupId: !Ref NlbTargetGroupId
   LambdaRole:
-    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -66,20 +72,25 @@ Resources:
                 Resource: !Ref NlbTargetGroupId
       Tags:
         - Key: f-iot.service.name
-          Value: lambda-role
+          Value: lambda
+    Type: AWS::IAM::Role
   EventRule:
     Type: AWS::Events::Rule
     Properties:
-      Description: pupulate atb target with opensearch
-      Name: detach-ecs-from-nlb
+      Description: detach ecs task that received terminate notification from nlb
+      Name: detach-task-to-be-terminated-from-nlb
       EventPattern:
         source:
           - aws.ecs
         detail-type:
           - ECS Task State Change
         detail:
-          - clusterArn: !Ref ClusterId
+          clusterArn:
+            - !Ref ClusterId
       State: ENABLED
+      Targets:
+        - Arn: !GetAtt Function.Arn
+          Id: lambda
   EventPermission:
     Type: AWS::Lambda::Permission
     Properties:

@@ -1,12 +1,11 @@
-// main 指定したドメイン名を名前解決し、ALBのターゲットに追加します。
-// UnhealtyなALBのターゲットは削除します。
+// main TerminationNotificationを受け取ったECSタスクを、NLBのターゲットから削除します。
 package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
-	"net"
 	"os"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -15,16 +14,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 )
-
-func ResolveIpAddress(domainEndpoint string) (resolvedIpAddr string) {
-	ipAddr, err := net.ResolveIPAddr("ip", domainEndpoint)
-	if err != nil {
-		log.Fatalf("failed to resolve ip address, %v", err)
-		os.Exit(1)
-	}
-	resolvedIpAddr = ipAddr.IP.String()
-	return
-}
 
 func Init() (svc *elasticloadbalancingv2.Client) {
 	cfg, err := config.LoadDefaultConfig(context.TODO())
@@ -93,33 +82,6 @@ func HasTarget(svc *elasticloadbalancingv2.Client, tg types.TargetGroup, ipAddr 
 	return
 }
 
-func RegisterSpecifiedTarget(svc *elasticloadbalancingv2.Client, tg types.TargetGroup, addr string, port int32) {
-	registerTarget := types.TargetDescription{AvailabilityZone: nil, Id: &addr, Port: &port}
-	registerTargets := []types.TargetDescription{registerTarget}
-	registerTargetInput := &elasticloadbalancingv2.RegisterTargetsInput{TargetGroupArn: tg.TargetGroupArn, Targets: registerTargets}
-	_, err := svc.RegisterTargets(context.TODO(), registerTargetInput)
-	if err != nil {
-		log.Fatalf("failed to register, %v", err)
-		os.Exit(1)
-	}
-}
-
-func DeregisterUnheltyTargets(svc *elasticloadbalancingv2.Client, tg types.TargetGroup) {
-	input := &elasticloadbalancingv2.DescribeTargetHealthInput{TargetGroupArn: tg.TargetGroupArn}
-	resp, err := svc.DescribeTargetHealth(context.TODO(), input)
-	if err != nil {
-		log.Fatalf("failed to get target helth, %v", err)
-		os.Exit(1)
-	}
-
-	for _, tgh := range resp.TargetHealthDescriptions {
-		if tgh.TargetHealth.State == types.TargetHealthStateEnumUnhealthy {
-			DeregisterSpecifiedTarget(svc, tg, *tgh.Target.Id, *tgh.Target.Port)
-			fmt.Printf("DEREGISTER UnhealtyTarget.Id: %s\n", *tgh.Target.Id)
-		}
-	}
-}
-
 func DeregisterSpecifiedTarget(svc *elasticloadbalancingv2.Client, tg types.TargetGroup, addr string, port int32) {
 	deregisterTarget := types.TargetDescription{AvailabilityZone: nil, Id: &addr, Port: &port}
 	deregisterTargets := []types.TargetDescription{deregisterTarget}
@@ -131,31 +93,55 @@ func DeregisterSpecifiedTarget(svc *elasticloadbalancingv2.Client, tg types.Targ
 	}
 }
 
-func HandleLambdaEvent(_ context.Context, event events.CloudWatchEvent) {
-	//event.Detail
-	domainEndpoint := os.Getenv("DomainEndpoint")
-	albId := os.Getenv("AlbId")
-	albTargetGroupId := os.Getenv("AlbTargetGroupId")
-	fmt.Printf("GET ENV DomainEndpoint: %s AlbId: %s AlbTargetGroupId: %s\n", domainEndpoint, albId, albTargetGroupId)
+type NetworkInterface struct {
+	PrivateIpv4Address string `json:"privateIpv4Address"`
+}
+type Container struct {
+	NetworkInterfaces []NetworkInterface
+	Name              string `json:"name"`
+}
+type EcsEvent struct {
+	StopCode   string `json:"stopCode"`
+	Containers []Container
+}
 
-	opensearchIpAddr := ResolveIpAddress(domainEndpoint)
-	fmt.Printf("GET OpensearchIpAddressddress: %s\n", opensearchIpAddr)
+func HandleLambdaEvent(_ context.Context, event events.CloudWatchEvent) {
+	var ecsEvent EcsEvent
+	if err := json.Unmarshal(event.Detail, &ecsEvent); err != nil {
+		os.Exit(1)
+	}
+
+	fmt.Printf("stopCode = %s\n", ecsEvent.StopCode)
+	if ecsEvent.StopCode != "TerminationNotice" {
+		return
+	}
+	var ecsIp string
+	for _, contaier := range ecsEvent.Containers {
+		if contaier.Name == "logstash" {
+			for _, ni := range contaier.NetworkInterfaces {
+				ecsIp = ni.PrivateIpv4Address
+			}
+		}
+	}
+	fmt.Printf("ip v4 = %s\n", ecsIp)
+
+	nlbId := os.Getenv("NlbId")
+	nlbTargetGroupId := os.Getenv("NlbTargetGroupId")
+	fmt.Printf("GET ENV AlbId: %s AlbTargetGroupId: %s\n", nlbId, nlbTargetGroupId)
 
 	svc := Init()
 
-	lb := GetSpecifiedLoadbalancer(svc, albId)
+	lb := GetSpecifiedLoadbalancer(svc, nlbId)
 	fmt.Printf("GET LoadbalancerName: %s LoadbalancerArn: %s\n", *lb.LoadBalancerName, *lb.LoadBalancerArn)
 
-	tg := GetSpecifiedTargetGroup(svc, lb, albTargetGroupId)
+	tg := GetSpecifiedTargetGroup(svc, lb, nlbTargetGroupId)
 	fmt.Printf("GET TargetGroupName: %s TargetGroupArn: %s\n", *tg.TargetGroupName, *tg.TargetGroupArn)
 
-	if !HasTarget(svc, tg, opensearchIpAddr) {
-		const httpsPort = 443
-		RegisterSpecifiedTarget(svc, tg, opensearchIpAddr, httpsPort)
-		fmt.Println("REGISTER")
+	if HasTarget(svc, tg, ecsIp) {
+		const tcpPort = 5044
+		DeregisterSpecifiedTarget(svc, tg, ecsIp, tcpPort)
+		fmt.Println("DEREGISTER")
 	}
-
-	DeregisterUnheltyTargets(svc, tg)
 }
 
 func main() {
