@@ -6,5 +6,4 @@ require (
 	github.com/aws/aws-lambda-go v1.30.0
 	github.com/aws/aws-sdk-go-v2/config v1.15.3
 	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.18.3
-	github.com/aws/aws-sdk-go-v2/service/eventbridge v1.16.0
 )
