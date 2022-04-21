@@ -124,6 +124,7 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: ecs
           Name: logstash
+          StopTimeout: 120
           PortMappings:
             - ContainerPort: !Ref ContainerPort
       Cpu: "2048"
