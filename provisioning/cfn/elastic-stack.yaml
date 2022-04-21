@@ -62,6 +62,16 @@ Resources:
         DomainEndpoint: !GetAtt Opensearch.Outputs.DomainEndpoint
         AlbId: !GetAtt Elb.Outputs.AlbId
         AlbTargetGroupId: !GetAtt Elb.Outputs.AlbTargetGroupId
+  LambdaForFargateSpot:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: lambda-for-fargate-spot.yaml
+      Parameters:
+        SubnetIds: !GetAtt Network.Outputs.PrivateSubnetIds
+        SecurityGroupId: !GetAtt SecurityGroup.Outputs.VpcEndpointSecurityGroupId
+        NlbId: !GetAtt Elb.Outputs.NlbId
+        NlbTargetGroupId: !GetAtt Elb.Outputs.NlbTargetGroupId
+        ClusterId: !GetAtt LogstashFargate.Outputs.ClusterId
   LogstashFargate:
     Type: AWS::CloudFormation::Stack
     DependsOn:

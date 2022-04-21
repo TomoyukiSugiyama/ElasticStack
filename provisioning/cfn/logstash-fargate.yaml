@@ -38,23 +38,31 @@ Resources:
         - FARGATE_SPOT
       DefaultCapacityProviderStrategy:
         - CapacityProvider: FARGATE
+          Base: 2
           Weight: 1
         - CapacityProvider: FARGATE_SPOT
-          Weight: 1
+          Base: 0
+          Weight: 2
       Tags:
         - Key: f-iot.service.name
           Value: ecs-cluster
   LogstashService:
     Type: AWS::ECS::Service
     Properties:
+      CapacityProviderStrategy:
+        - CapacityProvider: FARGATE
+          Base: 2
+          Weight: 1
+        - CapacityProvider: FARGATE_SPOT
+          Base: 0
+          Weight: 2
       Cluster: !GetAtt Cluster.Arn
       DeploymentConfiguration:
         MaximumPercent: 200
         MinimumHealthyPercent: 100
       DeploymentController:
         Type: ECS
-      DesiredCount: 2
-      LaunchType: FARGATE
+      DesiredCount: 3
       LoadBalancers:
         - ContainerName: !Ref ContainerName
           ContainerPort: !Ref ContainerPort
@@ -116,6 +124,7 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: ecs
           Name: logstash
+          StopTimeout: 120
           PortMappings:
             - ContainerPort: !Ref ContainerPort
       Cpu: "2048"
@@ -245,3 +254,10 @@ Resources:
                 Condition:
                   StringLike:
                     iam:AWSServiceName: "ecs.application-autoscaling.amazonaws.com"
+
+# ------------------------------------------------------------------------------
+# Outputs
+# ------------------------------------------------------------------------------
+Outputs:
+  ClusterId:
+    Value: !GetAtt Cluster.Arn
