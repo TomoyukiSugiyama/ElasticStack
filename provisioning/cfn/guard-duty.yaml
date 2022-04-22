@@ -52,3 +52,23 @@ Resources:
                   - cloudwatch:List*
                 Resource:
                   - "*"
+              - Effect: Allow
+                Action:
+                  - ssm:DescribeParameters
+                  - ssm:GetParameters
+                Resource:
+                  - "*"
+  EventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: guardduty notification
+      Name: guardduty-notification
+      EventPattern:
+        source:
+          - aws.guardduty
+        detail-type:
+          - GuardDuty Finding
+      State: ENABLED
+      Targets:
+        - Arn: !Ref Topic
+          Id: sns-topic
