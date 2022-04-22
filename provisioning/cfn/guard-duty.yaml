@@ -9,3 +9,11 @@ Resources:
     Properties:
       Enable: True
       FindingPublishingFrequency: FIFTEEN_MINUTES
+  Topic:
+    Type: AWS::SNS::Topic
+  Subscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: https
+      TopicArn: !Ref Topic
+      Endpoint: "https://global.sns-api.chatbot.amazonaws.com"
