@@ -33,7 +33,6 @@ Resources:
   ChatBotRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: chat-bot-role
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
