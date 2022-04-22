@@ -42,7 +42,7 @@ Resources:
               Service: chatbot.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - PolicyName: test-chatbot-iam-policy
+        - PolicyName: chat-bot-policy
           PolicyDocument:
             Version: 2012-10-17
             Statement:
