@@ -9,3 +9,47 @@ Resources:
     Properties:
       Enable: True
       FindingPublishingFrequency: FIFTEEN_MINUTES
+  Topic:
+    Type: AWS::SNS::Topic
+  Subscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: https
+      TopicArn: !Ref Topic
+      Endpoint: "https://global.sns-api.chatbot.amazonaws.com"
+  ChatBot:
+    Type: AWS::Chatbot::SlackChannelConfiguration
+    Properties:
+      ConfigurationName: GuardDutyNotification
+      GuardrailPolicies:
+        - "arn:aws:iam::aws:policy/AWSAppMeshEnvoyAccess"
+      IamRoleArn: !GetAtt ChatBotRole.Arn
+      LoggingLevel: NONE
+      SlackChannelId: "{{resolve:ssm:GuardDutySlackChannelId:1}}"
+      SlackWorkspaceId: "{{resolve:ssm:GuardDutySlackWorkspaceId:1}}"
+      SnsTopicArns:
+        - !Ref Topic
+      UserRoleRequired: false
+  ChatBotRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: chat-bot-role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: chatbot.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: chat-bot-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cloudwatch:Describe*
+                  - cloudwatch:Get*
+                  - cloudwatch:List*
+                Resource:
+                  - "*"
