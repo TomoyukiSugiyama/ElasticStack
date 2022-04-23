@@ -157,7 +157,7 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      KmsKeyId: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/6127eca8-7632-4b9f-8af0-74ca3b7df662"
+      KmsKeyId: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/fargate"
       RetentionInDays: 7
   ServiceScalingTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget

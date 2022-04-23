@@ -46,7 +46,7 @@ Resources:
         VolumeType: gp2
       EncryptionAtRestOptions:
         Enabled: true
-        KmsKeyId: cbbcaaca-c57e-44d7-bc80-f48929f1dd95
+        KmsKeyId: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/opensearch"
       AccessPolicies:
         Version: "2012-10-17"
         Statement:
