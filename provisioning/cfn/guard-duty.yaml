@@ -21,8 +21,6 @@ Resources:
     Type: AWS::Chatbot::SlackChannelConfiguration
     Properties:
       ConfigurationName: GuardDutyNotification
-      GuardrailPolicies:
-        - "arn:aws:iam::aws:policy/AWSAppMeshEnvoyAccess"
       IamRoleArn: !GetAtt ChatBotRole.Arn
       LoggingLevel: NONE
       SlackChannelId: "{{resolve:ssm:GuardDutySlackChannelId:1}}"
@@ -44,18 +42,6 @@ Resources:
         - arn:aws:iam::aws:policy/ReadOnlyAccess
         - arn:aws:iam::aws:policy/AWSSupportAccess
         - arn:aws:iam::aws:policy/AWSIncidentManagerResolverAccess
-      Policies:
-        - PolicyName: chat-bot-policy
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - cloudwatch:Describe*
-                  - cloudwatch:Get*
-                  - cloudwatch:List*
-                Resource:
-                  - "*"
   EventRule:
     Type: AWS::Events::Rule
     Properties:
