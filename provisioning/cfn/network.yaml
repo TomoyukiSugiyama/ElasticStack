@@ -187,7 +187,7 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      KmsKeyId: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/80f59435-f0c3-45d5-a92d-64415be70c72"
+      KmsKeyId: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/vpc-flow-log"
       RetentionInDays: 7
 
 # ------------------------------------------------------------------------------
