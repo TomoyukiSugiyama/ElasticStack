@@ -9,6 +9,20 @@ Resources:
     Properties:
       Enable: True
       FindingPublishingFrequency: FIFTEEN_MINUTES
+  EventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: guardduty notification
+      Name: guardduty-notification
+      EventPattern:
+        source:
+          - aws.guardduty
+        detail-type:
+          - GuardDuty Finding
+      State: ENABLED
+      Targets:
+        - Arn: !Ref Topic
+          Id: sns-topic
   Topic:
     Type: AWS::SNS::Topic
   Subscription:
@@ -21,6 +35,8 @@ Resources:
     Type: AWS::Chatbot::SlackChannelConfiguration
     Properties:
       ConfigurationName: GuardDutyNotification
+      GuardrailPolicies:
+        - "arn:aws:iam::aws:policy/AWSAppMeshEnvoyAccess"
       IamRoleArn: !GetAtt ChatBotRole.Arn
       LoggingLevel: NONE
       SlackChannelId: "{{resolve:ssm:GuardDutySlackChannelId:1}}"
@@ -42,17 +58,3 @@ Resources:
         - arn:aws:iam::aws:policy/ReadOnlyAccess
         - arn:aws:iam::aws:policy/AWSSupportAccess
         - arn:aws:iam::aws:policy/AWSIncidentManagerResolverAccess
-  EventRule:
-    Type: AWS::Events::Rule
-    Properties:
-      Description: guardduty notification
-      Name: guardduty-notification
-      EventPattern:
-        source:
-          - aws.guardduty
-        detail-type:
-          - GuardDuty Finding
-      State: ENABLED
-      Targets:
-        - Arn: !Ref Topic
-          Id: sns-topic
