@@ -9,6 +9,20 @@ Resources:
     Properties:
       Enable: True
       FindingPublishingFrequency: FIFTEEN_MINUTES
+  EventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: guardduty notification
+      Name: guardduty-notification
+      EventPattern:
+        source:
+          - aws.guardduty
+        detail-type:
+          - GuardDuty Finding
+      State: ENABLED
+      Targets:
+        - Arn: !Ref Topic
+          Id: sns-topic
   Topic:
     Type: AWS::SNS::Topic
   Subscription:
@@ -33,7 +47,6 @@ Resources:
   ChatBotRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: chat-bot-role
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -41,15 +54,7 @@ Resources:
             Principal:
               Service: chatbot.amazonaws.com
             Action: sts:AssumeRole
-      Policies:
-        - PolicyName: chat-bot-policy
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - cloudwatch:Describe*
-                  - cloudwatch:Get*
-                  - cloudwatch:List*
-                Resource:
-                  - "*"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
+        - arn:aws:iam::aws:policy/AWSSupportAccess
+        - arn:aws:iam::aws:policy/AWSIncidentManagerResolverAccess
