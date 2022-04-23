@@ -40,6 +40,10 @@ Resources:
             Principal:
               Service: chatbot.amazonaws.com
             Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
+        - arn:aws:iam::aws:policy/AWSSupportAccess
+        - arn:aws:iam::aws:policy/AWSIncidentManagerResolverAccess
       Policies:
         - PolicyName: chat-bot-policy
           PolicyDocument:
@@ -50,12 +54,6 @@ Resources:
                   - cloudwatch:Describe*
                   - cloudwatch:Get*
                   - cloudwatch:List*
-                Resource:
-                  - "*"
-              - Effect: Allow
-                Action:
-                  - ssm:DescribeParameters
-                  - ssm:GetParameters
                 Resource:
                   - "*"
   EventRule:
