@@ -42,7 +42,7 @@ Resources:
           Weight: 1
         - CapacityProvider: FARGATE_SPOT
           Base: 0
-          Weight: 2
+          Weight: 1
       Tags:
         - Key: f-iot.service.name
           Value: ecs-cluster
@@ -55,7 +55,7 @@ Resources:
           Weight: 1
         - CapacityProvider: FARGATE_SPOT
           Base: 0
-          Weight: 2
+          Weight: 1
       Cluster: !GetAtt Cluster.Arn
       DeploymentConfiguration:
         MaximumPercent: 200
