@@ -122,15 +122,24 @@ Resources:
       FromPort: 5044
       ToPort: 5044
       CidrIp: !Ref VpcCidrBlock
-  FargateSecurityGroupHTTPSoutbound:
+  FargateSecurityGroupS3outbound:
     Type: AWS::EC2::SecurityGroupEgress
     Properties:
-      Description: "Allowing access to s3 gateway vpc endpoint and opensearch."
+      Description: "Allowing access to s3 gateway vpc endpoint."
       GroupId: !Ref FargateSecurityGroup
       IpProtocol: tcp
       FromPort: 443
       ToPort: 443
-      CidrIp: 0.0.0.0/0
+      DestinationPrefixListId: "{{resolve:ssm:S3PrefixListId:1}}"
+  FargateSecurityGroupECRoutbound:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      Description: "Allowing access to ecr vpc endpoint and opensearch vpc endpoint."
+      GroupId: !Ref FargateSecurityGroup
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      CidrIp: !Ref VpcCidrBlock
   FargateSecurityGroupDNSoutbound:
     Type: AWS::EC2::SecurityGroupEgress
     Properties:
