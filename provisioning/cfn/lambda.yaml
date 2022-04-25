@@ -25,7 +25,7 @@ Resources:
       Handler: populate-alb-tg-with-opensearch
       Role: !GetAtt LambdaRole.Arn
       Code:
-        S3Bucket: lambda-ces09iuin3ybh1kmv0fp-artifact
+        S3Bucket: "{{resolve:ssm:S3BacketLambda:1}}"
         S3Key: populate-alb-tg-with-opensearch.zip
       Runtime: go1.x
       ReservedConcurrentExecutions: 1

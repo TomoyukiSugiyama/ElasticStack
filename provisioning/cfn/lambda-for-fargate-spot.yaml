@@ -25,7 +25,7 @@ Resources:
       Handler: detach-task-to-be-terminated-from-nlb
       Role: !GetAtt LambdaRole.Arn
       Code:
-        S3Bucket: lambda-ces09iuin3ybh1kmv0fp-artifact
+        S3Bucket: "{{resolve:ssm:S3BacketLambda:1}}"
         S3Key: detach-task-to-be-terminated-from-nlb.zip
       Runtime: go1.x
       ReservedConcurrentExecutions: 1
