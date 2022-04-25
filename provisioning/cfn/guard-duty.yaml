@@ -38,7 +38,7 @@ Resources:
     Properties:
       ConfigurationName: GuardDutyNotification
       GuardrailPolicies:
-        - "arn:aws:iam::aws:policy/AWSAppMeshEnvoyAccess"
+        - "arn:aws:iam::aws:policy/ReadOnlyAccess"
       IamRoleArn: !GetAtt ChatBotRole.Arn
       LoggingLevel: NONE
       SlackChannelId: "{{resolve:ssm:GuardDutySlackChannelId:1}}"
