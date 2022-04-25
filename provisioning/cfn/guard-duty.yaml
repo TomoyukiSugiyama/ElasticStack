@@ -58,5 +58,3 @@ Resources:
             Action: sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/ReadOnlyAccess
-        - arn:aws:iam::aws:policy/AWSSupportAccess
-        - arn:aws:iam::aws:policy/AWSIncidentManagerResolverAccess
