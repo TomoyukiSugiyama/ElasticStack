@@ -25,8 +25,6 @@ Resources:
           Id: sns-topic
   Topic:
     Type: AWS::SNS::Topic
-    Properties:
-      KmsMasterKeyId: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/aws/sns"
   Subscription:
     Type: AWS::SNS::Subscription
     Properties:
@@ -38,7 +36,7 @@ Resources:
     Properties:
       ConfigurationName: GuardDutyNotification
       GuardrailPolicies:
-        - "arn:aws:iam::aws:policy/AWSAppMeshEnvoyAccess"
+        - "arn:aws:iam::aws:policy/ReadOnlyAccess"
       IamRoleArn: !GetAtt ChatBotRole.Arn
       LoggingLevel: NONE
       SlackChannelId: "{{resolve:ssm:GuardDutySlackChannelId:1}}"
@@ -58,5 +56,3 @@ Resources:
             Action: sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/ReadOnlyAccess
-        - arn:aws:iam::aws:policy/AWSSupportAccess
-        - arn:aws:iam::aws:policy/AWSIncidentManagerResolverAccess
