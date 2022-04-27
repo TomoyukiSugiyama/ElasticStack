@@ -5,6 +5,7 @@ mode=$1; shift
 arg1=$1; shift
 arg2=$1; shift
 arg3=$1; shift
+arg4=$1; shift
 if [ "$mode" != "create" -a "$mode" != "update" -a "$mode" != "delete" -a "$mode" != "list" -a "$mode" != "describe" -a "$mode" != "validate" -a "$mode" != "package"  -a "$mode" != "deploy" ]; then
     echo ""
     echo "Usage: $0 MODE ARGS"
@@ -21,8 +22,9 @@ if [ "$mode" != "create" -a "$mode" != "update" -a "$mode" != "delete" -a "$mode
 fi
 
 if [ "$mode" == "create" -o "$mode" == "update" ]; then
-    params=$(echo $* | perl -pe "s/([^= ]+)=([^ ]+)/ParameterKey=\1,ParameterValue=\2/g")
-    args="--template-url https://s3.amazonaws.com/${arg2}/artifact.yaml --capabilities CAPABILITY_IAM --capabilities CAPABILITY_NAMED_IAM ${params}"
+    param1=$(echo ${arg3} | perl -pe "s/([^= ]+)=([^ ]+)/--parameter-overrides \1=\2/g")
+    param2=$(echo ${arg4} | perl -pe "s/([^= ]+)=([^ ]+)/\1=\2/g")
+    args="--template-url https://s3.amazonaws.com/${arg2}/artifact.yaml --capabilities CAPABILITY_IAM --capabilities CAPABILITY_NAMED_IAM ${param1} ${param2}"
     stack_name_option="--stack-name ${arg1}"
     mode_option="${mode}-stack"
 fi
@@ -34,7 +36,9 @@ if [ "$mode" == "package" ]; then
 fi
 
 if [ "$mode" == "deploy" ]; then
-    args="--template-file ${arg2} --capabilities CAPABILITY_IAM --capabilities CAPABILITY_NAMED_IAM"
+    param1=$(echo ${arg3} | perl -pe "s/([^= ]+)=([^ ]+)/--parameter-overrides \1=\2/g")
+    param2=$(echo ${arg4} | perl -pe "s/([^= ]+)=([^ ]+)/\1=\2/g")
+    args="--template-file ${arg2} --capabilities CAPABILITY_IAM --capabilities CAPABILITY_NAMED_IAM ${param1} ${param2}"
     stack_name_option="--stack-name ${arg1}"
     mode_option="${mode}"
 fi
