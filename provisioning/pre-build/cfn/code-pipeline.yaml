@@ -7,7 +7,7 @@ Parameters:
   ProjectName:
     Description: User-defined project name
     Type: String
-    Default: f-iot
+    Default: ElasticStack
   BranchName:
     Description: branch name
     Type: String
@@ -15,11 +15,11 @@ Parameters:
   CodeBuildName:
     Description: User-defined code build name
     Type: String
-    Default: f-iot-build
+    Default: ElasticStack-build
   CodePipelineName:
     Description: User-defined code pipeline name
     Type: String
-    Default: f-iot-pipeline
+    Default: ElasticStack-pipeline
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -37,9 +37,10 @@ Resources:
                 Category: Source
                 Owner: AWS
                 Version: 1
-                Provider: CodeCommit
+                Provider: CodeStarSourceConnection
               Configuration:
-                RepositoryName: !Ref ProjectName
+                ConnectionArn: "{{resolve:ssm:GithubConnectionArn:1}}"
+                FullRepositoryId: TomoyukiSugiyama/ElasticStack
                 BranchName: !Ref BranchName
               RunOrder: 1
               OutputArtifacts:

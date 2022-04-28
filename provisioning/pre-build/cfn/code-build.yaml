@@ -44,16 +44,6 @@ Resources:
             - Type: BASE_REF
               Pattern: ^refs/heads/master$
               ExcludeMatchedPattern: false
-            - Type: ACTOR_ACCOUNT_ID
-              Pattern: 12345
-              ExcludeMatchedPattern: true
-          - - Type: EVENT
-              Pattern: PUSH
-            - Type: HEAD_REF
-              Pattern: ^refs/heads/.*
-            - Type: FILE_PATH
-              Pattern: READ_ME
-              ExcludeMatchedPattern: true
       SourceVersion: refs/heads/develop
       LogsConfig:
         CloudWatchLogs:
