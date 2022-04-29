@@ -57,6 +57,13 @@ Resources:
                 Provider: CodeBuild
               Configuration:
                 ProjectName: !Ref CodeBuildName
+                EnvironmentVariables:
+                  - Name: S3_BUCKET_CFN_NAME
+                    Type: PARAMETER_STORE
+                    Value: S3_BUCKET_CFN_NAME
+                  - Name: S3_BUCKET_LAMBDA_NAME
+                    Type: PARAMETER_STORE
+                    Value: S3_BUCKET_LAMBDA_NAME
               OutputArtifacts:
                 - Name: BuildArtifact
               RunOrder: 1
