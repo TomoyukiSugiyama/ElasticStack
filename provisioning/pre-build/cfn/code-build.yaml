@@ -78,19 +78,39 @@ Resources:
                 Action:
                   - "ssm:GetParameters"
                 Resource:
-                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/CodeBuild/*"
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3_BUCKET_CFN_NAME"
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3_BUCKET_LAMBDA_NAME"
               - Effect: Allow
                 Action:
-                  - "ecr:DescribeImages"
+                  - "ecr:DescribeRepositories"
+                  - "ecr:CompleteLayerUpload"
+                  - "ecr:UploadLayerPart"
+                  - "ecr:InitiateLayerUpload"
+                  - "ecr:BatchCheckLayerAvailability"
                   - "ecr:PutImage"
                 Resource:
-                  - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/*"
+                  - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/f-iot-rep"
               - Effect: Allow
                 Action:
-                  - "s3:GetObject*"
+                  - "ecr:GetAuthorizationToken"
                 Resource:
-                  - "arn:aws:s3:::{{resolve:ssm:S3BacketLambda:1}}"
-                  - "arn:aws:s3:::{{resolve:ssm:S3BacketCfn:1}}"
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - "s3:PutObject"
+                Resource:
+                  - "arn:aws:s3:::{{resolve:ssm:S3BacketLambda:1}}/*"
+              - Effect: Allow
+                Action:
+                  - "s3:PutObject"
+                  - "s3:GetObject"
+                Resource:
+                  - "arn:aws:s3:::{{resolve:ssm:S3BacketCfn:1}}/*"
+              - Effect: Allow
+                Action:
+                  - "cloudformation:ValidateTemplate"
+                Resource:
+                  - "*"
 
 # ------------------------------------------------------------------------------
 # Outputs
