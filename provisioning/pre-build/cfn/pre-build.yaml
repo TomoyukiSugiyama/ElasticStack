@@ -22,15 +22,15 @@ Resources:
       TemplateURL: code-build.yaml
       Parameters:
         CodeBuildName: !Sub "${ProjectName}-build-dev"
-  # CodePipelineDev:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: code-pipeline.yaml
-  #     Parameters:
-  #       ProjectName: !Ref ProjectName
-  #       BranchName: develop
-  #       CodeBuildName: !GetAtt CodeBuildDev.Outputs.CodeBuildName
-  #       CodePipelineName: !Sub "${ProjectName}-pipeline-dev"
+  CodePipelineDev:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: code-pipeline.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        BranchName: develop
+        CodeBuildName: !GetAtt CodeBuildDev.Outputs.CodeBuildName
+        CodePipelineName: !Sub "${ProjectName}-pipeline-dev"
 
 # ------------------------------------------------------------------------------
 # Outputs

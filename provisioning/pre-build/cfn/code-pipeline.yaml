@@ -81,9 +81,6 @@ Resources:
       ArtifactStore:
         Type: S3
         Location: !Ref ArtifactS3Bucket
-        # EncryptionKey:
-        #   Id: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/code-pipeline"
-        #   Type: KMS
       RoleArn: !GetAtt CodePipelineRole.Arn
   ArtifactS3Bucket:
     Type: AWS::S3::Bucket
@@ -210,10 +207,6 @@ Resources:
                   - "codebuild:StartBuild"
                   - "codebuild:BatchGetBuildBatches"
                   - "codebuild:StartBuildBatch"
-                Resource: "*"
-              - Effect: "Allow"
-                Action:
-                  - "cloudformation:ValidateTemplate"
                 Resource: "*"
               - Effect: "Allow"
                 Action:
