@@ -61,11 +61,6 @@ Resources:
             Principal:
               Service: codebuild.amazonaws.com
         Version: 2012-10-17
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess
-        - arn:aws:iam::aws:policy/AmazonS3FullAccess
-        - arn:aws:iam::aws:policy/AmazonSSMFullAccess
-        - arn:aws:iam::aws:policy/AWSCloudFormationFullAccess
       Policies:
         - PolicyName: FIoTBuildDevPolicy
           PolicyDocument:
@@ -81,14 +76,21 @@ Resources:
                   - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${CodeBuildName}:*"
               - Effect: Allow
                 Action:
-                  - "codecommit:GitPull"
-                Resource:
-                  - "*"
-              - Effect: Allow
-                Action:
                   - "ssm:GetParameters"
                 Resource:
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/CodeBuild/*"
+              - Effect: Allow
+                Action:
+                  - "ecr:DescribeImages"
+                  - "ecr:PutImage"
+                Resource:
+                  - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/*"
+              - Effect: Allow
+                Action:
+                  - "s3:GetObject*"
+                Resource:
+                  - "arn:aws:s3:::{{resolve:ssm:S3BacketLambda:1}}"
+                  - "arn:aws:s3:::{{resolve:ssm:S3BacketCfn:1}}"
 
 # ------------------------------------------------------------------------------
 # Outputs

@@ -153,11 +153,6 @@ Resources:
             Principal:
               Service: codepipeline.amazonaws.com
         Version: 2012-10-17
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess
-        - arn:aws:iam::aws:policy/AmazonS3FullAccess
-        - arn:aws:iam::aws:policy/AmazonSSMFullAccess
-        - arn:aws:iam::aws:policy/AWSCloudFormationFullAccess
       Policies:
         - PolicyName: FIoTBuildDevPolicy
           PolicyDocument:
@@ -171,27 +166,8 @@ Resources:
                   StringEqualsIfExists:
                     iam:PassedToService:
                       - "cloudformation.amazonaws.com"
-                      - "elasticbeanstalk.amazonaws.com"
                       - "ec2.amazonaws.com"
                       - "ecs-tasks.amazonaws.com"
-              - Effect: "Allow"
-                Action:
-                  - "codecommit:CancelUploadArchive"
-                  - "codecommit:GetBranch"
-                  - "codecommit:GetCommit"
-                  - "codecommit:GetRepository"
-                  - "codecommit:GetUploadArchiveStatus"
-                  - "codecommit:UploadArchive"
-                Resource: "*"
-              - Effect: "Allow"
-                Action:
-                  - "codedeploy:CreateDeployment"
-                  - "codedeploy:GetApplication"
-                  - "codedeploy:GetApplicationRevision"
-                  - "codedeploy:GetDeployment"
-                  - "codedeploy:GetDeploymentConfig"
-                  - "codedeploy:RegisterApplicationRevision"
-                Resource: "*"
               - Effect: "Allow"
                 Action:
                   - "codestar-connections:UseConnection"
@@ -217,17 +193,6 @@ Resources:
                 Resource: "*"
               - Effect: "Allow"
                 Action:
-                  - "opsworks:CreateDeployment"
-                  - "opsworks:DescribeApps"
-                  - "opsworks:DescribeCommands"
-                  - "opsworks:DescribeDeployments"
-                  - "opsworks:DescribeInstances"
-                  - "opsworks:DescribeStacks"
-                  - "opsworks:UpdateApp"
-                  - "opsworks:UpdateStack"
-                Resource: "*"
-              - Effect: "Allow"
-                Action:
                   - "cloudformation:CreateStack"
                   - "cloudformation:DeleteStack"
                   - "cloudformation:DescribeStacks"
@@ -248,40 +213,11 @@ Resources:
                 Resource: "*"
               - Effect: "Allow"
                 Action:
-                  - "devicefarm:ListProjects"
-                  - "devicefarm:ListDevicePools"
-                  - "devicefarm:GetRun"
-                  - "devicefarm:GetUpload"
-                  - "devicefarm:CreateUpload"
-                  - "devicefarm:ScheduleRun"
-                Resource: "*"
-              - Effect: "Allow"
-                Action:
-                  - "servicecatalog:ListProvisioningArtifacts"
-                  - "servicecatalog:CreateProvisioningArtifact"
-                  - "servicecatalog:DescribeProvisioningArtifact"
-                  - "servicecatalog:DeleteProvisioningArtifact"
-                  - "servicecatalog:UpdateProduct"
-                Resource: "*"
-              - Effect: "Allow"
-                Action:
                   - "cloudformation:ValidateTemplate"
                 Resource: "*"
               - Effect: "Allow"
                 Action:
                   - "ecr:DescribeImages"
-                Resource: "*"
-              - Effect: "Allow"
-                Action:
-                  - "states:DescribeExecution"
-                  - "states:DescribeStateMachine"
-                  - "states:StartExecution"
-                Resource: "*"
-              - Effect: "Allow"
-                Action:
-                  - "appconfig:StartDeployment"
-                  - "appconfig:StopDeployment"
-                  - "appconfig:GetDeployment"
                 Resource: "*"
   CloudFormationRole:
     Type: AWS::IAM::Role
