@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Pre-build
+# ------------------------------------------------------------------------------
+# Parameters
+# ------------------------------------------------------------------------------
+Parameters:
+  ProjectName:
+    Type: String
+    Default: f-iot
+
+# ------------------------------------------------------------------------------
+# Resources
+# ------------------------------------------------------------------------------
+Resources:
+  # Kms:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: kms.yaml
+  CodeBuildDev:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: code-build.yaml
+      Parameters:
+        CodeBuildName: !Sub "${ProjectName}-build-dev"
+  CodePipelineDev:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: code-pipeline.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        BranchName: develop
+        CodeBuildName: !GetAtt CodeBuildDev.Outputs.CodeBuildName
+        CodePipelineName: !Sub "${ProjectName}-pipeline-dev"
+
+# ------------------------------------------------------------------------------
+# Outputs
+# ------------------------------------------------------------------------------
+Outputs:
+  ProjectName:
+    Value: !Ref ProjectName
