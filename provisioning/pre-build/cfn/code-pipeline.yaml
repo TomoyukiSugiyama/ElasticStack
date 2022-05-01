@@ -151,11 +151,11 @@ Resources:
               Service: codepipeline.amazonaws.com
         Version: 2012-10-17
       Policies:
-        - PolicyName: FIoTBuildDevPolicy
+        - PolicyName: FIoTPipelinePolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
-              - Effect: "Allow"
+              - Effect: Allow
                 Action:
                   - "iam:PassRole"
                 Resource: "*"
@@ -163,55 +163,16 @@ Resources:
                   StringEqualsIfExists:
                     iam:PassedToService:
                       - "cloudformation.amazonaws.com"
-                      - "ec2.amazonaws.com"
-                      - "ecs-tasks.amazonaws.com"
-              - Effect: "Allow"
+              - Effect: Allow
                 Action:
                   - "codestar-connections:UseConnection"
                 Resource: "*"
-              - Effect: "Allow"
+              - Effect: Allow
                 Action:
-                  - "elasticbeanstalk:*"
-                  - "ec2:*"
-                  - "elasticloadbalancing:*"
-                  - "autoscaling:*"
-                  - "cloudwatch:*"
-                  - "s3:*"
-                  - "sns:*"
-                  - "cloudformation:*"
-                  - "rds:*"
-                  - "sqs:*"
-                  - "ecs:*"
-                Resource: "*"
-              - Effect: "Allow"
-                Action:
-                  - "lambda:InvokeFunction"
-                  - "lambda:ListFunctions"
-                Resource: "*"
-              - Effect: "Allow"
-                Action:
-                  - "cloudformation:CreateStack"
-                  - "cloudformation:DeleteStack"
-                  - "cloudformation:DescribeStacks"
-                  - "cloudformation:UpdateStack"
-                  - "cloudformation:CreateChangeSet"
-                  - "cloudformation:DeleteChangeSet"
-                  - "cloudformation:DescribeChangeSet"
-                  - "cloudformation:ExecuteChangeSet"
-                  - "cloudformation:SetStackPolicy"
-                  - "cloudformation:ValidateTemplate"
-                Resource: "*"
-              - Effect: "Allow"
-                Action:
-                  - "codebuild:BatchGetBuilds"
-                  - "codebuild:StartBuild"
-                  - "codebuild:BatchGetBuildBatches"
-                  - "codebuild:StartBuildBatch"
-                Resource: "*"
-              - Effect: "Allow"
-                Action:
-                  - "ecr:DescribeImages"
-                Resource: "*"
+                  - "s3:PutObject"
+                  - "s3:GetObject"
+                Resource:
+                  - "*"
   CloudFormationRole:
     Type: AWS::IAM::Role
     Properties:
