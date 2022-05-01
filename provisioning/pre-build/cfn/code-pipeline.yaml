@@ -120,7 +120,7 @@ Resources:
             Resource:
               - !Sub "arn:aws:s3:::${ArtifactS3Bucket}/AWSLogs/${AWS::AccountId}/*"
             Principal:
-              AWS: "arn:aws:iam::582318560864:root"
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
           - Effect: Allow
             Action:
               - s3:PutObject
@@ -170,7 +170,14 @@ Resources:
               - Effect: Allow
                 Action:
                   - "s3:PutObject"
-                  - "s3:GetObject"
+                  - "s3:PutObjectAcl"
+                  - "s3:GetObject*"
+                Resource:
+                  - !Sub "arn:aws:s3:::${ArtifactS3Bucket}*"
+              - Effect: Allow
+                Action:
+                  - "codebuild:StartBuild"
+                  - "codebuild:BatchGet*"
                 Resource:
                   - "*"
   CloudFormationRole:
