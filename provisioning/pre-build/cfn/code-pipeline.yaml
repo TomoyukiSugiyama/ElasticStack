@@ -88,7 +88,6 @@ Resources:
     UpdateReplacePolicy: Retain
     Properties:
       AccessControl: LogDeliveryWrite
-      BucketName: codepipeline-dr09em4m93c8mi53dl0-artifact
       LifecycleConfiguration:
         Rules:
           - Id: AutoDelete
@@ -195,5 +194,64 @@ Resources:
             Principal:
               Service: cloudformation.amazonaws.com
         Version: 2012-10-17
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AdministratorAccess
+      Policies:
+        - PolicyName: CloudFormationPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "ec2:*"
+                  - "s3:*"
+                  - "elasticloadbalancing:*"
+                  - "elasticloadbalancingv2:*"
+                  - "es:*"
+                  - "ecr:*"
+                  - "ecs:*"
+                  - "servicediscovery:*"
+                  - "route53:*"
+                  - "autoscaling:*"
+                  - "application-autoscaling:*"
+                  - "cloudwatch:*"
+                  - "lambda:*"
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - "ssm:GetParameters"
+                Resource:
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/GuardDutySlackChannelId"
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/GuardDutySlackWorkspaceId"
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3BacketCfn"
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3BacketLambda"
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3PrefixListId"
+              - Effect: Allow
+                Action:
+                  - "sns:*"
+                Resource:
+                  - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*"
+              - Effect: Allow
+                Action:
+                  - "iam:*"
+                Resource:
+                  - !Sub "arn:aws:iam::${AWS::AccountId}:role/*"
+              - Effect: Allow
+                Action:
+                  - "guardduty:*"
+                Resource:
+                  - !Sub "arn:aws:guardduty:${AWS::Region}:${AWS::AccountId}:detector/*"
+              - Effect: Allow
+                Action:
+                  - "chatbot:*"
+                Resource:
+                  - !Sub "arn:aws:chatbot:*:${AWS::AccountId}:*"
+              - Effect: Allow
+                Action:
+                  - "logs:*"
+                Resource:
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+              - Effect: Allow
+                Action:
+                  - "events:*"
+                Resource:
+                  - !Sub "arn:aws:events:${AWS::Region}:*:*"

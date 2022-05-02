@@ -145,7 +145,7 @@ Resources:
             Resource:
               - !Sub "arn:aws:s3:::${NlbLogS3Bucket}/AWSLogs/${AWS::AccountId}/*"
             Principal:
-              AWS: "arn:aws:iam::582318560864:root"
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
           - Effect: Allow
             Action:
               - s3:PutObject
@@ -249,7 +249,7 @@ Resources:
             Resource:
               - !Sub "arn:aws:s3:::${AlbLogS3Bucket}/AWSLogs/${AWS::AccountId}/*"
             Principal:
-              AWS: "arn:aws:iam::582318560864:root"
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
           - Effect: Allow
             Action:
               - s3:PutObject
