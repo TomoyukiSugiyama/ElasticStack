@@ -88,10 +88,7 @@ Resources:
     UpdateReplacePolicy: Retain
     Properties:
       AccessControl: LogDeliveryWrite
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
+      BucketName: codepipeline-dr09em4m93c8mi53dl0-artifact
       LifecycleConfiguration:
         Rules:
           - Id: AutoDelete
@@ -118,19 +115,18 @@ Resources:
             Action:
               - s3:PutObject
             Resource:
-              - !Sub "arn:aws:s3:::${ArtifactS3Bucket}/AWSLogs/${AWS::AccountId}/*"
+              - !Sub "arn:aws:s3:::${ArtifactS3Bucket}/${CodePipelineName}/*"
             Principal:
               AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
           - Effect: Allow
             Action:
-              - s3:PutObject
+              - "s3:PutObject"
+              - "s3:PutObjectAcl"
+              - "s3:GetObject*"
             Resource:
-              - !Sub "arn:aws:s3:::${ArtifactS3Bucket}/AWSLogs/${AWS::AccountId}/*"
+              - !Sub "arn:aws:s3:::${ArtifactS3Bucket}/${CodePipelineName}/*"
             Principal:
               Service: codepipeline.amazonaws.com
-            Condition:
-              StringEquals:
-                s3:x-amz-acl: bucket-owner-full-control
           - Effect: Allow
             Action:
               - s3:GetBucketAcl
@@ -173,11 +169,26 @@ Resources:
                   - "s3:PutObjectAcl"
                   - "s3:GetObject*"
                 Resource:
-                  - !Sub "arn:aws:s3:::${ArtifactS3Bucket}*"
+                  - !Sub "arn:aws:s3:::${ArtifactS3Bucket}/${CodePipelineName}/*"
               - Effect: Allow
                 Action:
+                  - "codebuild:BatchGetBuilds"
                   - "codebuild:StartBuild"
-                  - "codebuild:BatchGet*"
+                  - "codebuild:BatchGetBuildBatches"
+                  - "codebuild:StartBuildBatch"
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - "cloudformation:CreateStack"
+                  - "cloudformation:DescribeStacks"
+                  - "cloudformation:UpdateStack"
+                  - "cloudformation:CreateChangeSet"
+                  - "cloudformation:DescribeChangeSet"
+                  - "cloudformation:ExecuteChangeSet"
+                  - "cloudformation:SetStackPolicy"
+                  - "cloudformation:ValidateTemplate"
+                  - "iam:PassRole"
                 Resource:
                   - "*"
   CloudFormationRole:
