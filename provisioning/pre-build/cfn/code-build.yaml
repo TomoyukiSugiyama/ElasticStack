@@ -111,7 +111,7 @@ Resources:
                   - "s3:PutObject"
                   - "s3:GetObject"
                 Resource:
-                  - "arn:aws:s3:::codepipeline-dr09em4m93c8mi53dl0-artifact/*"
+                  - "arn:aws:s3:::*codepipeline*"
               - Effect: Allow
                 Action:
                   - "cloudformation:ValidateTemplate"
