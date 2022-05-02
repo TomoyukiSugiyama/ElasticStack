@@ -61,11 +61,6 @@ Resources:
             Principal:
               Service: codebuild.amazonaws.com
         Version: 2012-10-17
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess
-        - arn:aws:iam::aws:policy/AmazonS3FullAccess
-        - arn:aws:iam::aws:policy/AmazonSSMFullAccess
-        - arn:aws:iam::aws:policy/AWSCloudFormationFullAccess
       Policies:
         - PolicyName: FIoTBuildDevPolicy
           PolicyDocument:
@@ -81,14 +76,47 @@ Resources:
                   - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${CodeBuildName}:*"
               - Effect: Allow
                 Action:
-                  - "codecommit:GitPull"
+                  - "ssm:GetParameters"
+                Resource:
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3_BUCKET_CFN_NAME"
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3_BUCKET_LAMBDA_NAME"
+              - Effect: Allow
+                Action:
+                  - "ecr:DescribeRepositories"
+                  - "ecr:CompleteLayerUpload"
+                  - "ecr:UploadLayerPart"
+                  - "ecr:InitiateLayerUpload"
+                  - "ecr:BatchCheckLayerAvailability"
+                  - "ecr:PutImage"
+                Resource:
+                  - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/f-iot-rep"
+              - Effect: Allow
+                Action:
+                  - "ecr:GetAuthorizationToken"
                 Resource:
                   - "*"
               - Effect: Allow
                 Action:
-                  - "ssm:GetParameters"
+                  - "s3:PutObject"
                 Resource:
-                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/CodeBuild/*"
+                  - "arn:aws:s3:::{{resolve:ssm:S3BacketLambda:1}}/*"
+              - Effect: Allow
+                Action:
+                  - "s3:PutObject"
+                  - "s3:GetObject"
+                Resource:
+                  - "arn:aws:s3:::{{resolve:ssm:S3BacketCfn:1}}/*"
+              - Effect: Allow
+                Action:
+                  - "s3:PutObject"
+                  - "s3:GetObject"
+                Resource:
+                  - "arn:aws:s3:::codepipeline-dr09em4m93c8mi53dl0-artifact/*"
+              - Effect: Allow
+                Action:
+                  - "cloudformation:ValidateTemplate"
+                Resource:
+                  - "*"
 
 # ------------------------------------------------------------------------------
 # Outputs
