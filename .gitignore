@@ -7,3 +7,5 @@ populate-alb-tg-with-opensearch.zip
 detach-task-to-be-terminated-from-nlb
 !detach-task-to-be-terminated-from-nlb/
 detach-task-to-be-terminated-from-nlb.zip
+
+secrets
