@@ -152,6 +152,14 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
+                  - "iam:PassRole"
+                Resource: "*"
+                Condition:
+                  StringEqualsIfExists:
+                    iam:PassedToService:
+                      - cloudformation.amazonaws.com
+              - Effect: Allow
+                Action:
                   - "codestar-connections:UseConnection"
                 Resource: "*"
               - Effect: Allow
@@ -179,7 +187,6 @@ Resources:
                   - "cloudformation:ExecuteChangeSet"
                   - "cloudformation:SetStackPolicy"
                   - "cloudformation:ValidateTemplate"
-                  - "iam:PassRole"
                 Resource:
                   - "*"
   CloudFormationRole:
@@ -201,19 +208,131 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - "ec2:*"
-                  - "s3:*"
-                  - "elasticloadbalancing:*"
-                  - "elasticloadbalancingv2:*"
-                  - "es:*"
-                  - "ecr:*"
-                  - "ecs:*"
-                  - "servicediscovery:*"
-                  - "route53:*"
-                  - "autoscaling:*"
-                  - "application-autoscaling:*"
-                  - "cloudwatch:*"
-                  - "lambda:*"
+                  - "ec2:CreateInternetGateway"
+                  - "ec2:CreateVpc"
+                  - "ec2:ModifyVpcAttribute"
+                  - "ec2:DescribeNetworkAcls"
+                  - "ec2:DescribeVpcAttribute"
+                  - "ec2:CreateRouteTable"
+                  - "ec2:DescribeAvailabilityZones"
+                  - "ec2:CreateSubnet"
+                  - "ec2:ModifySubnetAttribute"
+                  - "ec2:CreateRoute"
+                  - "ec2:AssociateRouteTable"
+                  - "ec2:DescribeFlowLogs"
+                  - "ec2:CreateFlowLogs"
+                  - "ec2:DescribeRouteTables"
+                  - "ec2:CreateSecurityGroup"
+                  - "ec2:AuthorizeSecurityGroupIngress"
+                  - "ec2:RevokeSecurityGroupEgress"
+                  - "ec2:AuthorizeSecurityGroupEgress"
+                  - "ec2:DescribeNetworkInterfaces"
+                  - "ec2:DescribeAccountAttributes"
+                  - "ec2:DescribeInternetGateways"
+                  - "ec2:DescribeKeyPairs"
+                  - "ec2:CreateVpcEndpoint"
+                  - "ec2:RunInstances"
+                  - "ec2:CreateTags"
+                  - "ec2:DescribeInstances"
+                  - "ec2:DescribeVpcEndpoints"
+                  - "ec2:DescribeSubnets"
+                  - "ec2:DescribeVpcs"
+                  - "ec2:DescribeSecurityGroups"
+                  - "ec2:TerminateInstances"
+                  - "ec2:DeleteVpcEndpoints"
+                  - "ec2:RevokeSecurityGroupIngress"
+                  - "ec2:RevokeSecurityGroupEgress"
+                  - "ec2:DeleteSecurityGroup"
+                  - "ec2:DetachInternetGateway"
+                  - "ec2:DeleteRoute"
+                  - "ec2:DeleteFlowLogs"
+                  - "ec2:DisassociateRouteTable"
+                  - "ec2:DeleteInternetGateway"
+                  - "ec2:DeleteSubnet"
+                  - "ec2:DeleteRouteTable"
+                  - "ec2:DeleteVpc"
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - "s3:CreateBucket"
+                  - "s3:PutBucketLifecycle"
+                  - "s3:PutBucketEncryption"
+                  - "s3:PutBucketVersioning"
+                  - "s3:PutBucketPublicAccessBlock"
+                  - "s3:GetBucketPolicy"
+                  - "s3:PutBucketPolicy"
+                  - "s3:DeleteBucketPolicy"
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - "elasticloadbalancing:CreateLoadBalancer"
+                  - "elasticloadbalancing:DescribeLoadBalancers"
+                  - "elasticloadbalancing:ModifyLoadBalancerAttributes"
+                  - "elasticloadbalancing:CreateTargetGroup"
+                  - "elasticloadbalancing:RegisterTargets"
+                  - "elasticloadbalancing:DescribeTargetGroups"
+                  - "elasticloadbalancing:DescribeTargetHealth"
+                  - "elasticloadbalancing:CreateListener"
+                  - "elasticloadbalancing:DescribeListeners"
+                  - "elasticloadbalancing:AddTags"
+                  - "elasticloadbalancing:DeleteListener"
+                  - "elasticloadbalancing:DeleteTargetGroup"
+                  - "elasticloadbalancing:DeleteLoadBalancer"
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - "es:CreateDomain"
+                  - "es:AddTags"
+                  - "es:ListTags"
+                  - "es:DescribeDomain"
+                  - "es:DeleteDomain"
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - "ecs:CreateCluster"
+                  - "ecs:RegisterTaskDefinition"
+                  - "ecs:CreateService"
+                  - "ecs:UpdateService"
+                  - "ecs:DescribeServices"
+                  - "ecs:DescribeClusters"
+                  - "ecs:DeleteCluster"
+                  - "ecs:DeregisterTaskDefinition"
+                  - "ecs:DeleteService"
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - "servicediscovery:CreatePrivateDnsNamespace"
+                  - "servicediscovery:GetOperation"
+                  - "servicediscovery:GetService"
+                  - "servicediscovery:CreateService"
+                  - "servicediscovery:DeleteService"
+                  - "servicediscovery:DeleteNamespace"
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - "autoscaling:DescribeScalableTargets"
+                  - "autoscaling:RegisterScalableTarget"
+                  - "autoscaling:DescribeScalingPolicies"
+                  - "autoscaling:PutScalingPolicy"
+                  - "autoscaling:DeleteScalingPolicy"
+                  - "autoscaling:DeregisterScalableTarget"
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - "lambda:PutFunctionConcurrency20171031"
+                  - "lambda:CreateFunction20150331"
+                  - "lambda:GetFunction20150331v2"
+                  - "lambda:GetFunctionCodeSigningConfig"
+                  - "lambda:AddPermission20150331v2"
+                  - "lambda:RemovePermission20150331v2"
+                  - "lambda:DeleteFunction20150331"
                 Resource:
                   - "*"
               - Effect: Allow
@@ -227,31 +346,33 @@ Resources:
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3PrefixListId"
               - Effect: Allow
                 Action:
-                  - "sns:*"
+                  - "sns:CreateTopic"
+                  - "sns:GetTopicAttributes"
+                  - "sns:Subscribe"
+                  - "sns:Unsubscribe"
+                  - "sns:DeleteTopic"
                 Resource:
                   - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*"
               - Effect: Allow
                 Action:
-                  - "iam:*"
-                Resource:
-                  - !Sub "arn:aws:iam::${AWS::AccountId}:role/*"
-              - Effect: Allow
-                Action:
-                  - "guardduty:*"
+                  - "guardduty:GetDetector"
+                  - "guardduty:CreateDetector"
+                  - "guardduty:DeleteDetector"
+                  - "guardduty:ListDetectors"
                 Resource:
                   - !Sub "arn:aws:guardduty:${AWS::Region}:${AWS::AccountId}:detector/*"
               - Effect: Allow
                 Action:
-                  - "chatbot:*"
-                Resource:
-                  - !Sub "arn:aws:chatbot:*:${AWS::AccountId}:*"
-              - Effect: Allow
-                Action:
-                  - "logs:*"
+                  - "logs:PutRetentionPolicy"
+                  - "logs:CreateLogGroup"
                 Resource:
                   - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
               - Effect: Allow
                 Action:
-                  - "events:*"
+                  - "events:PutRule"
+                  - "events:PutTargets"
+                  - "events:DescribeRule"
+                  - "events:RemoveTargets"
+                  - "events:DeleteRule"
                 Resource:
                   - !Sub "arn:aws:events:${AWS::Region}:*:*"
