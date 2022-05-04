@@ -7,6 +7,9 @@ Parameters:
   VpcCidrBlock:
     Type: String
     Default: 172.31.0.0/16
+  LogExpirationInDays:
+    Type: String
+    Default: 7
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -124,22 +127,22 @@ Resources:
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
   # SubnetRoutTableAssociation
-  PrivateSubnet1RootTableAssociation:
+  PrivateSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref PrivateSubnet1
       RouteTableId: !Ref PrivateRouteTable
-  PrivateSubnet2RootTableAssociation:
+  PrivateSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref PrivateSubnet2
       RouteTableId: !Ref PrivateRouteTable
-  PrivateSubnet3RootTableAssociation:
+  PrivateSubnet3RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref PrivateSubnet3
       RouteTableId: !Ref PrivateRouteTable
-  PublicSubnet1RootTableAssociation:
+  PublicSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref PublicSubnet1
@@ -174,7 +177,7 @@ Resources:
           - Id: GlacierRule
             Prefix: glacier
             Status: Enabled
-            ExpirationInDays: 7
+            ExpirationInDays: !Ref LogExpirationInDays
             Transitions:
               - TransitionInDays: 1
                 StorageClass: GLACIER

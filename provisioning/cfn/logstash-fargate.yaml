@@ -18,6 +18,9 @@ Parameters:
   ContainerPort:
     Type: Number
     Default: 5044
+  LogExpirationInDays:
+    Type: String
+    Default: 7
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -158,7 +161,7 @@ Resources:
     UpdateReplacePolicy: Retain
     Properties:
       KmsKeyId: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/fargate"
-      RetentionInDays: 7
+      RetentionInDays: !Ref LogExpirationInDays
   ServiceScalingTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     Properties:

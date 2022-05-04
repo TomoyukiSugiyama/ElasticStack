@@ -19,6 +19,18 @@ Parameters:
     Type: String
   SecurityGroupId:
     Type: String
+  PrivateIPv4Address1:
+    Type: String
+    Default: 172.31.0.100
+  PrivateIPv4Address2:
+    Type: String
+    Default: 172.31.16.100
+  PrivateIPv4Address3:
+    Type: String
+    Default: 172.31.32.100
+  LogExpirationInDays:
+    Type: String
+    Default: 7
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -38,11 +50,11 @@ Resources:
       Scheme: internal
       SubnetMappings:
         - SubnetId: !Select [0, !Split [",", !Ref SubnetIds]]
-          PrivateIPv4Address: 172.31.0.100
+          PrivateIPv4Address: !Ref PrivateIPv4Address1
         - SubnetId: !Select [1, !Split [",", !Ref SubnetIds]]
-          PrivateIPv4Address: 172.31.16.100
+          PrivateIPv4Address: !Ref PrivateIPv4Address2
         - SubnetId: !Select [2, !Split [",", !Ref SubnetIds]]
-          PrivateIPv4Address: 172.31.32.100
+          PrivateIPv4Address: !Ref PrivateIPv4Address3
       Type: network
       Tags:
         - Key: f-iot.service.name
@@ -122,7 +134,7 @@ Resources:
           - Id: GlacierRule
             Prefix: glacier
             Status: Enabled
-            ExpirationInDays: 7
+            ExpirationInDays: !Ref LogExpirationInDays
             Transitions:
               - TransitionInDays: 1
                 StorageClass: GLACIER
@@ -227,7 +239,7 @@ Resources:
           - Id: GlacierRule
             Prefix: glacier
             Status: Enabled
-            ExpirationInDays: 7
+            ExpirationInDays: !Ref LogExpirationInDays
             Transitions:
               - TransitionInDays: 1
                 StorageClass: GLACIER
