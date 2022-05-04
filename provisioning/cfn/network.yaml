@@ -152,7 +152,7 @@ Resources:
       ResourceType: VPC
       TrafficType: ALL
       LogDestinationType: s3
-      LogGroupName: !Ref VpcFlowLogS3Bucket
+      LogDestination: !GetAtt VpcFlowLogS3Bucket.Arn
       LogFormat: ${version} ${vpc-id} ${subnet-id} ${instance-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${tcp-flags} ${type} ${pkt-srcaddr} ${pkt-dstaddr}
       MaxAggregationInterval: 60
       DestinationOptions:
