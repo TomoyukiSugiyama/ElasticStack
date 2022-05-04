@@ -119,12 +119,13 @@ Resources:
               SSEAlgorithm: AES256
       LifecycleConfiguration:
         Rules:
-          - Id: AutoDelete
+          - Id: GlacierRule
+            Prefix: glacier
             Status: Enabled
-            ExpirationInDays: 14
-          - Id: NoncurrentVersionExpiration
-            Status: Enabled
-            NoncurrentVersionExpirationInDays: 7
+            ExpirationInDays: 7
+            Transitions:
+              - TransitionInDays: 1
+                StorageClass: GLACIER
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -223,12 +224,13 @@ Resources:
               SSEAlgorithm: AES256
       LifecycleConfiguration:
         Rules:
-          - Id: AutoDelete
+          - Id: GlacierRule
+            Prefix: glacier
             Status: Enabled
-            ExpirationInDays: 14
-          - Id: NoncurrentVersionExpiration
-            Status: Enabled
-            NoncurrentVersionExpirationInDays: 7
+            ExpirationInDays: 7
+            Transitions:
+              - TransitionInDays: 1
+                StorageClass: GLACIER
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
