@@ -148,47 +148,68 @@ Resources:
   VpcFlowLog:
     Type: AWS::EC2::FlowLog
     Properties:
-      DeliverLogsPermissionArn: !GetAtt VpcFlowLogRole.Arn
-      LogDestinationType: cloud-watch-logs
-      LogGroupName: !Ref VpcFlowLogGroup
       ResourceId: !Ref Vpc
       ResourceType: VPC
       TrafficType: ALL
-  VpcFlowLogRole:
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Action:
-              - sts:AssumeRole
-            Condition: {}
-            Effect: Allow
-            Principal:
-              Service: vpc-flow-logs.amazonaws.com
-        Version: 2012-10-17
-      Policies:
-        - PolicyName: VpcFlowLogAccessPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "logs:CreateLogGroup"
-                  - "logs:CreateLogStream"
-                  - "logs:PutLogEvents"
-                  - "logs:DescribeLogGroups"
-                  - "logs:DescribeLogStreams"
-                Resource: !GetAtt VpcFlowLogGroup.Arn
-      Tags:
-        - Key: f-iot.service.name
-          Value: vpc-flow-log-role
-    Type: AWS::IAM::Role
-  VpcFlowLogGroup:
-    Type: AWS::Logs::LogGroup
+      LogDestinationType: s3
+      LogGroupName: !Ref VpcFlowLogS3Bucket
+      LogFormat: ${version} ${vpc-id} ${subnet-id} ${instance-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${tcp-flags} ${type} ${pkt-srcaddr} ${pkt-dstaddr}
+      MaxAggregationInterval: 60
+      DestinationOptions:
+        FileFormat: parquet
+        HiveCompatiblePartitions: true
+        PerHourPartition: true
+  VpcFlowLogS3Bucket:
+    Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      KmsKeyId: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/vpc-flow-log"
-      RetentionInDays: 7
+      AccessControl: LogDeliveryWrite
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LifecycleConfiguration:
+        Rules:
+          - Id: GlacierRule
+            Prefix: glacier
+            Status: Enabled
+            ExpirationInDays: 7
+            Transitions:
+              - TransitionInDays: 1
+                StorageClass: GLACIER
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+  VpcFlowLogS3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref VpcFlowLogS3Bucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+            Resource:
+              - !Sub "arn:aws:s3:::${VpcFlowLogS3Bucket}/AWSLogs/${AWS::AccountId}/*"
+            Principal:
+              Service: delivery.logs.amazonaws.com
+            Condition:
+              StringEquals:
+                s3:x-amz-acl: bucket-owner-full-control
+          - Effect: Allow
+            Action:
+              - s3:GetBucketAcl
+              - s3:ListBucket
+            Resource:
+              - !Sub "arn:aws:s3:::${VpcFlowLogS3Bucket}"
+            Principal:
+              Service: delivery.logs.amazonaws.com
 
 # ------------------------------------------------------------------------------
 # Outputs
