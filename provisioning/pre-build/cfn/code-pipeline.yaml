@@ -217,6 +217,7 @@ Resources:
                   - "servicediscovery:*"
                   - "route53:*"
                   - "autoscaling:*"
+                  - "application-autoscaling:*"
                   - "cloudwatch:*"
                   - "lambda:*"
                 Resource:
