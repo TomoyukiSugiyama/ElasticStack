@@ -1,0 +1,12 @@
+let aws_opensearchservice_domain_resources = Resources.*[ Type == 'AWS::OpenSearchService::Domain' ]
+rule aws_opensearchservice_domain when %aws_opensearchservice_domain_resources !empty {
+  %aws_opensearchservice_domain_resources.Properties.EncryptionAtRestOptions == {"Enabled":true,"KmsKeyId":"arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/aws/es"}
+  %aws_opensearchservice_domain_resources.Properties.EngineVersion == "EngineVersion"
+  %aws_opensearchservice_domain_resources.Properties.ClusterConfig == {"InstanceCount":3,"InstanceType":"InstanceType","DedicatedMasterEnabled":true,"DedicatedMasterType":"InstanceType","DedicatedMasterCount":3,"ZoneAwarenessEnabled":true,"ZoneAwarenessConfig":{"AvailabilityZoneCount":3}}
+  %aws_opensearchservice_domain_resources.Properties.DomainName == "DomainName"
+  %aws_opensearchservice_domain_resources.Properties.AdvancedOptions == {"rest.action.multi.allow_explicit_index":true,"override_main_response_version":true}
+  %aws_opensearchservice_domain_resources.Properties.AccessPolicies == {"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"AWS":"*"},"Action":"es:*","Resource":"arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/${DomainName}/*"}]}
+  %aws_opensearchservice_domain_resources.Properties.VPCOptions == {"SubnetIds":[",","SubnetIds"],"SecurityGroupIds":["SecurityGroupId"]}
+  %aws_opensearchservice_domain_resources.Properties.Tags == [{"Key":"f-iot.opensearch.service","Value":"OpenSearch"}]
+  %aws_opensearchservice_domain_resources.Properties.EBSOptions == {"EBSEnabled":true,"Iops":0,"VolumeSize":10,"VolumeType":"gp2"}
+}

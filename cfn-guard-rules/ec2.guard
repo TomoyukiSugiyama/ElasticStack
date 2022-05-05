@@ -1,0 +1,8 @@
+let aws_ec2_instance_resources = Resources.*[ Type == 'AWS::EC2::Instance' ]
+rule aws_ec2_instance when %aws_ec2_instance_resources !empty {
+  %aws_ec2_instance_resources.Properties.NetworkInterfaces == [{"AssociatePublicIpAddress":true,"DeviceIndex":0,"SubnetId":"SubnetId","GroupSet":["SecurityGroupId"]}]
+  %aws_ec2_instance_resources.Properties.Tags == [{"Key":"f-iot.service.name","Value":"maintenance-server"}]
+  %aws_ec2_instance_resources.Properties.KeyName == "KeyName"
+  %aws_ec2_instance_resources.Properties.InstanceType == "t2.micro"
+  %aws_ec2_instance_resources.Properties.ImageId == "ami-085e9421f80dbe728"
+}

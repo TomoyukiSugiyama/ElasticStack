@@ -1,0 +1,10 @@
+let aws_ec2_vpcendpoint_resources = Resources.*[ Type == 'AWS::EC2::VPCEndpoint' ]
+rule aws_ec2_vpcendpoint when %aws_ec2_vpcendpoint_resources !empty {
+  %aws_ec2_vpcendpoint_resources.Properties.VpcId == "VpcId"
+#  %aws_ec2_vpcendpoint_resources.Properties.PrivateDnsEnabled == true
+#  %aws_ec2_vpcendpoint_resources.Properties.RouteTableIds == ["PrivateRouteTableId"]
+#  %aws_ec2_vpcendpoint_resources.Properties.SubnetIds == [",","SubnetIds"]
+  %aws_ec2_vpcendpoint_resources.Properties.ServiceName IN ["com.amazonaws.${AWS::Region}.s3", "com.amazonaws.${AWS::Region}.ecr.dkr", "com.amazonaws.${AWS::Region}.ecr.api", "com.amazonaws.${AWS::Region}.elasticloadbalancing", "com.amazonaws.${AWS::Region}.logs"]
+#  %aws_ec2_vpcendpoint_resources.Properties.SecurityGroupIds == ["SecurityGroupId"]
+  %aws_ec2_vpcendpoint_resources.Properties.VpcEndpointType IN ["Gateway", "Interface"]
+}
