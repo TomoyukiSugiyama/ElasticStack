@@ -15,7 +15,7 @@ phases:
       - chmod +x $CODEBUILD_SRC_DIR/provisioning/helper-scripts/s3-ops.sh
       - chmod +x $CODEBUILD_SRC_DIR/provisioning/helper-scripts/cfn-stack-ops.sh
 
-  pre-build:
+  pre_build:
     on-failure: ABORT
     commands:
       - echo Run cfn-lint
