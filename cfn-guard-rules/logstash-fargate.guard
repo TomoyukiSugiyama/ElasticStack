@@ -1,0 +1,34 @@
+let aws_iam_role_resources = Resources.*[ Type == 'AWS::IAM::Role' ]
+rule aws_iam_role when %aws_iam_role_resources !empty {
+#  %aws_iam_role_resources.Properties.ManagedPolicyArns == ["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy","arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"]
+#  %aws_iam_role_resources.Properties.Path == "/"
+  %aws_iam_role_resources.Properties.AssumeRolePolicyDocument IN [{"Statement":[{"Action":["sts:AssumeRole"],"Condition":{},"Effect":"Allow","Principal":{"Service":"ecs-tasks.amazonaws.com"}}],"Version":"2012-10-17"}, {"Statement":[{"Effect":"Allow","Principal":{"Service":"application-autoscaling.amazonaws.com"},"Action":"sts:AssumeRole"}]}]
+#  %aws_iam_role_resources.Properties.Tags == [{"Key":"f-iot.service.name","Value":"logstash-task-execution-role"}]
+#  %aws_iam_role_resources.Properties.Policies == [{"PolicyName":"logstash-autoscaling-policy","PolicyDocument":{"Statement":[{"Effect":"Allow","Action":["iam:CreateServiceLinkedRole"],"Resource":"arn:aws:iam::${AWS::AccountId}:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService","Condition":{"StringLike":{"iam:AWSServiceName":"ecs.application-autoscaling.amazonaws.com"}}}]}}]
+}
+let aws_applicationautoscaling_scalabletarget_resources = Resources.*[ Type == 'AWS::ApplicationAutoScaling::ScalableTarget' ]
+rule aws_applicationautoscaling_scalabletarget when %aws_applicationautoscaling_scalabletarget_resources !empty {
+  %aws_applicationautoscaling_scalabletarget_resources.Properties.ScalableDimension == "ecs:service:DesiredCount"
+  %aws_applicationautoscaling_scalabletarget_resources.Properties.MinCapacity == 3
+  %aws_applicationautoscaling_scalabletarget_resources.Properties.RoleARN == "ServiceAutoScalingRole.Arn"
+  %aws_applicationautoscaling_scalabletarget_resources.Properties.MaxCapacity == 6
+  %aws_applicationautoscaling_scalabletarget_resources.Properties.ResourceId == ["/",["service","Cluster","LogstashService.Name"]]
+  %aws_applicationautoscaling_scalabletarget_resources.Properties.ServiceNamespace == "ecs"
+}
+let aws_ecs_taskdefinition_resources = Resources.*[ Type == 'AWS::ECS::TaskDefinition' ]
+rule aws_ecs_taskdefinition when %aws_ecs_taskdefinition_resources !empty {
+  %aws_ecs_taskdefinition_resources.Properties.Memory == "4096"
+  %aws_ecs_taskdefinition_resources.Properties.Cpu == "2048"
+  %aws_ecs_taskdefinition_resources.Properties.ContainerDefinitions == [{"Command":["${AWS::Region}.compute.internal","ecs.local"],"Essential":false,"Image":"${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/f-iot-rep:ecs-searchdomain-sidecar","LogConfiguration":{"LogDriver":"awslogs","Options":{"awslogs-group":"LogGroup","awslogs-region":"AWS::Region","awslogs-stream-prefix":"ecs"}},"Name":"Logstash_ResolvConf_InitContainer"},{"DependsOn":[{"Condition":"SUCCESS","ContainerName":"Logstash_ResolvConf_InitContainer"}],"Essential":true,"Image":"${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/f-iot-rep:logstash","LinuxParameters":{},"LogConfiguration":{"LogDriver":"awslogs","Options":{"awslogs-group":"LogGroup","awslogs-region":"AWS::Region","awslogs-stream-prefix":"ecs"}},"Name":"logstash","StopTimeout":120,"PortMappings":[{"ContainerPort":"ContainerPort"}]}]
+  %aws_ecs_taskdefinition_resources.Properties.ExecutionRoleArn == "LogstashTaskExecutionRole.Arn"
+  %aws_ecs_taskdefinition_resources.Properties.NetworkMode == "awsvpc"
+  %aws_ecs_taskdefinition_resources.Properties.Family == "ecs-logstash"
+  %aws_ecs_taskdefinition_resources.Properties.RequiresCompatibilities == ["FARGATE"]
+}
+let aws_applicationautoscaling_scalingpolicy_resources = Resources.*[ Type == 'AWS::ApplicationAutoScaling::ScalingPolicy' ]
+rule aws_applicationautoscaling_scalingpolicy when %aws_applicationautoscaling_scalingpolicy_resources !empty {
+  %aws_applicationautoscaling_scalingpolicy_resources.Properties.PolicyType == "StepScaling"
+  %aws_applicationautoscaling_scalingpolicy_resources.Properties.StepScalingPolicyConfiguration IN [{"AdjustmentType":"ChangeInCapacity","Cooldown":60,"MetricAggregationType":"Average","StepAdjustments":[{"ScalingAdjustment":1,"MetricIntervalLowerBound":0}]}, {"AdjustmentType":"ChangeInCapacity","Cooldown":60,"MetricAggregationType":"Average","StepAdjustments":[{"ScalingAdjustment":-1,"MetricIntervalUpperBound":0}]}]
+  %aws_applicationautoscaling_scalingpolicy_resources.Properties.ScalingTargetId == "ServiceScalingTarget"
+  %aws_applicationautoscaling_scalingpolicy_resources.Properties.PolicyName IN ["logstash-scalein-policy", "logstash-scaleout-policy"]
+}

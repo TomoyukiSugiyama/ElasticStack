@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: 2010-09-09
 Description: Elb
 # ------------------------------------------------------------------------------
 # Parameters
@@ -19,6 +19,18 @@ Parameters:
     Type: String
   SecurityGroupId:
     Type: String
+  PrivateIPv4Address1:
+    Type: String
+    Default: 172.31.0.100
+  PrivateIPv4Address2:
+    Type: String
+    Default: 172.31.16.100
+  PrivateIPv4Address3:
+    Type: String
+    Default: 172.31.32.100
+  LogExpirationInDays:
+    Type: String
+    Default: 7
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -38,11 +50,11 @@ Resources:
       Scheme: internal
       SubnetMappings:
         - SubnetId: !Select [0, !Split [",", !Ref SubnetIds]]
-          PrivateIPv4Address: 172.31.0.100
+          PrivateIPv4Address: !Ref PrivateIPv4Address1
         - SubnetId: !Select [1, !Split [",", !Ref SubnetIds]]
-          PrivateIPv4Address: 172.31.16.100
+          PrivateIPv4Address: !Ref PrivateIPv4Address2
         - SubnetId: !Select [2, !Split [",", !Ref SubnetIds]]
-          PrivateIPv4Address: 172.31.32.100
+          PrivateIPv4Address: !Ref PrivateIPv4Address3
       Type: network
       Tags:
         - Key: f-iot.service.name
@@ -122,7 +134,7 @@ Resources:
           - Id: GlacierRule
             Prefix: glacier
             Status: Enabled
-            ExpirationInDays: 7
+            ExpirationInDays: !Ref LogExpirationInDays
             Transitions:
               - TransitionInDays: 1
                 StorageClass: GLACIER
@@ -144,14 +156,14 @@ Resources:
             Action:
               - s3:PutObject
             Resource:
-              - !Sub "arn:aws:s3:::${NlbLogS3Bucket}/AWSLogs/${AWS::AccountId}/*"
+              - !Sub arn:aws:s3:::${NlbLogS3Bucket}/AWSLogs/${AWS::AccountId}/*
             Principal:
-              AWS: "arn:aws:iam::582318560864:root"
+              AWS: arn:aws:iam::582318560864:root
           - Effect: Allow
             Action:
               - s3:PutObject
             Resource:
-              - !Sub "arn:aws:s3:::${NlbLogS3Bucket}/AWSLogs/${AWS::AccountId}/*"
+              - !Sub arn:aws:s3:::${NlbLogS3Bucket}/AWSLogs/${AWS::AccountId}/*
             Principal:
               Service: delivery.logs.amazonaws.com
             Condition:
@@ -161,7 +173,7 @@ Resources:
             Action:
               - s3:GetBucketAcl
             Resource:
-              - !Sub "arn:aws:s3:::${NlbLogS3Bucket}"
+              - !Sub arn:aws:s3:::${NlbLogS3Bucket}
             Principal:
               Service: delivery.logs.amazonaws.com
   Alb:
@@ -227,7 +239,7 @@ Resources:
           - Id: GlacierRule
             Prefix: glacier
             Status: Enabled
-            ExpirationInDays: 7
+            ExpirationInDays: !Ref LogExpirationInDays
             Transitions:
               - TransitionInDays: 1
                 StorageClass: GLACIER
@@ -249,14 +261,14 @@ Resources:
             Action:
               - s3:PutObject
             Resource:
-              - !Sub "arn:aws:s3:::${AlbLogS3Bucket}/AWSLogs/${AWS::AccountId}/*"
+              - !Sub arn:aws:s3:::${AlbLogS3Bucket}/AWSLogs/${AWS::AccountId}/*
             Principal:
-              AWS: "arn:aws:iam::582318560864:root"
+              AWS: arn:aws:iam::582318560864:root
           - Effect: Allow
             Action:
               - s3:PutObject
             Resource:
-              - !Sub "arn:aws:s3:::${AlbLogS3Bucket}/AWSLogs/${AWS::AccountId}/*"
+              - !Sub arn:aws:s3:::${AlbLogS3Bucket}/AWSLogs/${AWS::AccountId}/*
             Principal:
               Service: delivery.logs.amazonaws.com
             Condition:
@@ -266,7 +278,7 @@ Resources:
             Action:
               - s3:GetBucketAcl
             Resource:
-              - !Sub "arn:aws:s3:::${AlbLogS3Bucket}"
+              - !Sub arn:aws:s3:::${AlbLogS3Bucket}
             Principal:
               Service: delivery.logs.amazonaws.com
 

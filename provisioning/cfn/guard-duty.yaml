@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: 2010-09-09
 Description: Guard Duty
 # ------------------------------------------------------------------------------
 # Resources
@@ -30,13 +30,13 @@ Resources:
     Properties:
       Protocol: https
       TopicArn: !Ref Topic
-      Endpoint: "https://global.sns-api.chatbot.amazonaws.com"
+      Endpoint: https://global.sns-api.chatbot.amazonaws.com
   ChatBot:
     Type: AWS::Chatbot::SlackChannelConfiguration
     Properties:
       ConfigurationName: GuardDutyNotification
       GuardrailPolicies:
-        - "arn:aws:iam::aws:policy/ReadOnlyAccess"
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
       IamRoleArn: !GetAtt ChatBotRole.Arn
       LoggingLevel: NONE
       SlackChannelId: "{{resolve:ssm:GuardDutySlackChannelId:1}}"

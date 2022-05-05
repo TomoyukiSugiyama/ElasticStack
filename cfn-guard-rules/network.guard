@@ -1,0 +1,64 @@
+let aws_ec2_internetgateway_resources = Resources.*[ Type == 'AWS::EC2::InternetGateway' ]
+rule aws_ec2_internetgateway when %aws_ec2_internetgateway_resources !empty {
+  %aws_ec2_internetgateway_resources.Properties.Tags == [{"Key":"f-iot.service.name","Value":"InternetGateway"}]
+}
+let aws_ec2_route_resources = Resources.*[ Type == 'AWS::EC2::Route' ]
+rule aws_ec2_route when %aws_ec2_route_resources !empty {
+  %aws_ec2_route_resources.Properties.DestinationCidrBlock == "0.0.0.0/0"
+  %aws_ec2_route_resources.Properties.RouteTableId == "PublicRouteTable"
+  %aws_ec2_route_resources.Properties.GatewayId == "InternetGateway"
+}
+let aws_ec2_routetable_resources = Resources.*[ Type == 'AWS::EC2::RouteTable' ]
+rule aws_ec2_routetable when %aws_ec2_routetable_resources !empty {
+  %aws_ec2_routetable_resources.Properties.Tags IN [[{"Key":"f-iot.service.name","Value":"public-route-table"}], [{"Key":"f-iot.service.name","Value":"private-route-table"}]]
+  %aws_ec2_routetable_resources.Properties.VpcId == "Vpc"
+}
+let aws_s3_bucket_resources = Resources.*[ Type == 'AWS::S3::Bucket' ]
+rule aws_s3_bucket when %aws_s3_bucket_resources !empty {
+  %aws_s3_bucket_resources.Properties.BucketEncryption == {"ServerSideEncryptionConfiguration":[{"ServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}
+  %aws_s3_bucket_resources.Properties.PublicAccessBlockConfiguration == {"BlockPublicAcls":true,"BlockPublicPolicy":true,"IgnorePublicAcls":true,"RestrictPublicBuckets":true}
+  %aws_s3_bucket_resources.Properties.AccessControl == "LogDeliveryWrite"
+  %aws_s3_bucket_resources.Properties.LifecycleConfiguration == {"Rules":[{"Id":"GlacierRule","Prefix":"glacier","Status":"Enabled","ExpirationInDays":"LogExpirationInDays","Transitions":[{"TransitionInDays":1,"StorageClass":"GLACIER"}]}]}
+  %aws_s3_bucket_resources.Properties.VersioningConfiguration == {"Status":"Enabled"}
+}
+let aws_ec2_subnetroutetableassociation_resources = Resources.*[ Type == 'AWS::EC2::SubnetRouteTableAssociation' ]
+rule aws_ec2_subnetroutetableassociation when %aws_ec2_subnetroutetableassociation_resources !empty {
+  %aws_ec2_subnetroutetableassociation_resources.Properties.RouteTableId IN ["PublicRouteTable", "PrivateRouteTable"]
+  %aws_ec2_subnetroutetableassociation_resources.Properties.SubnetId IN ["PrivateSubnet3", "PrivateSubnet1", "PrivateSubnet2", "PublicSubnet1"]
+}
+let aws_s3_bucketpolicy_resources = Resources.*[ Type == 'AWS::S3::BucketPolicy' ]
+rule aws_s3_bucketpolicy when %aws_s3_bucketpolicy_resources !empty {
+  %aws_s3_bucketpolicy_resources.Properties.PolicyDocument == {"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":["s3:PutObject"],"Resource":["arn:aws:s3:::${VpcFlowLogS3Bucket}/AWSLogs/${AWS::AccountId}/*"],"Principal":{"Service":"delivery.logs.amazonaws.com"},"Condition":{"StringEquals":{"s3:x-amz-acl":"bucket-owner-full-control"}}},{"Effect":"Allow","Action":["s3:GetBucketAcl","s3:ListBucket"],"Resource":["arn:aws:s3:::${VpcFlowLogS3Bucket}"],"Principal":{"Service":"delivery.logs.amazonaws.com"}}]}
+  %aws_s3_bucketpolicy_resources.Properties.Bucket == "VpcFlowLogS3Bucket"
+}
+let aws_ec2_flowlog_resources = Resources.*[ Type == 'AWS::EC2::FlowLog' ]
+rule aws_ec2_flowlog when %aws_ec2_flowlog_resources !empty {
+  %aws_ec2_flowlog_resources.Properties.LogDestination == "VpcFlowLogS3Bucket.Arn"
+  %aws_ec2_flowlog_resources.Properties.LogFormat == "${version} ${vpc-id} ${subnet-id} ${instance-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${tcp-flags} ${type} ${pkt-srcaddr} ${pkt-dstaddr}"
+  %aws_ec2_flowlog_resources.Properties.ResourceType == "VPC"
+  %aws_ec2_flowlog_resources.Properties.DestinationOptions == {"FileFormat":"parquet","HiveCompatiblePartitions":true,"PerHourPartition":true}
+  %aws_ec2_flowlog_resources.Properties.LogDestinationType == "s3"
+  %aws_ec2_flowlog_resources.Properties.ResourceId == "Vpc"
+  %aws_ec2_flowlog_resources.Properties.MaxAggregationInterval == 60
+  %aws_ec2_flowlog_resources.Properties.TrafficType == "ALL"
+}
+let aws_ec2_vpc_resources = Resources.*[ Type == 'AWS::EC2::VPC' ]
+rule aws_ec2_vpc when %aws_ec2_vpc_resources !empty {
+  %aws_ec2_vpc_resources.Properties.CidrBlock == "VpcCidrBlock"
+  %aws_ec2_vpc_resources.Properties.Tags == [{"Key":"f-iot.service.name","Value":"vpc"}]
+  %aws_ec2_vpc_resources.Properties.EnableDnsSupport == true
+  %aws_ec2_vpc_resources.Properties.EnableDnsHostnames == true
+}
+let aws_ec2_vpcgatewayattachment_resources = Resources.*[ Type == 'AWS::EC2::VPCGatewayAttachment' ]
+rule aws_ec2_vpcgatewayattachment when %aws_ec2_vpcgatewayattachment_resources !empty {
+  %aws_ec2_vpcgatewayattachment_resources.Properties.VpcId == "Vpc"
+  %aws_ec2_vpcgatewayattachment_resources.Properties.InternetGatewayId == "InternetGateway"
+}
+let aws_ec2_subnet_resources = Resources.*[ Type == 'AWS::EC2::Subnet' ]
+rule aws_ec2_subnet when %aws_ec2_subnet_resources !empty {
+  %aws_ec2_subnet_resources.Properties.Tags IN [[{"Key":"f-iot.service.name","Value":"public-subnet-1"}], [{"Key":"f-iot.service.name","Value":"private-subnet-2"}], [{"Key":"f-iot.service.name","Value":"private-subnet-3"}], [{"Key":"f-iot.service.name","Value":"private-subnet-1"}], [{"Key":"f-iot.service.name","Value":"public-subnet-2"}]]
+#  %aws_ec2_subnet_resources.Properties.MapPublicIpOnLaunch == "True"
+  %aws_ec2_subnet_resources.Properties.AvailabilityZone IN [[1,{"Fn::GetAZs":"AWS::Region"}], [0,{"Fn::GetAZs":"AWS::Region"}], [2,{"Fn::GetAZs":"AWS::Region"}]]
+  %aws_ec2_subnet_resources.Properties.VpcId == "Vpc"
+  %aws_ec2_subnet_resources.Properties.CidrBlock IN [[2,{"Fn::Cidr":["Vpc.CidrBlock",6,12]}], [0,{"Fn::Cidr":["Vpc.CidrBlock",6,12]}], [4,{"Fn::Cidr":["Vpc.CidrBlock",6,12]}], [1,{"Fn::Cidr":["Vpc.CidrBlock",6,12]}], [3,{"Fn::Cidr":["Vpc.CidrBlock",6,12]}]]
+}

@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: 2010-09-09
 Description: Code build
 # ------------------------------------------------------------------------------
 # Parameters
@@ -68,53 +68,53 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - "logs:CreateLogGroup"
-                  - "logs:CreateLogStream"
-                  - "logs:PutLogEvents"
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
                 Resource:
-                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${CodeBuildName}"
-                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${CodeBuildName}:*"
+                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${CodeBuildName}
+                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${CodeBuildName}:*
               - Effect: Allow
                 Action:
-                  - "ssm:GetParameters"
+                  - ssm:GetParameters
                 Resource:
-                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3_BUCKET_CFN_NAME"
-                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3_BUCKET_LAMBDA_NAME"
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3_BUCKET_CFN_NAME
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3_BUCKET_LAMBDA_NAME
               - Effect: Allow
                 Action:
-                  - "ecr:DescribeRepositories"
-                  - "ecr:CompleteLayerUpload"
-                  - "ecr:UploadLayerPart"
-                  - "ecr:InitiateLayerUpload"
-                  - "ecr:BatchCheckLayerAvailability"
-                  - "ecr:PutImage"
+                  - ecr:DescribeRepositories
+                  - ecr:CompleteLayerUpload
+                  - ecr:UploadLayerPart
+                  - ecr:InitiateLayerUpload
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:PutImage"
                 Resource:
-                  - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/f-iot-rep"
+                  - !Sub arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/f-iot-rep
               - Effect: Allow
                 Action:
-                  - "ecr:GetAuthorizationToken"
+                  - ecr:GetAuthorizationToken
                 Resource:
                   - "*"
               - Effect: Allow
                 Action:
-                  - "s3:PutObject"
+                  - s3:PutObject
                 Resource:
-                  - "arn:aws:s3:::{{resolve:ssm:S3BacketLambda:1}}/*"
+                  - arn:aws:s3:::{{resolve:ssm:S3BacketLambda:1}}/*
               - Effect: Allow
                 Action:
-                  - "s3:PutObject"
-                  - "s3:GetObject"
+                  - s3:PutObject
+                  - s3:GetObject
                 Resource:
-                  - "arn:aws:s3:::{{resolve:ssm:S3BacketCfn:1}}/*"
+                  - arn:aws:s3:::{{resolve:ssm:S3BacketCfn:1}}/*
               - Effect: Allow
                 Action:
-                  - "s3:PutObject"
-                  - "s3:GetObject"
+                  - s3:PutObject
+                  - s3:GetObject
                 Resource:
-                  - "arn:aws:s3:::*codepipeline*"
+                  - arn:aws:s3:::*codepipeline*
               - Effect: Allow
                 Action:
-                  - "cloudformation:ValidateTemplate"
+                  - cloudformation:ValidateTemplate
                 Resource:
                   - "*"
 

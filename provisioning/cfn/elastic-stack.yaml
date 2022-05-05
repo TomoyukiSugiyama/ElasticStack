@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: 2010-09-09
 Description: Elastic Stack
 # ------------------------------------------------------------------------------
 # Parameters
@@ -7,6 +7,18 @@ Parameters:
   VpcCidrBlock:
     Type: String
     Default: 172.31.0.0/16
+  PrivateIPv4Address1:
+    Type: String
+    Default: 172.31.0.100
+  PrivateIPv4Address2:
+    Type: String
+    Default: 172.31.16.100
+  PrivateIPv4Address3:
+    Type: String
+    Default: 172.31.32.100
+  LogExpirationInDays:
+    Type: String
+    Default: 7
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -18,6 +30,7 @@ Resources:
       TemplateURL: network.yaml
       Parameters:
         VpcCidrBlock: !Ref VpcCidrBlock
+        LogExpirationInDays: !Ref LogExpirationInDays
   SecurityGroup:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -42,6 +55,7 @@ Resources:
       Parameters:
         SubnetIds: !GetAtt Network.Outputs.PrivateSubnetIds
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.OpenSearchSecurityGroupId
+        InstanceType: t3.small.search
   VpcEndpoint:
     Type: AWS::CloudFormation::Stack
     DependsOn: Elb
@@ -62,6 +76,7 @@ Resources:
         DomainEndpoint: !GetAtt Opensearch.Outputs.DomainEndpoint
         AlbId: !GetAtt Elb.Outputs.AlbId
         AlbTargetGroupId: !GetAtt Elb.Outputs.AlbTargetGroupId
+        LogExpirationInDays: !Ref LogExpirationInDays
   LambdaForFargateSpot:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -72,6 +87,7 @@ Resources:
         NlbId: !GetAtt Elb.Outputs.NlbId
         NlbTargetGroupId: !GetAtt Elb.Outputs.NlbTargetGroupId
         ClusterId: !GetAtt LogstashFargate.Outputs.ClusterId
+        LogExpirationInDays: !Ref LogExpirationInDays
   LogstashFargate:
     Type: AWS::CloudFormation::Stack
     DependsOn:
@@ -84,6 +100,7 @@ Resources:
         SubnetIds: !GetAtt Network.Outputs.PrivateSubnetIds
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.FargateSecurityGroupId
         LbTargetGroupId: !GetAtt Elb.Outputs.NlbTargetGroupId
+        LogExpirationInDays: !Ref LogExpirationInDays
   Elb:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -92,6 +109,10 @@ Resources:
         VpcId: !GetAtt Network.Outputs.VpcId
         SubnetIds: !GetAtt Network.Outputs.PrivateSubnetIds
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.AlbSecurityGroupId
+        PrivateIPv4Address1: !Ref PrivateIPv4Address1
+        PrivateIPv4Address2: !Ref PrivateIPv4Address2
+        PrivateIPv4Address3: !Ref PrivateIPv4Address3
+        LogExpirationInDays: !Ref LogExpirationInDays
   GuardDuty:
     Type: AWS::CloudFormation::Stack
     Properties:

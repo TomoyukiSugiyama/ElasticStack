@@ -1,0 +1,25 @@
+let aws_ec2_securitygroupingress_resources = Resources.*[ Type == 'AWS::EC2::SecurityGroupIngress' ]
+rule aws_ec2_securitygroupingress when %aws_ec2_securitygroupingress_resources !empty {
+  %aws_ec2_securitygroupingress_resources.Properties.Description IN ["Allowing access from logstash and alb.", "Allowing access from ec2.", "Allowing access from local pc.", "Allowing access from internal resources of vpc."]
+  %aws_ec2_securitygroupingress_resources.Properties.IpProtocol == "tcp"
+  %aws_ec2_securitygroupingress_resources.Properties.FromPort IN [80, 5044, 443, 22]
+  %aws_ec2_securitygroupingress_resources.Properties.CidrIp IN ["0.0.0.0/0", "VpcCidrBlock"]
+  %aws_ec2_securitygroupingress_resources.Properties.GroupId IN ["AlbSecurityGroup", "SecurityGroup", "OpenSearchSecurityGroup", "VpcEndpointSecurityGroup", "FargateSecurityGroup"]
+  %aws_ec2_securitygroupingress_resources.Properties.ToPort IN [22, 443, 5044, 80]
+}
+let aws_ec2_securitygroupegress_resources = Resources.*[ Type == 'AWS::EC2::SecurityGroupEgress' ]
+rule aws_ec2_securitygroupegress when %aws_ec2_securitygroupegress_resources !empty {
+#  %aws_ec2_securitygroupegress_resources.Properties.DestinationPrefixListId == "{{resolve:ssm:S3PrefixListId:1}}"
+  %aws_ec2_securitygroupegress_resources.Properties.GroupId IN ["VpcEndpointSecurityGroup", "SecurityGroup", "OpenSearchSecurityGroup", "AlbSecurityGroup", "FargateSecurityGroup"]
+#  %aws_ec2_securitygroupegress_resources.Properties.CidrIp == "VpcCidrBlock"
+  %aws_ec2_securitygroupegress_resources.Properties.ToPort IN [80, 443, 5044, 53]
+  %aws_ec2_securitygroupegress_resources.Properties.IpProtocol == "tcp"
+  %aws_ec2_securitygroupegress_resources.Properties.Description IN ["Allowing access to logstash and alb.", "Allowing access to opensearch.", "Allowing access to alb.", "Allowing access to logstash.", "Allowing access to ecr vpc endpoint and opensearch vpc endpoint.", "Allowing access to s3 gateway vpc endpoint.", "Allowing access to internal resources of vpc.", "Allowing access to route53."]
+  %aws_ec2_securitygroupegress_resources.Properties.FromPort IN [5044, 443, 53, 80]
+}
+let aws_ec2_securitygroup_resources = Resources.*[ Type == 'AWS::EC2::SecurityGroup' ]
+rule aws_ec2_securitygroup when %aws_ec2_securitygroup_resources !empty {
+  %aws_ec2_securitygroup_resources.Properties.GroupDescription IN ["Security Group for Fargate", "Security Group for VpcEndpoint", "Security Group for Alb", "Security Group for Opensearch", "Security Group for EC2"]
+  %aws_ec2_securitygroup_resources.Properties.Tags IN [[{"Key":"f-iot.service.name","Value":"security-group-for-vpc-endpoint"}], [{"Key":"f-iot.service.name","Value":"security-group-for-fargate"}], [{"Key":"f-iot.service.name","Value":"security-group-for-ec2"}], [{"Key":"f-iot.service.name","Value":"security-group-for-alb"}], [{"Key":"f-iot.service.name","Value":"security-group-for-open-search"}]]
+  %aws_ec2_securitygroup_resources.Properties.VpcId == "VpcId"
+}

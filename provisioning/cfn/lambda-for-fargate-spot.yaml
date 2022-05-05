@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: 2010-09-09
 Description: Lambda for fargate spot
 # ------------------------------------------------------------------------------
 # Parameters
@@ -14,6 +14,9 @@ Parameters:
     Type: String
   ClusterId:
     Type: String
+  LogExpirationInDays:
+    Type: String
+    Default: 7
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -61,14 +64,14 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - "elasticloadbalancing:DescribeLoadBalancers"
-                  - "elasticloadbalancing:DescribeTargetHealth"
-                  - "elasticloadbalancing:DescribeTargetGroups"
+                  - elasticloadbalancing:DescribeLoadBalancers
+                  - elasticloadbalancing:DescribeTargetHealth
+                  - elasticloadbalancing:DescribeTargetGroups
                 Resource: "*"
               - Effect: Allow
                 Action:
-                  - "elasticloadbalancing:RegisterTargets"
-                  - "elasticloadbalancing:DeregisterTargets"
+                  - elasticloadbalancing:RegisterTargets
+                  - elasticloadbalancing:DeregisterTargets
                 Resource: !Ref NlbTargetGroupId
       Tags:
         - Key: f-iot.service.name
@@ -104,6 +107,6 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      KmsKeyId: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/lambda"
+      KmsKeyId: !Sub arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/lambda
       LogGroupName: !Sub /aws/lambda/${Function}
-      RetentionInDays: 7
+      RetentionInDays: !Ref LogExpirationInDays

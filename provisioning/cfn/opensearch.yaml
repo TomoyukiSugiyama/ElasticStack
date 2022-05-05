@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: 2010-09-09
 Description: OpenSearchServiceDomain resource
 # ------------------------------------------------------------------------------
 # Parameters
@@ -46,15 +46,15 @@ Resources:
         VolumeType: gp2
       EncryptionAtRestOptions:
         Enabled: true
-        KmsKeyId: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/aws/es"
+        KmsKeyId: !Sub arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/aws/es
       AccessPolicies:
         Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
               AWS: "*"
-            Action: "es:*"
-            Resource: !Sub "arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/${DomainName}/*"
+            Action: es:*
+            Resource: !Sub arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/${DomainName}/*
       AdvancedOptions:
         rest.action.multi.allow_explicit_index: true
         override_main_response_version: true

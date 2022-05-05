@@ -1,0 +1,41 @@
+let aws_lambda_permission_resources = Resources.*[ Type == 'AWS::Lambda::Permission' ]
+rule aws_lambda_permission when %aws_lambda_permission_resources !empty {
+  %aws_lambda_permission_resources.Properties.Action == "lambda:InvokeFunction"
+  %aws_lambda_permission_resources.Properties.SourceAccount == "AWS::AccountId"
+  %aws_lambda_permission_resources.Properties.FunctionName == "Function"
+  %aws_lambda_permission_resources.Properties.SourceArn == "EventRule.Arn"
+  %aws_lambda_permission_resources.Properties.Principal == "events.amazonaws.com"
+}
+let aws_logs_loggroup_resources = Resources.*[ Type == 'AWS::Logs::LogGroup' ]
+rule aws_logs_loggroup when %aws_logs_loggroup_resources !empty {
+  %aws_logs_loggroup_resources.Properties.RetentionInDays == "LogExpirationInDays"
+  %aws_logs_loggroup_resources.Properties.KmsKeyId == "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/lambda"
+  %aws_logs_loggroup_resources.Properties.LogGroupName == "/aws/lambda/${Function}"
+}
+let aws_events_rule_resources = Resources.*[ Type == 'AWS::Events::Rule' ]
+rule aws_events_rule when %aws_events_rule_resources !empty {
+  %aws_events_rule_resources.Properties.ScheduleExpression == "cron(* * * * ? *)"
+  %aws_events_rule_resources.Properties.State == "ENABLED"
+  %aws_events_rule_resources.Properties.Targets == [{"Arn":"Function.Arn","Id":"lambda"}]
+  %aws_events_rule_resources.Properties.Name == "populate-alb-tg-with-opensearch-rule"
+  %aws_events_rule_resources.Properties.Description == "pupulate atb target with opensearch"
+}
+let aws_lambda_function_resources = Resources.*[ Type == 'AWS::Lambda::Function' ]
+rule aws_lambda_function when %aws_lambda_function_resources !empty {
+  %aws_lambda_function_resources.Properties.VpcConfig == {"SecurityGroupIds":["SecurityGroupId"],"SubnetIds":[",","SubnetIds"]}
+  %aws_lambda_function_resources.Properties.Code == {"S3Bucket":"{{resolve:ssm:S3BacketLambda:1}}","S3Key":"populate-alb-tg-with-opensearch.zip"}
+  %aws_lambda_function_resources.Properties.TracingConfig == {"Mode":"Active"}
+  %aws_lambda_function_resources.Properties.Environment == {"Variables":{"DomainEndpoint":"DomainEndpoint","AlbId":"AlbId","AlbTargetGroupId":"AlbTargetGroupId"}}
+  %aws_lambda_function_resources.Properties.Runtime == "go1.x"
+  %aws_lambda_function_resources.Properties.ReservedConcurrentExecutions == 1
+  %aws_lambda_function_resources.Properties.Timeout == 5
+  %aws_lambda_function_resources.Properties.Role == "LambdaRole.Arn"
+  %aws_lambda_function_resources.Properties.Handler == "populate-alb-tg-with-opensearch"
+}
+let aws_iam_role_resources = Resources.*[ Type == 'AWS::IAM::Role' ]
+rule aws_iam_role when %aws_iam_role_resources !empty {
+  %aws_iam_role_resources.Properties.ManagedPolicyArns == ["arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole","arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"]
+  %aws_iam_role_resources.Properties.AssumeRolePolicyDocument == {"Statement":[{"Action":["sts:AssumeRole"],"Condition":{},"Effect":"Allow","Principal":{"Service":"lambda.amazonaws.com"}}],"Version":"2012-10-17"}
+  %aws_iam_role_resources.Properties.Tags == [{"Key":"f-iot.service.name","Value":"lambda-role"}]
+  %aws_iam_role_resources.Properties.Policies == [{"PolicyName":"FIoTElasticLoadBalancingAccessPolicy","PolicyDocument":{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":["elasticloadbalancing:DescribeLoadBalancers","elasticloadbalancing:DescribeTargetHealth","elasticloadbalancing:DescribeTargetGroups"],"Resource":"*"},{"Effect":"Allow","Action":["elasticloadbalancing:RegisterTargets","elasticloadbalancing:DeregisterTargets"],"Resource":"AlbTargetGroupId"}]}}]
+}
