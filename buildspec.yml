@@ -10,7 +10,8 @@ phases:
       - export ECR_URI=$(aws ecr describe-repositories --repository-names f-iot-rep --query 'repositories[].repositoryUri' --output text)
       - pip install cfn-lint
       - gem install cfn-nag
-      - brew install cloudformation-guard
+      - curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/aws-cloudformation/cloudformation-guard/main/install-guard.sh | sh
+      - export PATH="~/.guard/bin/:$PATH"
       - chmod +x $CODEBUILD_SRC_DIR/provisioning/lambda/build.sh
       - chmod +x $CODEBUILD_SRC_DIR/provisioning/ecs/deploy-container-image-to-ecr.sh
       - chmod +x $CODEBUILD_SRC_DIR/provisioning/helper-scripts/s3-ops.sh
