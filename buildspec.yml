@@ -10,6 +10,7 @@ phases:
       - export ECR_URI=$(aws ecr describe-repositories --repository-names f-iot-rep --query 'repositories[].repositoryUri' --output text)
       - pip install cfn-lint
       - gem install cfn-nag
+      - brew install cloudformation-guard
       - chmod +x $CODEBUILD_SRC_DIR/provisioning/lambda/build.sh
       - chmod +x $CODEBUILD_SRC_DIR/provisioning/ecs/deploy-container-image-to-ecr.sh
       - chmod +x $CODEBUILD_SRC_DIR/provisioning/helper-scripts/s3-ops.sh
@@ -20,6 +21,8 @@ phases:
     commands:
       - cfn-lint -t $CODEBUILD_SRC_DIR/provisioning/cfn/*
       - cfn_nag_scan --input-path $CODEBUILD_SRC_DIR/provisioning/cfn/
+      - cd $CODEBUILD_SRC_DIR/cfn-guard-rules
+      - ./run-cfn-guard.sh
 
   build:
     on-failure: ABORT
