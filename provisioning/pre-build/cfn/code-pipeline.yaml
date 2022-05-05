@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: 2010-09-09
 Description: Code pipeline
 # ------------------------------------------------------------------------------
 # Parameters
@@ -115,23 +115,23 @@ Resources:
             Action:
               - s3:PutObject
             Resource:
-              - !Sub "arn:aws:s3:::${ArtifactS3Bucket}/${CodePipelineName}/*"
+              - !Sub arn:aws:s3:::${ArtifactS3Bucket}/${CodePipelineName}/*
             Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
           - Effect: Allow
             Action:
-              - "s3:PutObject"
-              - "s3:PutObjectAcl"
-              - "s3:GetObject*"
+              - s3:PutObject
+              - s3:PutObjectAcl
+              - s3:GetObject*
             Resource:
-              - !Sub "arn:aws:s3:::${ArtifactS3Bucket}/${CodePipelineName}/*"
+              - !Sub arn:aws:s3:::${ArtifactS3Bucket}/${CodePipelineName}/*
             Principal:
               Service: codepipeline.amazonaws.com
           - Effect: Allow
             Action:
               - s3:GetBucketAcl
             Resource:
-              - !Sub "arn:aws:s3:::${ArtifactS3Bucket}"
+              - !Sub arn:aws:s3:::${ArtifactS3Bucket}
             Principal:
               Service: codepipeline.amazonaws.com
   CodePipelineRole:
@@ -153,7 +153,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - "iam:PassRole"
+                  - iam:PassRole
                 Resource: "*"
                 Condition:
                   StringEqualsIfExists:
@@ -161,33 +161,33 @@ Resources:
                       - cloudformation.amazonaws.com
               - Effect: Allow
                 Action:
-                  - "codestar-connections:UseConnection"
+                  - codestar-connections:UseConnection
                 Resource: "*"
               - Effect: Allow
                 Action:
-                  - "s3:PutObject"
-                  - "s3:PutObjectAcl"
-                  - "s3:GetObject*"
+                  - s3:PutObject
+                  - s3:PutObjectAcl
+                  - s3:GetObject*
                 Resource:
-                  - !Sub "arn:aws:s3:::${ArtifactS3Bucket}/${CodePipelineName}/*"
+                  - !Sub arn:aws:s3:::${ArtifactS3Bucket}/${CodePipelineName}/*
               - Effect: Allow
                 Action:
-                  - "codebuild:BatchGetBuilds"
-                  - "codebuild:StartBuild"
-                  - "codebuild:BatchGetBuildBatches"
-                  - "codebuild:StartBuildBatch"
+                  - codebuild:BatchGetBuilds
+                  - codebuild:StartBuild
+                  - codebuild:BatchGetBuildBatches
+                  - codebuild:StartBuildBatch
                 Resource:
                   - "*"
               - Effect: Allow
                 Action:
-                  - "cloudformation:CreateStack"
-                  - "cloudformation:DescribeStacks"
-                  - "cloudformation:UpdateStack"
-                  - "cloudformation:CreateChangeSet"
-                  - "cloudformation:DescribeChangeSet"
-                  - "cloudformation:ExecuteChangeSet"
-                  - "cloudformation:SetStackPolicy"
-                  - "cloudformation:ValidateTemplate"
+                  - cloudformation:CreateStack
+                  - cloudformation:DescribeStacks
+                  - cloudformation:UpdateStack
+                  - cloudformation:CreateChangeSet
+                  - cloudformation:DescribeChangeSet
+                  - cloudformation:ExecuteChangeSet
+                  - cloudformation:SetStackPolicy
+                  - cloudformation:ValidateTemplate
                 Resource:
                   - "*"
   CloudFormationRole:
@@ -209,56 +209,56 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - "ec2:*"
-                  - "s3:*"
-                  - "elasticloadbalancing:*"
-                  - "es:*"
-                  - "ecr:*"
-                  - "ecs:*"
-                  - "servicediscovery:*"
-                  - "route53:*"
-                  - "autoscaling:*"
-                  - "application-autoscaling:*"
-                  - "cloudwatch:*"
-                  - "lambda:*"
+                  - ec2:*
+                  - s3:*
+                  - elasticloadbalancing:*
+                  - es:*
+                  - ecr:*
+                  - ecs:*
+                  - servicediscovery:*
+                  - route53:*
+                  - autoscaling:*
+                  - application-autoscaling:*
+                  - cloudwatch:*
+                  - lambda:*
                 Resource:
                   - "*"
               - Effect: Allow
                 Action:
-                  - "ssm:GetParameters"
+                  - ssm:GetParameters
                 Resource:
-                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/GuardDutySlackChannelId"
-                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/GuardDutySlackWorkspaceId"
-                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3BacketCfn"
-                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3BacketLambda"
-                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3PrefixListId"
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/GuardDutySlackChannelId
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/GuardDutySlackWorkspaceId
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3BacketCfn
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3BacketLambda
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3PrefixListId
               - Effect: Allow
                 Action:
                   - "sns:*"
                 Resource:
-                  - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*"
+                  - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*
               - Effect: Allow
                 Action:
-                  - "iam:*"
+                  - iam:*
                 Resource:
-                  - !Sub "arn:aws:iam::${AWS::AccountId}:role/*"
+                  - !Sub arn:aws:iam::${AWS::AccountId}:role/*
               - Effect: Allow
                 Action:
-                  - "guardduty:*"
+                  - guardduty:*
                 Resource:
-                  - !Sub "arn:aws:guardduty:${AWS::Region}:${AWS::AccountId}:detector/*"
+                  - !Sub arn:aws:guardduty:${AWS::Region}:${AWS::AccountId}:detector/*
               - Effect: Allow
                 Action:
-                  - "chatbot:*"
+                  - chatbot:*
                 Resource:
-                  - !Sub "arn:aws:chatbot:*:${AWS::AccountId}:*"
+                  - !Sub arn:aws:chatbot:*:${AWS::AccountId}:*
               - Effect: Allow
                 Action:
-                  - "logs:*"
+                  - logs:*
                 Resource:
-                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*
               - Effect: Allow
                 Action:
-                  - "events:*"
+                  - events:*
                 Resource:
-                  - !Sub "arn:aws:events:${AWS::Region}:*:*"
+                  - !Sub arn:aws:events:${AWS::Region}:*:*

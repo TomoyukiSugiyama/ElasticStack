@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: 2010-09-09
 Description: Network
 # ------------------------------------------------------------------------------
 # Parameters
@@ -199,7 +199,7 @@ Resources:
             Action:
               - s3:PutObject
             Resource:
-              - !Sub "arn:aws:s3:::${VpcFlowLogS3Bucket}/AWSLogs/${AWS::AccountId}/*"
+              - !Sub arn:aws:s3:::${VpcFlowLogS3Bucket}/AWSLogs/${AWS::AccountId}/*
             Principal:
               Service: delivery.logs.amazonaws.com
             Condition:
@@ -210,7 +210,7 @@ Resources:
               - s3:GetBucketAcl
               - s3:ListBucket
             Resource:
-              - !Sub "arn:aws:s3:::${VpcFlowLogS3Bucket}"
+              - !Sub arn:aws:s3:::${VpcFlowLogS3Bucket}
             Principal:
               Service: delivery.logs.amazonaws.com
 

@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: 2010-09-09
 Description: Logstash Fargate
 # ------------------------------------------------------------------------------
 # Parameters
@@ -160,7 +160,7 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      KmsKeyId: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/fargate"
+      KmsKeyId: !Sub arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/fargate
       RetentionInDays: !Ref LogExpirationInDays
   ServiceScalingTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
@@ -175,7 +175,7 @@ Resources:
   ServiceScaleOutPolicy:
     Type: AWS::ApplicationAutoScaling::ScalingPolicy
     Properties:
-      PolicyName: "logstash-scaleout-policy"
+      PolicyName: logstash-scaleout-policy
       PolicyType: StepScaling
       ScalingTargetId: !Ref ServiceScalingTarget
       StepScalingPolicyConfiguration:
@@ -188,7 +188,7 @@ Resources:
   ServiceScaleInPolicy:
     Type: AWS::ApplicationAutoScaling::ScalingPolicy
     Properties:
-      PolicyName: "logstash-scalein-policy"
+      PolicyName: logstash-scalein-policy
       PolicyType: StepScaling
       ScalingTargetId: !Ref ServiceScalingTarget
       StepScalingPolicyConfiguration:
@@ -247,16 +247,16 @@ Resources:
             Action: sts:AssumeRole
       Path: /
       Policies:
-        - PolicyName: "logstash-autoscaling-policy"
+        - PolicyName: logstash-autoscaling-policy
           PolicyDocument:
             Statement:
               - Effect: Allow
                 Action:
                   - iam:CreateServiceLinkedRole
-                Resource: !Sub "arn:aws:iam::${AWS::AccountId}:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService"
+                Resource: !Sub arn:aws:iam::${AWS::AccountId}:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService
                 Condition:
                   StringLike:
-                    iam:AWSServiceName: "ecs.application-autoscaling.amazonaws.com"
+                    iam:AWSServiceName: ecs.application-autoscaling.amazonaws.com
 
 # ------------------------------------------------------------------------------
 # Outputs
