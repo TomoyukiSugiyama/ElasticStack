@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: 2010-09-09
 Description: Elb
 # ------------------------------------------------------------------------------
 # Parameters
@@ -156,14 +156,14 @@ Resources:
             Action:
               - s3:PutObject
             Resource:
-              - !Sub "arn:aws:s3:::${NlbLogS3Bucket}/AWSLogs/${AWS::AccountId}/*"
+              - !Sub arn:aws:s3:::${NlbLogS3Bucket}/AWSLogs/${AWS::AccountId}/*
             Principal:
-              AWS: "arn:aws:iam::582318560864:root"
+              AWS: arn:aws:iam::582318560864:root
           - Effect: Allow
             Action:
               - s3:PutObject
             Resource:
-              - !Sub "arn:aws:s3:::${NlbLogS3Bucket}/AWSLogs/${AWS::AccountId}/*"
+              - !Sub arn:aws:s3:::${NlbLogS3Bucket}/AWSLogs/${AWS::AccountId}/*
             Principal:
               Service: delivery.logs.amazonaws.com
             Condition:
@@ -173,7 +173,7 @@ Resources:
             Action:
               - s3:GetBucketAcl
             Resource:
-              - !Sub "arn:aws:s3:::${NlbLogS3Bucket}"
+              - !Sub arn:aws:s3:::${NlbLogS3Bucket}
             Principal:
               Service: delivery.logs.amazonaws.com
   Alb:
@@ -261,14 +261,14 @@ Resources:
             Action:
               - s3:PutObject
             Resource:
-              - !Sub "arn:aws:s3:::${AlbLogS3Bucket}/AWSLogs/${AWS::AccountId}/*"
+              - !Sub arn:aws:s3:::${AlbLogS3Bucket}/AWSLogs/${AWS::AccountId}/*
             Principal:
-              AWS: "arn:aws:iam::582318560864:root"
+              AWS: arn:aws:iam::582318560864:root
           - Effect: Allow
             Action:
               - s3:PutObject
             Resource:
-              - !Sub "arn:aws:s3:::${AlbLogS3Bucket}/AWSLogs/${AWS::AccountId}/*"
+              - !Sub arn:aws:s3:::${AlbLogS3Bucket}/AWSLogs/${AWS::AccountId}/*
             Principal:
               Service: delivery.logs.amazonaws.com
             Condition:
@@ -278,7 +278,7 @@ Resources:
             Action:
               - s3:GetBucketAcl
             Resource:
-              - !Sub "arn:aws:s3:::${AlbLogS3Bucket}"
+              - !Sub arn:aws:s3:::${AlbLogS3Bucket}
             Principal:
               Service: delivery.logs.amazonaws.com
 

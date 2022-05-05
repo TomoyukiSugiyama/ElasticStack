@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: 2010-09-09
 Description: VPC Endpoint
 # ------------------------------------------------------------------------------
 # Parameters
@@ -20,7 +20,7 @@ Resources:
   EcrDkrEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
-      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ecr.dkr"
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.ecr.dkr
       VpcEndpointType: Interface
       PrivateDnsEnabled: true
       VpcId: !Ref VpcId
@@ -30,7 +30,7 @@ Resources:
   EcrApiEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
-      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ecr.api"
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.ecr.api
       VpcEndpointType: Interface
       PrivateDnsEnabled: true
       VpcId: !Ref VpcId
@@ -40,7 +40,7 @@ Resources:
   S3Endpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
-      ServiceName: !Sub "com.amazonaws.${AWS::Region}.s3"
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.s3
       VpcEndpointType: Gateway
       VpcId: !Ref VpcId
       RouteTableIds:
@@ -48,7 +48,7 @@ Resources:
   LogsEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
-      ServiceName: !Sub "com.amazonaws.${AWS::Region}.logs"
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.logs
       VpcEndpointType: Interface
       PrivateDnsEnabled: true
       VpcId: !Ref VpcId
@@ -58,7 +58,7 @@ Resources:
   ElasticLoadBalancingEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
-      ServiceName: !Sub "com.amazonaws.${AWS::Region}.elasticloadbalancing"
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.elasticloadbalancing
       VpcEndpointType: Interface
       PrivateDnsEnabled: true
       VpcId: !Ref VpcId
