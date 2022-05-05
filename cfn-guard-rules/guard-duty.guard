@@ -1,0 +1,35 @@
+let aws_sns_subscription_resources = Resources.*[ Type == 'AWS::SNS::Subscription' ]
+rule aws_sns_subscription when %aws_sns_subscription_resources !empty {
+  %aws_sns_subscription_resources.Properties.TopicArn == "Topic"
+  %aws_sns_subscription_resources.Properties.Endpoint == "https://global.sns-api.chatbot.amazonaws.com"
+  %aws_sns_subscription_resources.Properties.Protocol == "https"
+}
+let aws_chatbot_slackchannelconfiguration_resources = Resources.*[ Type == 'AWS::Chatbot::SlackChannelConfiguration' ]
+rule aws_chatbot_slackchannelconfiguration when %aws_chatbot_slackchannelconfiguration_resources !empty {
+  %aws_chatbot_slackchannelconfiguration_resources.Properties.SlackWorkspaceId == "{{resolve:ssm:GuardDutySlackWorkspaceId:1}}"
+  %aws_chatbot_slackchannelconfiguration_resources.Properties.SnsTopicArns == ["Topic"]
+  %aws_chatbot_slackchannelconfiguration_resources.Properties.SlackChannelId == "{{resolve:ssm:GuardDutySlackChannelId:1}}"
+  %aws_chatbot_slackchannelconfiguration_resources.Properties.UserRoleRequired == false
+  %aws_chatbot_slackchannelconfiguration_resources.Properties.GuardrailPolicies == ["arn:aws:iam::aws:policy/ReadOnlyAccess"]
+  %aws_chatbot_slackchannelconfiguration_resources.Properties.LoggingLevel == "NONE"
+  %aws_chatbot_slackchannelconfiguration_resources.Properties.ConfigurationName == "GuardDutyNotification"
+  %aws_chatbot_slackchannelconfiguration_resources.Properties.IamRoleArn == "ChatBotRole.Arn"
+}
+let aws_iam_role_resources = Resources.*[ Type == 'AWS::IAM::Role' ]
+rule aws_iam_role when %aws_iam_role_resources !empty {
+  %aws_iam_role_resources.Properties.ManagedPolicyArns == ["arn:aws:iam::aws:policy/ReadOnlyAccess"]
+  %aws_iam_role_resources.Properties.AssumeRolePolicyDocument == {"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"chatbot.amazonaws.com"},"Action":"sts:AssumeRole"}]}
+}
+let aws_guardduty_detector_resources = Resources.*[ Type == 'AWS::GuardDuty::Detector' ]
+rule aws_guardduty_detector when %aws_guardduty_detector_resources !empty {
+  %aws_guardduty_detector_resources.Properties.Enable == "True"
+  %aws_guardduty_detector_resources.Properties.FindingPublishingFrequency == "FIFTEEN_MINUTES"
+}
+let aws_events_rule_resources = Resources.*[ Type == 'AWS::Events::Rule' ]
+rule aws_events_rule when %aws_events_rule_resources !empty {
+  %aws_events_rule_resources.Properties.Targets == [{"Arn":"Topic","Id":"sns-topic"}]
+  %aws_events_rule_resources.Properties.Description == "guardduty notification"
+  %aws_events_rule_resources.Properties.Name == "guardduty-notification"
+  %aws_events_rule_resources.Properties.EventPattern == {"source":["aws.guardduty"],"detail-type":["GuardDuty Finding"]}
+  %aws_events_rule_resources.Properties.State == "ENABLED"
+}

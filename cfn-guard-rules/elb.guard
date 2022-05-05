@@ -1,0 +1,51 @@
+let aws_elasticloadbalancingv2_listener_resources = Resources.*[ Type == 'AWS::ElasticLoadBalancingV2::Listener' ]
+rule aws_elasticloadbalancingv2_listener when %aws_elasticloadbalancingv2_listener_resources !empty {
+  %aws_elasticloadbalancingv2_listener_resources.Properties.LoadBalancerArn IN ["Nlb", "Alb"]
+  %aws_elasticloadbalancingv2_listener_resources.Properties.Port IN [5044, 80]
+  %aws_elasticloadbalancingv2_listener_resources.Properties.Protocol IN ["HTTP", "TCP"]
+  %aws_elasticloadbalancingv2_listener_resources.Properties.DefaultActions IN [[{"Type":"forward","TargetGroupArn":"NlbForAlbTargetGroup"}], [{"Type":"forward","TargetGroupArn":"AlbTargetGroup"}], [{"Type":"forward","TargetGroupArn":"NlbForLogstashTargetGroup"}]]
+}
+let aws_s3_bucket_resources = Resources.*[ Type == 'AWS::S3::Bucket' ]
+rule aws_s3_bucket when %aws_s3_bucket_resources !empty {
+  %aws_s3_bucket_resources.Properties.PublicAccessBlockConfiguration == {"BlockPublicAcls":true,"BlockPublicPolicy":true,"IgnorePublicAcls":true,"RestrictPublicBuckets":true}
+  %aws_s3_bucket_resources.Properties.VersioningConfiguration == {"Status":"Enabled"}
+  %aws_s3_bucket_resources.Properties.BucketEncryption == {"ServerSideEncryptionConfiguration":[{"ServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}
+  %aws_s3_bucket_resources.Properties.LifecycleConfiguration == {"Rules":[{"Id":"GlacierRule","Prefix":"glacier","Status":"Enabled","ExpirationInDays":"LogExpirationInDays","Transitions":[{"TransitionInDays":1,"StorageClass":"GLACIER"}]}]}
+  %aws_s3_bucket_resources.Properties.AccessControl == "LogDeliveryWrite"
+}
+let aws_elasticloadbalancingv2_targetgroup_resources = Resources.*[ Type == 'AWS::ElasticLoadBalancingV2::TargetGroup' ]
+rule aws_elasticloadbalancingv2_targetgroup when %aws_elasticloadbalancingv2_targetgroup_resources !empty {
+  %aws_elasticloadbalancingv2_targetgroup_resources.Properties.HealthyThresholdCount IN [5, 3]
+  %aws_elasticloadbalancingv2_targetgroup_resources.Properties.HealthCheckPort IN [443, 5044, 80]
+  %aws_elasticloadbalancingv2_targetgroup_resources.Properties.HealthCheckTimeoutSeconds IN [6, 5, 10]
+  %aws_elasticloadbalancingv2_targetgroup_resources.Properties.HealthCheckEnabled == true
+  %aws_elasticloadbalancingv2_targetgroup_resources.Properties.VpcId == "VpcId"
+  %aws_elasticloadbalancingv2_targetgroup_resources.Properties.HealthCheckProtocol IN ["TCP", "HTTP", "HTTPS"]
+  %aws_elasticloadbalancingv2_targetgroup_resources.Properties.Tags IN [[{"Key":"f-iot.service.name","Value":"nlb-for-alb-target-group"}], [{"Key":"f-iot.service.name","Value":"nlb-for-logstash-target-group"}], [{"Key":"f-iot.service.name","Value":"alb-target-group"}]]
+  %aws_elasticloadbalancingv2_targetgroup_resources.Properties.Protocol IN ["HTTPS", "TCP"]
+#  %aws_elasticloadbalancingv2_targetgroup_resources.Properties.Targets == [{"Id":"Alb","Port":80}]
+  %aws_elasticloadbalancingv2_targetgroup_resources.Properties.UnhealthyThresholdCount IN [2, 3]
+  %aws_elasticloadbalancingv2_targetgroup_resources.Properties.IpAddressType == "ipv4"
+  %aws_elasticloadbalancingv2_targetgroup_resources.Properties.TargetType IN ["ip", "alb"]
+  %aws_elasticloadbalancingv2_targetgroup_resources.Properties.Port IN [80, 443, 5044]
+#  %aws_elasticloadbalancingv2_targetgroup_resources.Properties.HealthCheckPath == "/"
+  %aws_elasticloadbalancingv2_targetgroup_resources.Properties.Name IN ["NlbForAlbTargetGroupName", "NlbForLogstashTargetGroupName", "AlbTargetGroupName"]
+  %aws_elasticloadbalancingv2_targetgroup_resources.Properties.HealthCheckIntervalSeconds == 30
+#  %aws_elasticloadbalancingv2_targetgroup_resources.Properties.ProtocolVersion == "HTTP1"
+}
+let aws_s3_bucketpolicy_resources = Resources.*[ Type == 'AWS::S3::BucketPolicy' ]
+rule aws_s3_bucketpolicy when %aws_s3_bucketpolicy_resources !empty {
+  %aws_s3_bucketpolicy_resources.Properties.Bucket IN ["NlbLogS3Bucket", "AlbLogS3Bucket"]
+  %aws_s3_bucketpolicy_resources.Properties.PolicyDocument IN [{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":["s3:PutObject"],"Resource":["arn:aws:s3:::${AlbLogS3Bucket}/AWSLogs/${AWS::AccountId}/*"],"Principal":{"AWS":"arn:aws:iam::582318560864:root"}},{"Effect":"Allow","Action":["s3:PutObject"],"Resource":["arn:aws:s3:::${AlbLogS3Bucket}/AWSLogs/${AWS::AccountId}/*"],"Principal":{"Service":"delivery.logs.amazonaws.com"},"Condition":{"StringEquals":{"s3:x-amz-acl":"bucket-owner-full-control"}}},{"Effect":"Allow","Action":["s3:GetBucketAcl"],"Resource":["arn:aws:s3:::${AlbLogS3Bucket}"],"Principal":{"Service":"delivery.logs.amazonaws.com"}}]}, {"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":["s3:PutObject"],"Resource":["arn:aws:s3:::${NlbLogS3Bucket}/AWSLogs/${AWS::AccountId}/*"],"Principal":{"AWS":"arn:aws:iam::582318560864:root"}},{"Effect":"Allow","Action":["s3:PutObject"],"Resource":["arn:aws:s3:::${NlbLogS3Bucket}/AWSLogs/${AWS::AccountId}/*"],"Principal":{"Service":"delivery.logs.amazonaws.com"},"Condition":{"StringEquals":{"s3:x-amz-acl":"bucket-owner-full-control"}}},{"Effect":"Allow","Action":["s3:GetBucketAcl"],"Resource":["arn:aws:s3:::${NlbLogS3Bucket}"],"Principal":{"Service":"delivery.logs.amazonaws.com"}}]}]
+}
+let aws_elasticloadbalancingv2_loadbalancer_resources = Resources.*[ Type == 'AWS::ElasticLoadBalancingV2::LoadBalancer' ]
+rule aws_elasticloadbalancingv2_loadbalancer when %aws_elasticloadbalancingv2_loadbalancer_resources !empty {
+#  %aws_elasticloadbalancingv2_loadbalancer_resources.Properties.Subnets == [",","SubnetIds"]
+  %aws_elasticloadbalancingv2_loadbalancer_resources.Properties.LoadBalancerAttributes IN [[{"Key":"access_logs.s3.enabled","Value":true},{"Key":"access_logs.s3.bucket","Value":"AlbLogS3Bucket"}], [{"Key":"access_logs.s3.enabled","Value":true},{"Key":"access_logs.s3.bucket","Value":"NlbLogS3Bucket"},{"Key":"load_balancing.cross_zone.enabled","Value":true}]]
+  %aws_elasticloadbalancingv2_loadbalancer_resources.Properties.Scheme == "internal"
+#  %aws_elasticloadbalancingv2_loadbalancer_resources.Properties.SubnetMappings == [{"SubnetId":[0,[",","SubnetIds"]],"PrivateIPv4Address":"PrivateIPv4Address1"},{"SubnetId":[1,[",","SubnetIds"]],"PrivateIPv4Address":"PrivateIPv4Address2"},{"SubnetId":[2,[",","SubnetIds"]],"PrivateIPv4Address":"PrivateIPv4Address3"}]
+#  %aws_elasticloadbalancingv2_loadbalancer_resources.Properties.SecurityGroups == ["SecurityGroupId"]
+  %aws_elasticloadbalancingv2_loadbalancer_resources.Properties.IpAddressType == "ipv4"
+  %aws_elasticloadbalancingv2_loadbalancer_resources.Properties.Tags IN [[{"Key":"f-iot.service.name","Value":"nlb"}], [{"Key":"f-iot.service.name","Value":"alb"}]]
+  %aws_elasticloadbalancingv2_loadbalancer_resources.Properties.Type IN ["network", "application"]
+}
