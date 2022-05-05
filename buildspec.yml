@@ -15,6 +15,14 @@ phases:
       - chmod +x $CODEBUILD_SRC_DIR/provisioning/helper-scripts/s3-ops.sh
       - chmod +x $CODEBUILD_SRC_DIR/provisioning/helper-scripts/cfn-stack-ops.sh
 
+  pre-build:
+    on-failure: ABORT
+    commands:
+      - echo Run cfn-lint
+      - cfn-lint -t $CODEBUILD_SRC_DIR/provisioning/cfn/*
+      - echo Run cfn-nag_scan
+      - cfn_nag_scan --input-path $CODEBUILD_SRC_DIR/provisioning/cfn/
+
   build:
     on-failure: ABORT
     commands:
@@ -37,10 +45,6 @@ phases:
       - $CODEBUILD_SRC_DIR/provisioning/helper-scripts/s3-ops.sh push $S3_BUCKET_CFN_NAME artifact.yaml
       - echo Run cfn validation
       - $CODEBUILD_SRC_DIR/provisioning/helper-scripts/cfn-stack-ops.sh validate $S3_BUCKET_CFN_NAME
-      - echo Run cfn-lint
-      - cfn-lint -t $CODEBUILD_SRC_DIR/provisioning/cfn/*
-      - echo Run cfn-nag_scan
-      - cfn_nag_scan --input-path $CODEBUILD_SRC_DIR/provisioning/cfn/
 
 artifacts:
   files:
