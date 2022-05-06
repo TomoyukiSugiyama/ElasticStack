@@ -60,7 +60,7 @@ Resources:
                 Provider: CodeBuild
               Configuration:
                 ProjectName: !Ref CodeBuildName
-                EnvironmentVariables: '[{"name":"S3_BUCKET_CFN_NAME","value":"S3_BUCKET_CFN_NAME","type":"PARAMETER_STORE"},{"name":"S3_BUCKET_LAMBDA_NAME","value":"S3_BUCKET_LAMBDA_NAME","type":"PARAMETER_STORE"}]'
+                EnvironmentVariables: !Sub '[{"name":"S3_BUCKET_CFN_NAME","value":"/${DeployEnv}/s3/cfn/BucketName","type":"PARAMETER_STORE"},{"name":"S3_BUCKET_LAMBDA_NAME","value":"/${DeployEnv}/s3/cfn/BucketName","type":"PARAMETER_STORE"}]'
               OutputArtifacts:
                 - Name: BuildArtifact
               RunOrder: 1
