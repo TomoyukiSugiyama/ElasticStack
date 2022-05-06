@@ -10,7 +10,7 @@ alias cfn-stack-ops="${WORK_DIR}/provisioning/helper-scripts/cfn-stack-ops.sh $1
 
 # KMS
 # Create kms to encrypt/decrypt logs.
-# cfn-stack-ops deploy kms kms.yaml FargateLogKeyAliasName=alias/${DEPLOY_ENV}/fargate LambdaLogKeyAliasName=alias/${DEPLOY_ENV}/lambda
+cfn-stack-ops deploy kms ${SCRIPT_DIR}/cfn/kms.yaml FargateLogKeyAliasName=alias/${DEPLOY_ENV}/fargate LambdaLogKeyAliasName=alias/${DEPLOY_ENV}/lambda
 
 # SSM
 # Create parameters.

@@ -45,7 +45,7 @@ Resources:
               - kms:GenerateDataKey*
               - kms:Describe*
             Resource: "*"
-  FargateKeyAlias:
+  FargateLogKeyAlias:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Type: AWS::KMS::Alias

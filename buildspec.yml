@@ -7,7 +7,7 @@ phases:
       golang: 1.14
       ruby: 2.7
     commands:
-      - export ECR_URI=$(aws ecr describe-repositories --repository-names f-iot-rep --query 'repositories[].repositoryUri' --output text)
+      - export ECR_URI=$(aws ecr describe-repositories --repository-names dev-repogitory --query 'repositories[].repositoryUri' --output text)
       - pip install cfn-lint
       - gem install cfn-nag
       - curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/aws-cloudformation/cloudformation-guard/main/install-guard.sh | sh
