@@ -19,7 +19,6 @@ $ export S3_BUCKET_CFN_NAME="elastic-stack-xxxxxxxxxxxxxxxxx-artifact"
 
 2. Package
 ```bash
-$ mkdir provisioning/artifacts
 $ cfn-stack-ops package provisioning/cfn/elastic-stack.yaml $S3_BUCKET_CFN_NAME provisioning/artifacts/artifact.yaml
 aws cloudformation package --template-file provisioning/cfn/elastic-stack.yaml --s3-bucket elastic-stack-xxxxxxxxxxxxxxxxx-artifact --output-template-file provisioning/artifacts/artifact.yaml
 Uploading to XXXXXXXXXXXXXXXXXXXXXXXXXXXX.template  1669 / 1669.0  (100.00%)

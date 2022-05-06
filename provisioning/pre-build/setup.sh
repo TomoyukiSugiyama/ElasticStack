@@ -21,7 +21,7 @@ ${WORK_DIR}/params/create-params-${DEPLOY_ENV}.sh
 # Get s3 bucket name from ssm.
 S3CfnBucketName=$(aws ssm get-parameter --name /${DEPLOY_ENV}/s3/cfn/BucketName --query "Parameter.Value" --output text)
 S3LambdaBucketName=$(aws ssm get-parameter --name /${DEPLOY_ENV}/s3/lambda/BucketName --query "Parameter.Value" --output text)
-# Create s3 backets
+# Create s3 buckets
 cfn-stack-ops deploy s3 ${SCRIPT_DIR}/cfn/s3.yaml S3CfnBucketName=${S3CfnBucketName} S3LambdaBucketName=${S3LambdaBucketName}
 
 # ECR

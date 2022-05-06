@@ -133,7 +133,7 @@ Resources:
       IpProtocol: tcp
       FromPort: 443
       ToPort: 443
-      DestinationPrefixListId: !Sub "{{resolve:ssm:/${DeployEnv}/S3/PrefixListId:1}}"
+      DestinationPrefixListId: !Sub "{{resolve:ssm:/${DeployEnv}/s3/PrefixListId:1}}"
   FargateSecurityGroupECRoutbound:
     Type: AWS::EC2::SecurityGroupEgress
     Properties:
