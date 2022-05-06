@@ -224,6 +224,7 @@ Resources:
                   - application-autoscaling:*
                   - cloudwatch:*
                   - lambda:*
+                  - logs:*
                 Resource:
                   - "*"
               - Effect: Allow
@@ -255,11 +256,6 @@ Resources:
                   - chatbot:*
                 Resource:
                   - !Sub arn:aws:chatbot:*:${AWS::AccountId}:*
-              - Effect: Allow
-                Action:
-                  - logs:*
-                Resource:
-                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*
               - Effect: Allow
                 Action:
                   - events:*
