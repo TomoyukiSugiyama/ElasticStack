@@ -9,7 +9,7 @@ rule aws_lambda_permission when %aws_lambda_permission_resources !empty {
 let aws_logs_loggroup_resources = Resources.*[ Type == 'AWS::Logs::LogGroup' ]
 rule aws_logs_loggroup when %aws_logs_loggroup_resources !empty {
   %aws_logs_loggroup_resources.Properties.RetentionInDays == "LogExpirationInDays"
-  %aws_logs_loggroup_resources.Properties.KmsKeyId == "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/lambda"
+  %aws_logs_loggroup_resources.Properties.KmsKeyId == "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/${DeployEnv}/lambda"
   %aws_logs_loggroup_resources.Properties.LogGroupName == "/aws/lambda/${Function}"
 }
 let aws_events_rule_resources = Resources.*[ Type == 'AWS::Events::Rule' ]
@@ -23,7 +23,7 @@ rule aws_events_rule when %aws_events_rule_resources !empty {
 let aws_lambda_function_resources = Resources.*[ Type == 'AWS::Lambda::Function' ]
 rule aws_lambda_function when %aws_lambda_function_resources !empty {
   %aws_lambda_function_resources.Properties.VpcConfig == {"SecurityGroupIds":["SecurityGroupId"],"SubnetIds":[",","SubnetIds"]}
-  %aws_lambda_function_resources.Properties.Code == {"S3Bucket":"{{resolve:ssm:S3BacketLambda:1}}","S3Key":"populate-alb-tg-with-opensearch.zip"}
+  %aws_lambda_function_resources.Properties.Code == {"S3Bucket":"{{resolve:ssm:/${DeployEnv}/s3/lambda/BucketName:1}}","S3Key":"populate-alb-tg-with-opensearch.zip"}
   %aws_lambda_function_resources.Properties.TracingConfig == {"Mode":"Active"}
   %aws_lambda_function_resources.Properties.Environment == {"Variables":{"DomainEndpoint":"DomainEndpoint","AlbId":"AlbId","AlbTargetGroupId":"AlbTargetGroupId"}}
   %aws_lambda_function_resources.Properties.Runtime == "go1.x"
