@@ -1,6 +1,14 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Guard Duty
 # ------------------------------------------------------------------------------
+# Parameters
+# ------------------------------------------------------------------------------
+Parameters:
+  DeployEnv:
+    Type: String
+    Default: dev
+
+# ------------------------------------------------------------------------------
 # Resources
 # ------------------------------------------------------------------------------
 Resources:
@@ -39,8 +47,8 @@ Resources:
         - arn:aws:iam::aws:policy/ReadOnlyAccess
       IamRoleArn: !GetAtt ChatBotRole.Arn
       LoggingLevel: NONE
-      SlackChannelId: "{{resolve:ssm:GuardDutySlackChannelId:1}}"
-      SlackWorkspaceId: "{{resolve:ssm:GuardDutySlackWorkspaceId:1}}"
+      SlackChannelId: !Sub "{{resolve:ssm:/${DeployEnv}/slack/guardduty/ChannelId:1}}"
+      SlackWorkspaceId: !Sub "{{resolve:ssm:/${DeployEnv}/slack/WorkspaceId:1}}"
       SnsTopicArns:
         - !Ref Topic
       UserRoleRequired: false

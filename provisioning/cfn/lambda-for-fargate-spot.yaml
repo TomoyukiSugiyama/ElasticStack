@@ -17,6 +17,9 @@ Parameters:
   LogExpirationInDays:
     Type: String
     Default: 7
+  DeployEnv:
+    Type: String
+    Default: dev
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -28,7 +31,7 @@ Resources:
       Handler: detach-task-to-be-terminated-from-nlb
       Role: !GetAtt LambdaRole.Arn
       Code:
-        S3Bucket: "{{resolve:ssm:S3BacketLambda:1}}"
+        S3Bucket: !Sub "{{resolve:ssm:/${DeployEnv}/s3/lambda/BucketName:1}}"
         S3Key: detach-task-to-be-terminated-from-nlb.zip
       Runtime: go1.x
       ReservedConcurrentExecutions: 1
@@ -107,6 +110,6 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      KmsKeyId: !Sub arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/lambda
+      KmsKeyId: !Sub arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/${DeployEnv}/lambda
       LogGroupName: !Sub /aws/lambda/${Function}
       RetentionInDays: !Ref LogExpirationInDays

@@ -7,6 +7,9 @@ Parameters:
   ProjectName:
     Type: String
     Default: f-iot
+  DeployEnv:
+    Type: String
+    Default: dev
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -18,9 +21,7 @@ Resources:
       TemplateURL: code-build.yaml
       Parameters:
         CodeBuildName: !Sub ${ProjectName}-build-dev
-        S3CfnBucketParameterKey: /dev/s3/cfn/BucketName
-        S3LambdaBucketParameterKey: /dev/s3/lambda/BucketName
-        EcrRepogitoryName: dev-repogitory
+        DeployEnv: !Ref DeployEnv
   CodePipelineDev:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -30,6 +31,7 @@ Resources:
         BranchName: develop
         CodeBuildName: !GetAtt CodeBuildDev.Outputs.CodeBuildName
         CodePipelineName: !Sub ${ProjectName}-pipeline-dev
+        DeployEnv: !Ref DeployEnv
 
 # ------------------------------------------------------------------------------
 # Outputs

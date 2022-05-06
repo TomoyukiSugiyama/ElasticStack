@@ -8,18 +8,9 @@ Parameters:
     Description: User-defined code build name
     Type: String
     Default: f-iot-build
-  S3CfnBucketParameterKey:
-    Description: User-defined s3 cfn bucket parameter key
+  DeployEnv:
     Type: String
-    Default: /s3/cfn/BucketName
-  S3LambdaBucketParameterKey:
-    Description: User-defined s3 lambda bucket parameter key
-    Type: String
-    Default: /s3/lambda/BucketName
-  EcrRepogitoryName:
-    Description: User-defined ecr repogitory name
-    Type: String
-    Default: f-iot-repogitory
+    Default: dev
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -41,10 +32,10 @@ Resources:
         EnvironmentVariables:
           - Name: S3_BUCKET_CFN_NAME
             Type: PARAMETER_STORE
-            Value: !Ref S3CfnBucketParameterKey
+            Value: !Sub /${DeployEnv}/s3/cfn/BucketName
           - Name: S3_BUCKET_LAMBDA_NAME
             Type: PARAMETER_STORE
-            Value: !Ref S3LambdaBucketParameterKey
+            Value: !Sub /${DeployEnv}/s3/lambda/BucketName
       Source:
         Location: https://github.com/TomoyukiSugiyama/ElasticStack
         Type: GITHUB
@@ -86,12 +77,12 @@ Resources:
                 Resource:
                   - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${CodeBuildName}
                   - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${CodeBuildName}:*
-              # - Effect: Allow
-              #   Action:
-              #     - ssm:GetParameters
-              #   Resource:
-              #     - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${S3CfnBucketParameterKey}
-              #     - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${S3LambdaBucketParameterKey}
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameters
+                Resource:
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${DeployEnv}/s3/cfn/BucketName
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${DeployEnv}/s3/lambda/BucketName
               - Effect: Allow
                 Action:
                   - ecr:DescribeRepositories
@@ -101,7 +92,7 @@ Resources:
                   - ecr:BatchCheckLayerAvailability
                   - ecr:PutImage
                 Resource:
-                  - !Sub arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${EcrRepogitoryName}
+                  - !Sub arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${DeployEnv}-repogitory
               - Effect: Allow
                 Action:
                   - ecr:GetAuthorizationToken
@@ -111,13 +102,13 @@ Resources:
                 Action:
                   - s3:PutObject
                 Resource:
-                  - !Sub arn:aws:s3:::{{resolve:ssm:${S3CfnBucketParameterKey}:1}}/*
+                  - !Sub arn:aws:s3:::{{resolve:ssm:/${DeployEnv}/s3/lambda/BucketName:1}}/*
               - Effect: Allow
                 Action:
                   - s3:PutObject
                   - s3:GetObject
                 Resource:
-                  - !Sub arn:aws:s3:::{{resolve:ssm:${S3CfnBucketParameterKey}:1}}/*
+                  - !Sub arn:aws:s3:::{{resolve:ssm:/${DeployEnv}/s3/cfn/BucketName:1}}/*
               - Effect: Allow
                 Action:
                   - s3:PutObject
