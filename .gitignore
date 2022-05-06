@@ -1,4 +1,5 @@
-artifacts/
+provisioning/artifacts/*
+!provisioning/artifacts/.gitkeep
 
 populate-alb-tg-with-opensearch
 !populate-alb-tg-with-opensearch/

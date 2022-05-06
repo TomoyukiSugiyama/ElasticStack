@@ -60,7 +60,7 @@ Resources:
                 Provider: CodeBuild
               Configuration:
                 ProjectName: !Ref CodeBuildName
-                EnvironmentVariables: !Sub '[{"name":"S3_BUCKET_CFN_NAME","value":"/${DeployEnv}/s3/cfn/BucketName","type":"PARAMETER_STORE"},{"name":"S3_BUCKET_LAMBDA_NAME","value":"/${DeployEnv}/s3/cfn/BucketName","type":"PARAMETER_STORE"}]'
+                EnvironmentVariables: !Sub '[{"name":"S3_BUCKET_CFN_NAME","value":"/${DeployEnv}/s3/cfn/BucketName","type":"PARAMETER_STORE"},{"name":"S3_BUCKET_LAMBDA_NAME","value":"/${DeployEnv}/s3/lambda/BucketName","type":"PARAMETER_STORE"}]'
               OutputArtifacts:
                 - Name: BuildArtifact
               RunOrder: 1
@@ -234,7 +234,7 @@ Resources:
                   - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${DeployEnv}/slack/WorkspaceId
                   - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${DeployEnv}/s3/cfn/BucketName
                   - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${DeployEnv}/s3/lambda/BucketName
-                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${DeployEnv}/S3/PrefixListId
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${DeployEnv}/s3/PrefixListId
               - Effect: Allow
                 Action:
                   - sns:*
