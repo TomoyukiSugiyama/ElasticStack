@@ -12,10 +12,6 @@ Parameters:
 # Resources
 # ------------------------------------------------------------------------------
 Resources:
-  # Kms:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: kms.yaml
   CodeBuildDev:
     Type: AWS::CloudFormation::Stack
     Properties:
