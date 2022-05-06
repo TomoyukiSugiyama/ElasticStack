@@ -19,25 +19,25 @@ Resources:
           - Sid: Enable IAM User Permissions
             Effect: Allow
             Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
-            Action: "kms:*"
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action: kms:*
             Resource: "*"
           - Effect: Allow
             Principal:
-              Service: !Sub "logs.${AWS::Region}.amazonaws.com"
+              Service: !Sub logs.${AWS::Region}.amazonaws.com
             Action:
-              - "kms:Encrypt*"
-              - "kms:Decrypt*"
-              - "kms:ReEncrypt*"
-              - "kms:GenerateDataKey*"
-              - "kms:Describe*"
+              - kms:Encrypt*
+              - kms:Decrypt*
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+              - kms:Describe*
             Resource: "*"
   FargateKeyAlias:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
-    Type: "AWS::KMS::Alias"
+    Type: AWS::KMS::Alias
     Properties:
-      AliasName: "alias/fargate"
+      AliasName: alias/fargate
       TargetKeyId: !Ref FargateLogKey
   LambdaKey:
     Type: AWS::KMS::Key
@@ -54,23 +54,23 @@ Resources:
           - Sid: Enable IAM User Permissions
             Effect: Allow
             Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
-            Action: "kms:*"
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action: kms:*
             Resource: "*"
           - Effect: Allow
             Principal:
-              Service: !Sub "logs.${AWS::Region}.amazonaws.com"
+              Service: !Sub logs.${AWS::Region}.amazonaws.com
             Action:
-              - "kms:Encrypt*"
-              - "kms:Decrypt*"
-              - "kms:ReEncrypt*"
-              - "kms:GenerateDataKey*"
-              - "kms:Describe*"
+              - kms:Encrypt*
+              - kms:Decrypt*
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+              - kms:Describe*
             Resource: "*"
   LambdaKeyAlias:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
-    Type: "AWS::KMS::Alias"
+    Type: AWS::KMS::Alias
     Properties:
-      AliasName: "alias/lambda"
+      AliasName: alias/lambda
       TargetKeyId: !Ref LambdaKey

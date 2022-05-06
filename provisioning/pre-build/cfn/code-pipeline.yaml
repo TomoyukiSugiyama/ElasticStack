@@ -149,7 +149,7 @@ Resources:
       Policies:
         - PolicyName: FIoTPipelinePolicy
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
@@ -205,7 +205,7 @@ Resources:
       Policies:
         - PolicyName: CloudFormationPolicy
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
@@ -234,7 +234,7 @@ Resources:
                   - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3PrefixListId
               - Effect: Allow
                 Action:
-                  - "sns:*"
+                  - sns:*
                 Resource:
                   - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*
               - Effect: Allow

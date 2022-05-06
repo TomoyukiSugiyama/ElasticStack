@@ -64,7 +64,7 @@ Resources:
       Policies:
         - PolicyName: FIoTBuildDevPolicy
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
@@ -87,7 +87,7 @@ Resources:
                   - ecr:UploadLayerPart
                   - ecr:InitiateLayerUpload
                   - ecr:BatchCheckLayerAvailability
-                  - ecr:PutImage"
+                  - ecr:PutImage
                 Resource:
                   - !Sub arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/f-iot-rep
               - Effect: Allow
