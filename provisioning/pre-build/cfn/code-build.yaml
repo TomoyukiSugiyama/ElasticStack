@@ -8,6 +8,18 @@ Parameters:
     Description: User-defined code build name
     Type: String
     Default: f-iot-build
+  S3CfnBucketParameterKey:
+    Description: User-defined s3 cfn bucket parameter key
+    Type: String
+    Default: /s3/cfn/BucketName
+  S3LambdaBucketParameterKey:
+    Description: User-defined s3 lambda bucket parameter key
+    Type: String
+    Default: /s3/lambda/BucketName
+  EcrRepogitoryName:
+    Description: User-defined s3 lambda bucket parameter key
+    Type: String
+    Default: f-iot-repogitory
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -29,10 +41,10 @@ Resources:
         EnvironmentVariables:
           - Name: S3_BUCKET_CFN_NAME
             Type: PARAMETER_STORE
-            Value: S3_BUCKET_CFN_NAME
+            Value: !Ref S3CfnBucketParameterKey
           - Name: S3_BUCKET_LAMBDA_NAME
             Type: PARAMETER_STORE
-            Value: S3_BUCKET_LAMBDA_NAME
+            Value: !Ref S3LambdaBucketParameterKey
       Source:
         Location: https://github.com/TomoyukiSugiyama/ElasticStack
         Type: GITHUB
@@ -78,8 +90,8 @@ Resources:
                 Action:
                   - ssm:GetParameters
                 Resource:
-                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3_BUCKET_CFN_NAME
-                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3_BUCKET_LAMBDA_NAME
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${S3CfnBucketParameterKey}
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${S3LambdaBucketParameterKey}
               - Effect: Allow
                 Action:
                   - ecr:DescribeRepositories
@@ -89,7 +101,7 @@ Resources:
                   - ecr:BatchCheckLayerAvailability
                   - ecr:PutImage
                 Resource:
-                  - !Sub arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/f-iot-rep
+                  - !Sub arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${EcrRepogitoryName}
               - Effect: Allow
                 Action:
                   - ecr:GetAuthorizationToken

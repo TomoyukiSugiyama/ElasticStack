@@ -7,6 +7,14 @@ Parameters:
   ProjectName:
     Type: String
     Default: f-iot
+  S3CfnBucketParameterKey:
+    Description: User-defined s3 cfn bucket parameter key
+    Type: String
+    Default: /s3/cfn/BucketName
+  S3LambdaBucketParameterKey:
+    Description: User-defined s3 lambda bucket parameter key
+    Type: String
+    Default: /s3/cfn/BucketName
 
 # ------------------------------------------------------------------------------
 # Resources

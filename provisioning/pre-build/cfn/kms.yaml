@@ -1,6 +1,19 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Kms
 # ------------------------------------------------------------------------------
+# Parameters
+# ------------------------------------------------------------------------------
+Parameters:
+  FargateLogKeyAliasName:
+    Description: User-defined s3 cfn bucket name
+    Type: String
+    Default: alias/fargate
+  LambdaLogKeyAliasName:
+    Description: User-defined lambda bucket name
+    Type: String
+    Default: alias/lambda
+
+# ------------------------------------------------------------------------------
 # Resources
 # ------------------------------------------------------------------------------
 Resources:
@@ -37,9 +50,9 @@ Resources:
     UpdateReplacePolicy: Retain
     Type: AWS::KMS::Alias
     Properties:
-      AliasName: alias/fargate
+      AliasName: !Ref FargateLogKeyAliasName
       TargetKeyId: !Ref FargateLogKey
-  LambdaKey:
+  LambdaLogKey:
     Type: AWS::KMS::Key
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
@@ -67,10 +80,10 @@ Resources:
               - kms:GenerateDataKey*
               - kms:Describe*
             Resource: "*"
-  LambdaKeyAlias:
+  LambdaLogKeyAlias:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Type: AWS::KMS::Alias
     Properties:
-      AliasName: alias/lambda
-      TargetKeyId: !Ref LambdaKey
+      AliasName: !Ref LambdaLogKeyAliasName
+      TargetKeyId: !Ref LambdaLogKey

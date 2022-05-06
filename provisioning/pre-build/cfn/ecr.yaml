@@ -1,13 +1,21 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Code pipeline
 # ------------------------------------------------------------------------------
+# Parameters
+# ------------------------------------------------------------------------------
+Parameters:
+  EcrRepogitoryName:
+    Type: String
+    Default: f-iot-repogitory
+
+# ------------------------------------------------------------------------------
 # Resources
 # ------------------------------------------------------------------------------
 Resources:
   ElasticContainerRepository:
     Type: AWS::ECR::Repository
     Properties:
-      RepositoryName: f-iot-repogitory
+      RepositoryName: !Ref EcrRepogitoryName
       RepositoryPolicyText:
         Version: 2012-10-17
         Statement:

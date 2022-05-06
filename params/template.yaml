@@ -1,4 +1,4 @@
-Name: "/sample/name" # [REQUIRED] The fully qualified name of the parameter that you want to add to the system.
+Name: "/env/name" # [REQUIRED] The fully qualified name of the parameter that you want to add to the system.
 # Description: "" # Information about the parameter that you want to add to the system.
 Value: "sample-value" # [REQUIRED] The parameter value that you want to add to the system.
 Type: String # The type of parameter that you want to add to the system. Valid values are: String, StringList, SecureString.
