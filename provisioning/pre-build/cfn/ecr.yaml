@@ -1,0 +1,34 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Code pipeline
+# ------------------------------------------------------------------------------
+# Parameters
+# ------------------------------------------------------------------------------
+Parameters:
+  EcrRepogitoryName:
+    Type: String
+    Default: f-iot-repogitory
+
+# ------------------------------------------------------------------------------
+# Resources
+# ------------------------------------------------------------------------------
+Resources:
+  ElasticContainerRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Ref EcrRepogitoryName
+      RepositoryPolicyText:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowPushPull
+            Effect: Allow
+            Principal:
+              AWS:
+                - !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action:
+              - ecr:GetDownloadUrlForLayer
+              - ecr:BatchGetImage
+              - ecr:BatchCheckLayerAvailability
+              - ecr:PutImage
+              - ecr:InitiateLayerUpload
+              - ecr:UploadLayerPart
+              - ecr:CompleteLayerUpload

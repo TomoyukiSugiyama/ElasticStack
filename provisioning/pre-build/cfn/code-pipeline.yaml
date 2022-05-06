@@ -20,6 +20,9 @@ Parameters:
     Description: User-defined code pipeline name
     Type: String
     Default: ElasticStack-pipeline
+  DeployEnv:
+    Type: String
+    Default: dev
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -39,7 +42,7 @@ Resources:
                 Version: 1
                 Provider: CodeStarSourceConnection
               Configuration:
-                ConnectionArn: "{{resolve:ssm:GithubConnectionArn:1}}"
+                ConnectionArn: !Sub "{{resolve:ssm:/${DeployEnv}/github/ConnectionId:1}}"
                 FullRepositoryId: TomoyukiSugiyama/ElasticStack
                 BranchName: !Ref BranchName
               RunOrder: 1
@@ -149,7 +152,7 @@ Resources:
       Policies:
         - PolicyName: FIoTPipelinePolicy
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
@@ -205,7 +208,7 @@ Resources:
       Policies:
         - PolicyName: CloudFormationPolicy
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
@@ -227,14 +230,14 @@ Resources:
                 Action:
                   - ssm:GetParameters
                 Resource:
-                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/GuardDutySlackChannelId
-                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/GuardDutySlackWorkspaceId
-                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3BacketCfn
-                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3BacketLambda
-                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3PrefixListId
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${DeployEnv}/slack/guardduty/ChannelId
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${DeployEnv}/slack/WorkspaceId
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${DeployEnv}/s3/cfn/BucketName
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${DeployEnv}/s3/lambda/BucketName
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${DeployEnv}/S3/PrefixListId
               - Effect: Allow
                 Action:
-                  - "sns:*"
+                  - sns:*
                 Resource:
                   - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*
               - Effect: Allow

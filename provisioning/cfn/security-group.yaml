@@ -9,6 +9,9 @@ Parameters:
   VpcCidrBlock:
     Type: String
     Default: 172.31.0.0/16
+  DeployEnv:
+    Type: String
+    Default: dev
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -130,7 +133,7 @@ Resources:
       IpProtocol: tcp
       FromPort: 443
       ToPort: 443
-      DestinationPrefixListId: "{{resolve:ssm:S3PrefixListId:1}}"
+      DestinationPrefixListId: !Sub "{{resolve:ssm:/${DeployEnv}/S3/PrefixListId:1}}"
   FargateSecurityGroupECRoutbound:
     Type: AWS::EC2::SecurityGroupEgress
     Properties:

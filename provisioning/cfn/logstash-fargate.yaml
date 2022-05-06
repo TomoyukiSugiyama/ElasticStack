@@ -21,6 +21,9 @@ Parameters:
   LogExpirationInDays:
     Type: String
     Default: 7
+  DeployEnv:
+    Type: String
+    Default: dev
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -106,7 +109,7 @@ Resources:
             - !Sub "${AWS::Region}.compute.internal"
             - ecs.local
           Essential: false
-          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/f-iot-rep:ecs-searchdomain-sidecar"
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${DeployEnv}-repogitory:ecs-searchdomain-sidecar"
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -118,7 +121,7 @@ Resources:
             - Condition: SUCCESS
               ContainerName: Logstash_ResolvConf_InitContainer
           Essential: true
-          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/f-iot-rep:logstash"
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${DeployEnv}-repogitory:logstash"
           LinuxParameters: {}
           LogConfiguration:
             LogDriver: awslogs
@@ -160,7 +163,7 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      KmsKeyId: !Sub arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/fargate
+      KmsKeyId: !Sub arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/${DeployEnv}/fargate
       RetentionInDays: !Ref LogExpirationInDays
   ServiceScalingTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget

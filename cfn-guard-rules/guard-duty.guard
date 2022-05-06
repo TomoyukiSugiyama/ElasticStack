@@ -6,9 +6,9 @@ rule aws_sns_subscription when %aws_sns_subscription_resources !empty {
 }
 let aws_chatbot_slackchannelconfiguration_resources = Resources.*[ Type == 'AWS::Chatbot::SlackChannelConfiguration' ]
 rule aws_chatbot_slackchannelconfiguration when %aws_chatbot_slackchannelconfiguration_resources !empty {
-  %aws_chatbot_slackchannelconfiguration_resources.Properties.SlackWorkspaceId == "{{resolve:ssm:GuardDutySlackWorkspaceId:1}}"
+  %aws_chatbot_slackchannelconfiguration_resources.Properties.SlackWorkspaceId == "{{resolve:ssm:/${DeployEnv}/slack/WorkspaceId:1}}"
   %aws_chatbot_slackchannelconfiguration_resources.Properties.SnsTopicArns == ["Topic"]
-  %aws_chatbot_slackchannelconfiguration_resources.Properties.SlackChannelId == "{{resolve:ssm:GuardDutySlackChannelId:1}}"
+  %aws_chatbot_slackchannelconfiguration_resources.Properties.SlackChannelId == "{{resolve:ssm:/${DeployEnv}/slack/guardduty/ChannelId:1}}"
   %aws_chatbot_slackchannelconfiguration_resources.Properties.UserRoleRequired == false
   %aws_chatbot_slackchannelconfiguration_resources.Properties.GuardrailPolicies == ["arn:aws:iam::aws:policy/ReadOnlyAccess"]
   %aws_chatbot_slackchannelconfiguration_resources.Properties.LoggingLevel == "NONE"

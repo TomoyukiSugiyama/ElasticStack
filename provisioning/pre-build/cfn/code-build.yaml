@@ -8,6 +8,9 @@ Parameters:
     Description: User-defined code build name
     Type: String
     Default: f-iot-build
+  DeployEnv:
+    Type: String
+    Default: dev
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -29,10 +32,10 @@ Resources:
         EnvironmentVariables:
           - Name: S3_BUCKET_CFN_NAME
             Type: PARAMETER_STORE
-            Value: S3_BUCKET_CFN_NAME
+            Value: !Sub /${DeployEnv}/s3/cfn/BucketName
           - Name: S3_BUCKET_LAMBDA_NAME
             Type: PARAMETER_STORE
-            Value: S3_BUCKET_LAMBDA_NAME
+            Value: !Sub /${DeployEnv}/s3/lambda/BucketName
       Source:
         Location: https://github.com/TomoyukiSugiyama/ElasticStack
         Type: GITHUB
@@ -64,7 +67,7 @@ Resources:
       Policies:
         - PolicyName: FIoTBuildDevPolicy
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
@@ -78,8 +81,8 @@ Resources:
                 Action:
                   - ssm:GetParameters
                 Resource:
-                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3_BUCKET_CFN_NAME
-                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/S3_BUCKET_LAMBDA_NAME
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${DeployEnv}/s3/cfn/BucketName
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${DeployEnv}/s3/lambda/BucketName
               - Effect: Allow
                 Action:
                   - ecr:DescribeRepositories
@@ -87,9 +90,9 @@ Resources:
                   - ecr:UploadLayerPart
                   - ecr:InitiateLayerUpload
                   - ecr:BatchCheckLayerAvailability
-                  - ecr:PutImage"
+                  - ecr:PutImage
                 Resource:
-                  - !Sub arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/f-iot-rep
+                  - !Sub arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${DeployEnv}-repogitory
               - Effect: Allow
                 Action:
                   - ecr:GetAuthorizationToken
@@ -99,13 +102,13 @@ Resources:
                 Action:
                   - s3:PutObject
                 Resource:
-                  - arn:aws:s3:::{{resolve:ssm:S3BacketLambda:1}}/*
+                  - !Sub arn:aws:s3:::{{resolve:ssm:/${DeployEnv}/s3/lambda/BucketName:1}}/*
               - Effect: Allow
                 Action:
                   - s3:PutObject
                   - s3:GetObject
                 Resource:
-                  - arn:aws:s3:::{{resolve:ssm:S3BacketCfn:1}}/*
+                  - !Sub arn:aws:s3:::{{resolve:ssm:/${DeployEnv}/s3/cfn/BucketName:1}}/*
               - Effect: Allow
                 Action:
                   - s3:PutObject

@@ -7,21 +7,21 @@ Parameters:
   ProjectName:
     Type: String
     Default: f-iot
+  DeployEnv:
+    Type: String
+    Default: dev
 
 # ------------------------------------------------------------------------------
 # Resources
 # ------------------------------------------------------------------------------
 Resources:
-  # Kms:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: kms.yaml
   CodeBuildDev:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: code-build.yaml
       Parameters:
-        CodeBuildName: !Sub "${ProjectName}-build-dev"
+        CodeBuildName: !Sub ${ProjectName}-build-dev
+        DeployEnv: !Ref DeployEnv
   CodePipelineDev:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -30,7 +30,8 @@ Resources:
         ProjectName: !Ref ProjectName
         BranchName: develop
         CodeBuildName: !GetAtt CodeBuildDev.Outputs.CodeBuildName
-        CodePipelineName: !Sub "${ProjectName}-pipeline-dev"
+        CodePipelineName: !Sub ${ProjectName}-pipeline-dev
+        DeployEnv: !Ref DeployEnv
 
 # ------------------------------------------------------------------------------
 # Outputs

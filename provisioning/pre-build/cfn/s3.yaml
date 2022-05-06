@@ -1,0 +1,128 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: S3
+# ------------------------------------------------------------------------------
+# Parameters
+# ------------------------------------------------------------------------------
+Parameters:
+  S3CfnBucketName:
+    Description: User-defined s3 cfn bucket name
+    Type: String
+    Default: cfn-98h3wjncm67g8hjim-artifact
+  S3LambdaBucketName:
+    Description: User-defined s3 lambda bucket name
+    Type: String
+    Default: lambda-98h3wjncm67g8hjim-artifact
+  LogExpirationInDays:
+    Type: String
+    Default: 7
+
+# ------------------------------------------------------------------------------
+# Resources
+# ------------------------------------------------------------------------------
+Resources:
+  S3CfnBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Ref S3CfnBucketName
+      AccessControl: LogDeliveryWrite
+      LifecycleConfiguration:
+        Rules:
+          - Id: GlacierRule
+            Prefix: glacier
+            Status: Enabled
+            ExpirationInDays: !Ref LogExpirationInDays
+            Transitions:
+              - TransitionInDays: 1
+                StorageClass: GLACIER
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+  S3CfnBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3CfnBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+            Resource:
+              - !Sub arn:aws:s3:::${S3CfnBucket}/*
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+              - s3:PutObjectAcl
+              - s3:GetObject*
+            Resource:
+              - !Sub arn:aws:s3:::${S3CfnBucket}/*
+            Principal:
+              Service: codebuild.amazonaws.com
+          - Effect: Allow
+            Action:
+              - s3:GetBucketAcl
+            Resource:
+              - !Sub arn:aws:s3:::${S3CfnBucket}
+            Principal:
+              Service: codebuild.amazonaws.com
+  S3LambdaBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Ref S3LambdaBucketName
+      AccessControl: LogDeliveryWrite
+      LifecycleConfiguration:
+        Rules:
+          - Id: GlacierRule
+            Prefix: glacier
+            Status: Enabled
+            ExpirationInDays: !Ref LogExpirationInDays
+            Transitions:
+              - TransitionInDays: 1
+                StorageClass: GLACIER
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+  S3LambdaBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3LambdaBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+            Resource:
+              - !Sub arn:aws:s3:::${S3LambdaBucket}/*
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+              - s3:PutObjectAcl
+              - s3:GetObject*
+            Resource:
+              - !Sub arn:aws:s3:::${S3LambdaBucket}/*
+            Principal:
+              Service: codebuild.amazonaws.com
+          - Effect: Allow
+            Action:
+              - s3:GetBucketAcl
+            Resource:
+              - !Sub arn:aws:s3:::${S3LambdaBucket}
+            Principal:
+              Service: codebuild.amazonaws.com

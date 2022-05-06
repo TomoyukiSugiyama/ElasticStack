@@ -1,0 +1,13 @@
+Name: "/env/name" # [REQUIRED] The fully qualified name of the parameter that you want to add to the system.
+# Description: "" # Information about the parameter that you want to add to the system.
+Value: "sample-value" # [REQUIRED] The parameter value that you want to add to the system.
+Type: String # The type of parameter that you want to add to the system. Valid values are: String, StringList, SecureString.
+# KeyId: "alias/aws/ssm" # The Key Management Service (KMS) ID that you want to use to encrypt a parameter.
+# Overwrite: true # Overwrite an existing parameter.
+# AllowedPattern: "" # A regular expression used to validate the parameter value.
+# Tags: # Optional metadata that you assign to a resource.
+#   - Key: "" # [REQUIRED] The name of the tag.
+#     Value: "" # [REQUIRED] The value of the tag.
+Tier: Standard # The parameter tier to assign to a parameter. Valid values are: Standard, Advanced, Intelligent-Tiering.
+# Policies: "" # One or more policies to apply to a parameter.
+# DataType: "" # The data type for a String parameter.

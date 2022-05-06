@@ -19,6 +19,9 @@ Parameters:
   LogExpirationInDays:
     Type: String
     Default: 7
+  DeployEnv:
+    Type: String
+    Default: dev
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -38,6 +41,7 @@ Resources:
       Parameters:
         VpcId: !GetAtt Network.Outputs.VpcId
         VpcCidrBlock: !Ref VpcCidrBlock
+        DeployEnv: !Ref DeployEnv
   SpringBoard:
     Type: AWS::CloudFormation::Stack
     DependsOn: Elb
@@ -77,6 +81,7 @@ Resources:
         AlbId: !GetAtt Elb.Outputs.AlbId
         AlbTargetGroupId: !GetAtt Elb.Outputs.AlbTargetGroupId
         LogExpirationInDays: !Ref LogExpirationInDays
+        DeployEnv: !Ref DeployEnv
   LambdaForFargateSpot:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -88,6 +93,7 @@ Resources:
         NlbTargetGroupId: !GetAtt Elb.Outputs.NlbTargetGroupId
         ClusterId: !GetAtt LogstashFargate.Outputs.ClusterId
         LogExpirationInDays: !Ref LogExpirationInDays
+        DeployEnv: !Ref DeployEnv
   LogstashFargate:
     Type: AWS::CloudFormation::Stack
     DependsOn:
@@ -101,6 +107,7 @@ Resources:
         SecurityGroupId: !GetAtt SecurityGroup.Outputs.FargateSecurityGroupId
         LbTargetGroupId: !GetAtt Elb.Outputs.NlbTargetGroupId
         LogExpirationInDays: !Ref LogExpirationInDays
+        DeployEnv: !Ref DeployEnv
   Elb:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -117,6 +124,8 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: guard-duty.yaml
+      Parameters:
+        DeployEnv: !Ref DeployEnv
 
 # ------------------------------------------------------------------------------
 # Outputs

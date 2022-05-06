@@ -21,7 +21,7 @@ rule aws_lambda_function when %aws_lambda_function_resources !empty {
   %aws_lambda_function_resources.Properties.Timeout == 5
   %aws_lambda_function_resources.Properties.TracingConfig == {"Mode":"Active"}
   %aws_lambda_function_resources.Properties.Environment == {"Variables":{"NlbId":"NlbId","NlbTargetGroupId":"NlbTargetGroupId"}}
-  %aws_lambda_function_resources.Properties.Code == {"S3Bucket":"{{resolve:ssm:S3BacketLambda:1}}","S3Key":"detach-task-to-be-terminated-from-nlb.zip"}
+  %aws_lambda_function_resources.Properties.Code == {"S3Bucket":"{{resolve:ssm:/${DeployEnv}/s3/lambda/BucketName:1}}","S3Key":"detach-task-to-be-terminated-from-nlb.zip"}
   %aws_lambda_function_resources.Properties.VpcConfig == {"SecurityGroupIds":["SecurityGroupId"],"SubnetIds":[",","SubnetIds"]}
   %aws_lambda_function_resources.Properties.Runtime == "go1.x"
   %aws_lambda_function_resources.Properties.ReservedConcurrentExecutions == 1
@@ -36,6 +36,6 @@ rule aws_iam_role when %aws_iam_role_resources !empty {
 let aws_logs_loggroup_resources = Resources.*[ Type == 'AWS::Logs::LogGroup' ]
 rule aws_logs_loggroup when %aws_logs_loggroup_resources !empty {
   %aws_logs_loggroup_resources.Properties.LogGroupName == "/aws/lambda/${Function}"
-  %aws_logs_loggroup_resources.Properties.KmsKeyId == "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/lambda"
+  %aws_logs_loggroup_resources.Properties.KmsKeyId == "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/${DeployEnv}/lambda"
   %aws_logs_loggroup_resources.Properties.RetentionInDays == "LogExpirationInDays"
 }

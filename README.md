@@ -28,7 +28,9 @@ Execute the following command to deploy the packaged template
 aws cloudformation deploy --template-file /path/to/ElasticStack/provisioning/artifacts/artifact.yaml --stack-name <YOUR STACK NAME>
 ```
 
-3. Push cfn to s3 bucket
+3. Deploy cfn
+
+Create stack from local file.
 ```bash
 $ cfn-stack-ops deploy test-stack provisioning/artifacts/artifact.yaml
 aws cloudformation deploy --stack-name test-stack --template-file provisioning/artifacts/artifact.yaml
