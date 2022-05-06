@@ -7,14 +7,6 @@ Parameters:
   ProjectName:
     Type: String
     Default: f-iot
-  S3CfnBucketParameterKey:
-    Description: User-defined s3 cfn bucket parameter key
-    Type: String
-    Default: /s3/cfn/BucketName
-  S3LambdaBucketParameterKey:
-    Description: User-defined s3 lambda bucket parameter key
-    Type: String
-    Default: /s3/cfn/BucketName
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -26,6 +18,9 @@ Resources:
       TemplateURL: code-build.yaml
       Parameters:
         CodeBuildName: !Sub ${ProjectName}-build-dev
+        S3CfnBucketParameterKey: /dev/s3/cfn/BucketName
+        S3LambdaBucketParameterKey: /dev/s3/lambda/BucketName
+        EcrRepogitoryName: dev-repogitory
   CodePipelineDev:
     Type: AWS::CloudFormation::Stack
     Properties:

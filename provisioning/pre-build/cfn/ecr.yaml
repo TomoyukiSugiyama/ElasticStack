@@ -23,7 +23,7 @@ Resources:
             Effect: Allow
             Principal:
               AWS:
-                - !Sub arn:aws:iam::${AWS::AccountId}:user/tomoyuki
+                - !Sub arn:aws:iam::${AWS::AccountId}:root
             Action:
               - ecr:GetDownloadUrlForLayer
               - ecr:BatchGetImage

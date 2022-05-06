@@ -15,7 +15,7 @@ alias cfn-stack-ops="${WORK_DIR}/provisioning/helper-scripts/cfn-stack-ops.sh $1
 # SSM
 # Create parameters.
 # Need to set github connection id and slack workspace/channel ids in secrets/*.yaml, before create parameters.
-${WORK_DIR}/params/create-params-dev.sh
+${WORK_DIR}/params/create-params-${DEPLOY_ENV}.sh
 
 # S3
 # Get s3 bucket name from ssm.
@@ -30,3 +30,5 @@ cfn-stack-ops deploy ecr ${SCRIPT_DIR}/cfn/ecr.yaml EcrRepogitoryName=${DEPLOY_E
 
 # CodeBuild, CodePipeline
 # Create codebuild and codepipeline.
+cfn-stack-ops package ${WORK_DIR}/provisioning/pre-build/cfn/pre-build.yaml ${S3CfnBucketName} ${WORK_DIR}/provisioning/artifacts/pre-build-artifact.yaml
+cfn-stack-ops deploy dev ${WORK_DIR}/provisioning/artifacts/pre-build-artifact.yaml

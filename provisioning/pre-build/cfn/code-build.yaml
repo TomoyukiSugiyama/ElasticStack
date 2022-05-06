@@ -17,7 +17,7 @@ Parameters:
     Type: String
     Default: /s3/lambda/BucketName
   EcrRepogitoryName:
-    Description: User-defined s3 lambda bucket parameter key
+    Description: User-defined ecr repogitory name
     Type: String
     Default: f-iot-repogitory
 
@@ -86,12 +86,12 @@ Resources:
                 Resource:
                   - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${CodeBuildName}
                   - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${CodeBuildName}:*
-              - Effect: Allow
-                Action:
-                  - ssm:GetParameters
-                Resource:
-                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${S3CfnBucketParameterKey}
-                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${S3LambdaBucketParameterKey}
+              # - Effect: Allow
+              #   Action:
+              #     - ssm:GetParameters
+              #   Resource:
+              #     - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${S3CfnBucketParameterKey}
+              #     - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${S3LambdaBucketParameterKey}
               - Effect: Allow
                 Action:
                   - ecr:DescribeRepositories
@@ -111,13 +111,13 @@ Resources:
                 Action:
                   - s3:PutObject
                 Resource:
-                  - arn:aws:s3:::{{resolve:ssm:S3BacketLambda:1}}/*
+                  - !Sub arn:aws:s3:::{{resolve:ssm:${S3CfnBucketParameterKey}:1}}/*
               - Effect: Allow
                 Action:
                   - s3:PutObject
                   - s3:GetObject
                 Resource:
-                  - arn:aws:s3:::{{resolve:ssm:S3BacketCfn:1}}/*
+                  - !Sub arn:aws:s3:::{{resolve:ssm:${S3CfnBucketParameterKey}:1}}/*
               - Effect: Allow
                 Action:
                   - s3:PutObject
