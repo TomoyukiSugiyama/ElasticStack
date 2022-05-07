@@ -24,6 +24,7 @@ Resources:
       ServiceRole: !GetAtt ProjectRole.Arn
       Artifacts:
         Type: NO_ARTIFACTS
+      BadgeEnabled: true
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
@@ -45,9 +46,9 @@ Resources:
           - - Type: EVENT
               Pattern: PULL_REQUEST_CREATED,PULL_REQUEST_UPDATED
             - Type: BASE_REF
-              Pattern: refs/heads/develop
+              Pattern: refs/heads/main
               ExcludeMatchedPattern: false
-      SourceVersion: refs/heads/develop
+      SourceVersion: refs/heads/main
       LogsConfig:
         CloudWatchLogs:
           Status: ENABLED
