@@ -28,7 +28,7 @@ Resources:
       TemplateURL: code-pipeline.yaml
       Parameters:
         ProjectName: !Ref ProjectName
-        BranchName: develop
+        BranchName: main
         CodeBuildName: !GetAtt CodeBuildDev.Outputs.CodeBuildName
         CodePipelineName: !Sub ${ProjectName}-pipeline-dev
         DeployEnv: !Ref DeployEnv

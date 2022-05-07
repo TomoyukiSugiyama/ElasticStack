@@ -11,7 +11,7 @@ Parameters:
   BranchName:
     Description: branch name
     Type: String
-    Default: develop
+    Default: main
   CodeBuildName:
     Description: User-defined code build name
     Type: String
