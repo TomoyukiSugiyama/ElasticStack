@@ -261,3 +261,38 @@ Resources:
                   - events:*
                 Resource:
                   - !Sub arn:aws:events:${AWS::Region}:*:*
+  CodeStarNitifivation:
+    Type: AWS::CodeStarNotifications::NotificationRule
+    Properties:
+      Name: Notification rule for pipeline action succeeded or failed
+      DetailType: FULL
+      Resource: !Sub arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:${DevPipeline}
+      EventTypeIds:
+        - codepipeline-pipeline-action-execution-succeeded
+        - codepipeline-pipeline-action-execution-failed
+      Targets:
+        - TargetType: AWSChatbotSlack
+          TargetAddress: !Ref ChatBot
+  ChatBot:
+    Type: AWS::Chatbot::SlackChannelConfiguration
+    Properties:
+      ConfigurationName: CodePipelineNotification
+      GuardrailPolicies:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
+      IamRoleArn: !GetAtt ChatBotRole.Arn
+      LoggingLevel: NONE
+      SlackChannelId: !Sub "{{resolve:ssm:/${DeployEnv}/slack/codepipeline/ChannelId:1}}"
+      SlackWorkspaceId: !Sub "{{resolve:ssm:/${DeployEnv}/slack/WorkspaceId:1}}"
+      UserRoleRequired: false
+  ChatBotRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: chatbot.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
