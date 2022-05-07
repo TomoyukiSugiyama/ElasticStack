@@ -15,7 +15,7 @@ cfn-stack-ops deploy kms ${SCRIPT_DIR}/cfn/kms.yaml FargateLogKeyAliasName=alias
 # SSM
 # Create parameters.
 # Need to set github connection id and slack workspace/channel ids in secrets/*.yaml, before create parameters.
-${WORK_DIR}/params/create-params-${DEPLOY_ENV}.sh
+${WORK_DIR}/provisioning/params/create-params-${DEPLOY_ENV}.sh
 
 # S3
 # Get s3 bucket name from ssm.
