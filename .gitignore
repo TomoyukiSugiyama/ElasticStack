@@ -9,6 +9,6 @@ detach-task-to-be-terminated-from-nlb
 !detach-task-to-be-terminated-from-nlb/
 detach-task-to-be-terminated-from-nlb.zip
 
-params/*
-!params/create-params-dev.sh
-!params/template.yaml
+provisioning/params/*
+!provisioning/params/create-params-dev.sh
+!provisioning/params/template.yaml
