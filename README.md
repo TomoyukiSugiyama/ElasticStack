@@ -1,6 +1,6 @@
 # ElasticStack
 
-![](https://codebuild.ap-northeast-1.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoickNjQlcrckNSS0xkUGJPUFVkWUdBSlJVcmZwc2NnTWZld2tZVEFLZ2pCR1E3bEdHV1VmS0plYnFKNWJvYmRWeWErSDUrc2hNeERxYTB1RllxOGpvY0E0PSIsIml2UGFyYW1ldGVyU3BlYyI6ImZhU1FGQjNCUkRIbnJST0YiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=main)
+![](https://codebuild.ap-northeast-1.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoidUdhc2czblF6ai8rNGtqVFNkWnBPUERkYjZWc1RKTHVLQzMrb3NURWEwYXU5YXF4UmNneDIzZjVWMkY2UitmVEtxNmhESDBhTERtUmE0MzhET21JMitRPSIsIml2UGFyYW1ldGVyU3BlYyI6IkE2NnNZK1R2bzdIcnJKT2oiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=main)
 
 ## Environment setup
 1. Create parameter files to suit your environment.

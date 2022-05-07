@@ -24,6 +24,7 @@ Resources:
       ServiceRole: !GetAtt ProjectRole.Arn
       Artifacts:
         Type: NO_ARTIFACTS
+      BadgeEnabled: true
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
