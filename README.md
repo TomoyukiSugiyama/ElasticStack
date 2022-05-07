@@ -14,18 +14,18 @@ You need to create following parameters.
 | Name                              | Value                                                                                                                                                                                                                                                                        |
 | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | /dev/github/ConnectionId          | codestar-connections arn to build code from github repogitory. ( Need to connect GitHub with CodeBuild at developper tools console. After that you can get arn from developper tools console. ex. arn:aws:codestar-connections:region:account-id:connection/XXXXXXXXXXXXXX ) |
-| /dev/s3/cfn/BucketName            | s3 bucket name for cloudformation files ( This value is used to create s3 bucket for cfn.　Need to check tha rule of s3 bucket name. ex. dev-cloudformation-XXXXXXXXXXXXXXXXXXXX-artifact )                                                                                  |
-| /dev/s3/lambda/BucketName         | s3 bucket name for lambda function .zip files ( This value is used to create s3 bucket for cfn.　Need to check tha rule of s3 bucket name. ex. dev-lambda-XXXXXXXXXXXXXXXXXXXX-artifact )                                                                                    |
-| /dev/s3/PrefixListId              | managed prefix list id for s3 gateway endpoint ( Get id from vpc console. ex. pl-12a34567 )                                                                                                                                                                                  |
-| /dev/slack/codepipeline/ChannelId | slack channel id to notificate result of codepipeline action ( Get id from slack channel. Right click the channel and copy link. ex. A1B2C3D45EF )                                                                                                                           |
-| /dev/slack/guardduty/ChannelId    | slack channel id to notificate result from guardduty ( Get id from slack channel. Right click the channel and copy link. ex. A1B2C3D45EF )                                                                                                                                   |
-| /dev/slack/WorkspaceId            | slack workspace id to notificate ( Need to connect slack with chat bot at chat bot console. After that you can get id from console. ex. A1B2C3D45EF )                                                                                                                        |
+| /dev/s3/cfn/BucketName            | s3 bucket name for cloudformation files. ( This value is used to create s3 bucket for cfn. Need to check tha rule of s3 bucket name. ex. dev-cloudformation-XXXXXXXXXXXXXXXXXXXX-artifact )                                                                                  |
+| /dev/s3/lambda/BucketName         | s3 bucket name for lambda function .zip files. ( This value is used to create s3 bucket for cfn. Need to check tha rule of s3 bucket name. ex. dev-lambda-XXXXXXXXXXXXXXXXXXXX-artifact )                                                                                    |
+| /dev/s3/PrefixListId              | managed prefix list id for s3 gateway endpoint. ( Get id from vpc console. ex. pl-12a34567 )                                                                                                                                                                                 |
+| /dev/slack/codepipeline/ChannelId | slack channel id to notify result of codepipeline action. ( Get id from slack channel. Right click the channel and copy link. ex. A1B2C3D45EF )                                                                                                                              |
+| /dev/slack/guardduty/ChannelId    | slack channel id to notify result from guardduty. ( Get id from slack channel. Right click the channel and copy link. ex. A1B2C3D45EF )                                                                                                                                      |
+| /dev/slack/WorkspaceId            | slack workspace id to notify. ( Need to connect slack with chat bot at chat bot console. After that you can get id from console. ex. A1B2C3D45EF )                                                                                                                           |
 2. Run setup script.
 
 Please install aws cli before run script. Since this script use aws cli.
 
 ```
-$ ./pre-build/setup.sh
+$ ./provisioning/pre-build/setup.sh
 ```
 
 ## Local Setting (manually)
