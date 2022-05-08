@@ -1,7 +1,7 @@
 version: '3'
 
+# x-aws-cluster: "locust-cluster"
 x-aws-vpc: ${AWS_VPC}
-x-aws-cluster: "locust"
 
 services:
   master:
@@ -11,8 +11,16 @@ services:
     command: -f /mnt/locust/locustfile.py --master -H http://master:8089
     deploy:
       replicas: 1
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4096M
   worker:
     image: ${ECR_URI}:locust
     command: -f /mnt/locust/locustfile.py --worker --master-host master
     deploy:
       replicas: 4
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4096M
