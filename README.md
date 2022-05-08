@@ -168,3 +168,15 @@ delete    stack-name
 ```bash
 $ sh -i ~/.ssh/your-key.pem ec2-user@your-ec2-instance-public-ip -N -L 9200:vpc-domain-name.region.es.amazonaws.com:443
 ```
+
+# Load test
+
+```
+$ docker context create ecs ecs
+? Create a Docker context using: An existing AWS profile
+? Select AWS Profile default
+```
+
+```
+$ docker context use ecs
+```

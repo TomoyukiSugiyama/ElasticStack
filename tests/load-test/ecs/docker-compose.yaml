@@ -1,16 +1,18 @@
 version: '3'
 
+x-aws-vpc: ${AWS_VPC}
+x-aws-cluster: "locust"
+
 services:
   master:
-    image: locustio/locust
+    image: ${ECR_URI}:locust
     ports:
       - "8089:8089"
-    volumes:
-      - ./locust:/mnt/locust
     command: -f /mnt/locust/locustfile.py --master -H http://master:8089
-
+    deploy:
+      replicas: 1
   worker:
-    image: locustio/locust
-    volumes:
-      - ./locust:/mnt/locust
+    image: ${ECR_URI}:locust
     command: -f /mnt/locust/locustfile.py --worker --master-host master
+    deploy:
+      replicas: 4
