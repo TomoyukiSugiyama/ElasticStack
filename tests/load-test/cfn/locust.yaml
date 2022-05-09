@@ -1,0 +1,340 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Locust
+# ------------------------------------------------------------------------------
+# Parameters
+# ------------------------------------------------------------------------------
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  SubnetIds:
+    Type: String
+  DeployEnv:
+    Type: String
+    Default: dev
+
+# ------------------------------------------------------------------------------
+# Resources
+# ------------------------------------------------------------------------------
+Resources:
+  CloudMap:
+    Properties:
+      Description: Service Map for Docker Compose project ecs
+      Name: ecs.local
+      Vpc: !Ref VpcId
+    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
+  Cluster:
+    Properties:
+      ClusterName: ecs
+      Tags:
+        - Key: com.docker.compose.project
+          Value: ecs
+    Type: AWS::ECS::Cluster
+  Default8089Ingress:
+    Properties:
+      CidrIp: 0.0.0.0/0
+      Description: master:8089/tcp on default network
+      FromPort: 8089
+      GroupId:
+        Ref: DefaultNetwork
+      IpProtocol: TCP
+      ToPort: 8089
+    Type: AWS::EC2::SecurityGroupIngress
+  DefaultNetwork:
+    Properties:
+      GroupDescription: ecs Security Group for default network
+      Tags:
+        - Key: com.docker.compose.project
+          Value: ecs
+        - Key: com.docker.compose.network
+          Value: ecs_default
+      VpcId: !Ref VpcId
+    Type: AWS::EC2::SecurityGroup
+  DefaultNetworkIngress:
+    Properties:
+      Description: Allow communication within network default
+      GroupId:
+        Ref: DefaultNetwork
+      IpProtocol: "-1"
+      SourceSecurityGroupId:
+        Ref: DefaultNetwork
+    Type: AWS::EC2::SecurityGroupIngress
+  LoadBalancer:
+    Properties:
+      LoadBalancerAttributes:
+        - Key: load_balancing.cross_zone.enabled
+          Value: "true"
+      Scheme: internet-facing
+      Subnets: !Split [",", !Ref SubnetIds]
+      Tags:
+        - Key: com.docker.compose.project
+          Value: ecs
+      Type: network
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+  LogGroup:
+    Properties:
+      LogGroupName: /docker-compose/ecs
+    Type: AWS::Logs::LogGroup
+  MasterService:
+    DependsOn:
+      - MasterTCP8089Listener
+    Properties:
+      Cluster:
+        Fn::GetAtt:
+          - Cluster
+          - Arn
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DeploymentController:
+        Type: ECS
+      DesiredCount: 1
+      LaunchType: FARGATE
+      LoadBalancers:
+        - ContainerName: master
+          ContainerPort: 8089
+          TargetGroupArn:
+            Ref: MasterTCP8089TargetGroup
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - Ref: DefaultNetwork
+          Subnets: !Split [",", !Ref SubnetIds]
+      PlatformVersion: 1.4.0
+      PropagateTags: SERVICE
+      SchedulingStrategy: REPLICA
+      ServiceRegistries:
+        - RegistryArn:
+            Fn::GetAtt:
+              - MasterServiceDiscoveryEntry
+              - Arn
+      Tags:
+        - Key: com.docker.compose.project
+          Value: ecs
+        - Key: com.docker.compose.service
+          Value: master
+      TaskDefinition:
+        Ref: MasterTaskDefinition
+    Type: AWS::ECS::Service
+  MasterServiceDiscoveryEntry:
+    Properties:
+      Description: '"master" service discovery entry in Cloud Map'
+      DnsConfig:
+        DnsRecords:
+          - TTL: 60
+            Type: A
+        RoutingPolicy: MULTIVALUE
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+      Name: master
+      NamespaceId:
+        Ref: CloudMap
+    Type: AWS::ServiceDiscovery::Service
+  MasterTCP8089Listener:
+    Properties:
+      DefaultActions:
+        - ForwardConfig:
+            TargetGroups:
+              - TargetGroupArn:
+                  Ref: MasterTCP8089TargetGroup
+          Type: forward
+      LoadBalancerArn:
+        Ref: LoadBalancer
+      Port: 8089
+      Protocol: TCP
+    Type: AWS::ElasticLoadBalancingV2::Listener
+  MasterTCP8089TargetGroup:
+    Properties:
+      Port: 8089
+      Protocol: TCP
+      Tags:
+        - Key: com.docker.compose.project
+          Value: ecs
+      TargetType: ip
+      VpcId: !Ref VpcId
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+  MasterTaskDefinition:
+    Properties:
+      ContainerDefinitions:
+        - Command:
+            - ap-northeast-1.compute.internal
+            - ecs.local
+          Essential: false
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${DeployEnv}-repogitory:ecs-searchdomain-sidecar"
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group:
+                Ref: LogGroup
+              awslogs-region:
+                Ref: AWS::Region
+              awslogs-stream-prefix: ecs
+          Name: Master_ResolvConf_InitContainer
+        - Command:
+            - -f
+            - /mnt/locust/locustfile.py
+            - --master
+            - -H
+            - http://master:8089
+          DependsOn:
+            - Condition: SUCCESS
+              ContainerName: Master_ResolvConf_InitContainer
+          Essential: true
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${DeployEnv}-repogitory:locust"
+          LinuxParameters: {}
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group:
+                Ref: LogGroup
+              awslogs-region:
+                Ref: AWS::Region
+              awslogs-stream-prefix: ecs
+          Name: master
+          PortMappings:
+            - ContainerPort: 8089
+              HostPort: 8089
+              Protocol: tcp
+      Cpu: "2048"
+      ExecutionRoleArn: !GetAtt MasterTaskExecutionRole.Arn
+      Family: ecs-master
+      Memory: "4096"
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+    Type: AWS::ECS::TaskDefinition
+  MasterTaskExecutionRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Condition: {}
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+      Tags:
+        - Key: com.docker.compose.project
+          Value: ecs
+        - Key: com.docker.compose.service
+          Value: master
+    Type: AWS::IAM::Role
+  WorkerService:
+    Properties:
+      Cluster:
+        Fn::GetAtt:
+          - Cluster
+          - Arn
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DeploymentController:
+        Type: ECS
+      DesiredCount: 4
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - Ref: DefaultNetwork
+          Subnets: !Split [",", !Ref SubnetIds]
+      PlatformVersion: 1.4.0
+      PropagateTags: SERVICE
+      SchedulingStrategy: REPLICA
+      ServiceRegistries:
+        - RegistryArn:
+            Fn::GetAtt:
+              - WorkerServiceDiscoveryEntry
+              - Arn
+      Tags:
+        - Key: com.docker.compose.project
+          Value: ecs
+        - Key: com.docker.compose.service
+          Value: worker
+      TaskDefinition:
+        Ref: WorkerTaskDefinition
+    Type: AWS::ECS::Service
+  WorkerServiceDiscoveryEntry:
+    Properties:
+      Description: '"worker" service discovery entry in Cloud Map'
+      DnsConfig:
+        DnsRecords:
+          - TTL: 60
+            Type: A
+        RoutingPolicy: MULTIVALUE
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+      Name: worker
+      NamespaceId:
+        Ref: CloudMap
+    Type: AWS::ServiceDiscovery::Service
+  WorkerTaskDefinition:
+    Properties:
+      ContainerDefinitions:
+        - Command:
+            - ap-northeast-1.compute.internal
+            - ecs.local
+          Essential: false
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${DeployEnv}-repogitory:ecs-searchdomain-sidecar"
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group:
+                Ref: LogGroup
+              awslogs-region:
+                Ref: AWS::Region
+              awslogs-stream-prefix: ecs
+          Name: Worker_ResolvConf_InitContainer
+        - Command:
+            - -f
+            - /mnt/locust/locustfile.py
+            - --worker
+            - --master-host
+            - master
+          DependsOn:
+            - Condition: SUCCESS
+              ContainerName: Worker_ResolvConf_InitContainer
+          Essential: true
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${DeployEnv}-repogitory:locust"
+          LinuxParameters: {}
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group:
+                Ref: LogGroup
+              awslogs-region:
+                Ref: AWS::Region
+              awslogs-stream-prefix: ecs
+          Name: worker
+      Cpu: "2048"
+      ExecutionRoleArn: !GetAtt WorkerTaskExecutionRole.Arn
+      Family: ecs-worker
+      Memory: "4096"
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+    Type: AWS::ECS::TaskDefinition
+  WorkerTaskExecutionRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Condition: {}
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+      Tags:
+        - Key: com.docker.compose.project
+          Value: ecs
+        - Key: com.docker.compose.service
+          Value: worker
+    Type: AWS::IAM::Role
