@@ -12,3 +12,5 @@ detach-task-to-be-terminated-from-nlb.zip
 provisioning/params/*
 !provisioning/params/create-params-dev.sh
 !provisioning/params/template.yaml
+
+__pycache__

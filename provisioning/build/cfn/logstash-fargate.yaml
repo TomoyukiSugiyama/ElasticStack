@@ -33,12 +33,12 @@ Resources:
     Type: AWS::ServiceDiscovery::PrivateDnsNamespace
     Properties:
       Description: Service Map for Docker Compose project ecs
-      Name: ecs.local
+      Name: logstash-cluster.local
       Vpc: !Ref VpcId
   Cluster:
     Type: AWS::ECS::Cluster
     Properties:
-      ClusterName: ecs
+      ClusterName: logstash-cluster
       CapacityProviders:
         - FARGATE
         - FARGATE_SPOT
@@ -107,7 +107,7 @@ Resources:
       ContainerDefinitions:
         - Command:
             - !Sub "${AWS::Region}.compute.internal"
-            - ecs.local
+            - logstash-cluster.local
           Essential: false
           Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${DeployEnv}-repogitory:ecs-searchdomain-sidecar"
           LogConfiguration:
