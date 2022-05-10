@@ -1,6 +1,5 @@
 version: '3'
 
-# x-aws-cluster: "locust-cluster"
 x-aws-vpc: ${AWS_VPC}
 
 services:
