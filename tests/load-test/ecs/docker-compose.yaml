@@ -1,6 +1,6 @@
 version: '3'
 
-x-aws-vpc: ${AWS_VPC}
+# x-aws-vpc: ${AWS_VPC}
 
 services:
   # master:
@@ -28,10 +28,13 @@ services:
     ports:
       - "5066:5066"
     volumes:
-      - log:/var/log/
+      - log-files:/var/log/
     deploy:
       replicas: 1
       resources:
         limits:
           cpus: "2"
           memory: 4096M
+
+volumes:
+  log-files:
