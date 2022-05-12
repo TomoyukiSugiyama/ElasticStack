@@ -1,17 +1,37 @@
 AWSTemplateFormatVersion: 2010-09-09
+Description: Logstash Fargate
+# ------------------------------------------------------------------------------
+# Parameters
+# ------------------------------------------------------------------------------
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  SubnetId1:
+    Type: String
+  SubnetId2:
+    Type: String
+  SubnetId3:
+    Type: String
+  DeployEnv:
+    Type: String
+    Default: dev
+
+# ------------------------------------------------------------------------------
+# Resources
+# ------------------------------------------------------------------------------
 Resources:
   CloudMap:
     Properties:
       Description: Service Map for Docker Compose project ecs
       Name: ecs.local
-      Vpc: vpc-2ed63848
+      Vpc: !Ref VpcId
     Type: AWS::ServiceDiscovery::PrivateDnsNamespace
   Cluster:
     Properties:
       ClusterName: ecs
       Tags:
-      - Key: com.docker.compose.project
-        Value: ecs
+        - Key: com.docker.compose.project
+          Value: ecs
     Type: AWS::ECS::Cluster
   Default5066Ingress:
     Properties:
@@ -27,11 +47,11 @@ Resources:
     Properties:
       GroupDescription: ecs Security Group for default network
       Tags:
-      - Key: com.docker.compose.project
-        Value: ecs
-      - Key: com.docker.compose.network
-        Value: ecs_default
-      VpcId: vpc-2ed63848
+        - Key: com.docker.compose.project
+          Value: ecs
+        - Key: com.docker.compose.network
+          Value: ecs_default
+      VpcId: !Ref VpcId
     Type: AWS::EC2::SecurityGroup
   DefaultNetworkIngress:
     Properties:
@@ -44,15 +64,15 @@ Resources:
     Type: AWS::EC2::SecurityGroupIngress
   FilebeatService:
     DependsOn:
-    - FilebeatTCP5066Listener
-    - LogfilesNFSMountTargetOnSubnetfa00a8b2
-    - LogfilesNFSMountTargetOnSubnet9afa48b1
-    - LogfilesNFSMountTargetOnSubnet88968cd3
+      - FilebeatTCP5066Listener
+      - LogfilesNFSMountTargetOnSubnet1
+      - LogfilesNFSMountTargetOnSubnet2
+      - LogfilesNFSMountTargetOnSubnet3
     Properties:
       Cluster:
         Fn::GetAtt:
-        - Cluster
-        - Arn
+          - Cluster
+          - Arn
       DeploymentConfiguration:
         MaximumPercent: 200
         MinimumHealthyPercent: 100
@@ -61,32 +81,32 @@ Resources:
       DesiredCount: 1
       LaunchType: FARGATE
       LoadBalancers:
-      - ContainerName: filebeat
-        ContainerPort: 5066
-        TargetGroupArn:
-          Ref: FilebeatTCP5066TargetGroup
+        - ContainerName: filebeat
+          ContainerPort: 5066
+          TargetGroupArn:
+            Ref: FilebeatTCP5066TargetGroup
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: ENABLED
           SecurityGroups:
-          - Ref: DefaultNetwork
+            - Ref: DefaultNetwork
           Subnets:
-          - subnet-fa00a8b2
-          - subnet-9afa48b1
-          - subnet-88968cd3
+            - !Ref SubnetId1
+            - !Ref SubnetId2
+            - !Ref SubnetId3
       PlatformVersion: 1.4.0
       PropagateTags: SERVICE
       SchedulingStrategy: REPLICA
       ServiceRegistries:
-      - RegistryArn:
-          Fn::GetAtt:
-          - FilebeatServiceDiscoveryEntry
-          - Arn
+        - RegistryArn:
+            Fn::GetAtt:
+              - FilebeatServiceDiscoveryEntry
+              - Arn
       Tags:
-      - Key: com.docker.compose.project
-        Value: ecs
-      - Key: com.docker.compose.service
-        Value: filebeat
+        - Key: com.docker.compose.project
+          Value: ecs
+        - Key: com.docker.compose.service
+          Value: filebeat
       TaskDefinition:
         Ref: FilebeatTaskDefinition
     Type: AWS::ECS::Service
@@ -95,8 +115,8 @@ Resources:
       Description: '"filebeat" service discovery entry in Cloud Map'
       DnsConfig:
         DnsRecords:
-        - TTL: 60
-          Type: A
+          - TTL: 60
+            Type: A
         RoutingPolicy: MULTIVALUE
       HealthCheckCustomConfig:
         FailureThreshold: 1
@@ -107,11 +127,11 @@ Resources:
   FilebeatTCP5066Listener:
     Properties:
       DefaultActions:
-      - ForwardConfig:
-          TargetGroups:
-          - TargetGroupArn:
-              Ref: FilebeatTCP5066TargetGroup
-        Type: forward
+        - ForwardConfig:
+            TargetGroups:
+              - TargetGroupArn:
+                  Ref: FilebeatTCP5066TargetGroup
+          Type: forward
       LoadBalancerArn:
         Ref: LoadBalancer
       Port: 5066
@@ -122,137 +142,134 @@ Resources:
       Port: 5066
       Protocol: TCP
       Tags:
-      - Key: com.docker.compose.project
-        Value: ecs
+        - Key: com.docker.compose.project
+          Value: ecs
       TargetType: ip
-      VpcId: vpc-2ed63848
+      VpcId: !Ref VpcId
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
   FilebeatTaskDefinition:
     Properties:
       ContainerDefinitions:
-      - Command:
-        - ap-northeast-1.compute.internal
-        - ecs.local
-        Essential: false
-        Image: docker/ecs-searchdomain-sidecar:1.0
-        LogConfiguration:
-          LogDriver: awslogs
-          Options:
-            awslogs-group:
-              Ref: LogGroup
-            awslogs-region:
-              Ref: AWS::Region
-            awslogs-stream-prefix: ecs
-        Name: Filebeat_ResolvConf_InitContainer
-      - DependsOn:
-        - Condition: SUCCESS
-          ContainerName: Filebeat_ResolvConf_InitContainer
-        Essential: true
-        Image: 645402554699.dkr.ecr.ap-northeast-1.amazonaws.com/dev-repogitory:filebeat@sha256:4582493bb00f4ca24cee9066096bc56c3e00f100fb0e72ae5abe76d04b024ee8
-        LinuxParameters: {}
-        LogConfiguration:
-          LogDriver: awslogs
-          Options:
-            awslogs-group:
-              Ref: LogGroup
-            awslogs-region:
-              Ref: AWS::Region
-            awslogs-stream-prefix: ecs
-        MountPoints:
-        - ContainerPath: /var/log
-          SourceVolume: log-files
-        Name: filebeat
-        PortMappings:
-        - ContainerPort: 5066
-          HostPort: 5066
-          Protocol: tcp
+        - Command:
+            - ap-northeast-1.compute.internal
+            - ecs.local
+          Essential: false
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${DeployEnv}-repogitory:ecs-searchdomain-sidecar"
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group:
+                Ref: LogGroup
+              awslogs-region:
+                Ref: AWS::Region
+              awslogs-stream-prefix: ecs
+          Name: Filebeat_ResolvConf_InitContainer
+        - DependsOn:
+            - Condition: SUCCESS
+              ContainerName: Filebeat_ResolvConf_InitContainer
+          Essential: true
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${DeployEnv}-repogitory:filebeat"
+          LinuxParameters: {}
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group:
+                Ref: LogGroup
+              awslogs-region:
+                Ref: AWS::Region
+              awslogs-stream-prefix: ecs
+          MountPoints:
+            - ContainerPath: /var/log
+              SourceVolume: log-files
+          Name: filebeat
+          PortMappings:
+            - ContainerPort: 5066
+              HostPort: 5066
+              Protocol: tcp
       Cpu: "2048"
-      ExecutionRoleArn:
-        Ref: FilebeatTaskExecutionRole
+      ExecutionRoleArn: !GetAtt FilebeatTaskExecutionRole.Arn
       Family: ecs-filebeat
       Memory: "4096"
       NetworkMode: awsvpc
       RequiresCompatibilities:
-      - FARGATE
+        - FARGATE
       TaskRoleArn:
         Ref: FilebeatTaskRole
       Volumes:
-      - EFSVolumeConfiguration:
-          AuthorizationConfig:
-            AccessPointId:
-              Ref: LogfilesAccessPoint
-            IAM: ENABLED
-          FilesystemId: fs-0e18651dfc267b9b5
-          TransitEncryption: ENABLED
-        Name: log-files
+        - EFSVolumeConfiguration:
+            AuthorizationConfig:
+              AccessPointId:
+                Ref: LogfilesAccessPoint
+              IAM: ENABLED
+            FilesystemId: fs-0e18651dfc267b9b5
+            TransitEncryption: ENABLED
+          Name: log-files
     Type: AWS::ECS::TaskDefinition
   FilebeatTaskExecutionRole:
     Properties:
       AssumeRolePolicyDocument:
         Statement:
-        - Action:
-          - sts:AssumeRole
-          Condition: {}
-          Effect: Allow
-          Principal:
-            Service: ecs-tasks.amazonaws.com
+          - Action:
+              - sts:AssumeRole
+            Condition: {}
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
         Version: 2012-10-17
       ManagedPolicyArns:
-      - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
-      - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
       Tags:
-      - Key: com.docker.compose.project
-        Value: ecs
-      - Key: com.docker.compose.service
-        Value: filebeat
+        - Key: com.docker.compose.project
+          Value: ecs
+        - Key: com.docker.compose.service
+          Value: filebeat
     Type: AWS::IAM::Role
   FilebeatTaskRole:
     Properties:
       AssumeRolePolicyDocument:
         Statement:
-        - Action:
-          - sts:AssumeRole
-          Condition: {}
-          Effect: Allow
-          Principal:
-            Service: ecs-tasks.amazonaws.com
+          - Action:
+              - sts:AssumeRole
+            Condition: {}
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
         Version: 2012-10-17
       Policies:
-      - PolicyDocument:
-          Statement:
-          - Action:
-            - elasticfilesystem:ClientMount
-            - elasticfilesystem:ClientWrite
-            - elasticfilesystem:ClientRootAccess
-            Condition:
-              StringEquals:
-                elasticfilesystem:AccessPointArn:
-                  Ref: LogfilesAccessPoint
-            Effect: Allow
-            Principal: {}
-            Resource:
-            - arn:aws:elasticfilesystem:ap-northeast-1:645402554699:file-system/fs-0e18651dfc267b9b5
-          Version: 2012-10-17
-        PolicyName: FilebeatLogfilesVolumeMountPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - elasticfilesystem:ClientMount
+                  - elasticfilesystem:ClientWrite
+                  - elasticfilesystem:ClientRootAccess
+                Condition:
+                  StringEquals:
+                    elasticfilesystem:AccessPointArn: !GetAtt LogfilesAccessPoint.Arn
+                Effect: Allow
+                Resource:
+                  - !Sub arn:aws:elasticfilesystem:${AWS::Region}:${AWS::AccountId}:file-system/fs-0e18651dfc267b9b5
+            Version: 2012-10-17
+          PolicyName: FilebeatLogfilesVolumeMountPolicy
       Tags:
-      - Key: com.docker.compose.project
-        Value: ecs
-      - Key: com.docker.compose.service
-        Value: filebeat
+        - Key: com.docker.compose.project
+          Value: ecs
+        - Key: com.docker.compose.service
+          Value: filebeat
     Type: AWS::IAM::Role
   LoadBalancer:
     Properties:
       LoadBalancerAttributes:
-      - Key: load_balancing.cross_zone.enabled
-        Value: "true"
+        - Key: load_balancing.cross_zone.enabled
+          Value: "true"
       Scheme: internet-facing
       Subnets:
-      - subnet-fa00a8b2
-      - subnet-9afa48b1
-      - subnet-88968cd3
+        - !Ref SubnetId1
+        - !Ref SubnetId2
+        - !Ref SubnetId3
       Tags:
-      - Key: com.docker.compose.project
-        Value: ecs
+        - Key: com.docker.compose.project
+          Value: ecs
       Type: network
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
   LogGroup:
@@ -262,32 +279,32 @@ Resources:
   LogfilesAccessPoint:
     Properties:
       AccessPointTags:
-      - Key: com.docker.compose.project
-        Value: ecs
-      - Key: com.docker.compose.volume
-        Value: log-files
-      - Key: Name
-        Value: ecs_log-files
+        - Key: com.docker.compose.project
+          Value: ecs
+        - Key: com.docker.compose.volume
+          Value: log-files
+        - Key: Name
+          Value: ecs_log-files
       FileSystemId: fs-0e18651dfc267b9b5
     Type: AWS::EFS::AccessPoint
-  LogfilesNFSMountTargetOnSubnet9afa48b1:
+  LogfilesNFSMountTargetOnSubnet2:
     Properties:
       FileSystemId: fs-0e18651dfc267b9b5
       SecurityGroups:
-      - Ref: DefaultNetwork
-      SubnetId: subnet-9afa48b1
+        - Ref: DefaultNetwork
+      SubnetId: !Ref SubnetId2
     Type: AWS::EFS::MountTarget
-  LogfilesNFSMountTargetOnSubnet88968cd3:
+  LogfilesNFSMountTargetOnSubnet3:
     Properties:
       FileSystemId: fs-0e18651dfc267b9b5
       SecurityGroups:
-      - Ref: DefaultNetwork
-      SubnetId: subnet-88968cd3
+        - Ref: DefaultNetwork
+      SubnetId: !Ref SubnetId3
     Type: AWS::EFS::MountTarget
-  LogfilesNFSMountTargetOnSubnetfa00a8b2:
+  LogfilesNFSMountTargetOnSubnet1:
     Properties:
       FileSystemId: fs-0e18651dfc267b9b5
       SecurityGroups:
-      - Ref: DefaultNetwork
-      SubnetId: subnet-fa00a8b2
+        - Ref: DefaultNetwork
+      SubnetId: !Ref SubnetId1
     Type: AWS::EFS::MountTarget
