@@ -5,6 +5,21 @@ import (
 	"time"
 )
 
+type Step struct {
+	StepId string
+	Value  int
+	StdMax int
+	StdMin int
+	Result string
+}
+
+type LogFormat struct {
+	Prefix string
+	Steps  []Step
+	Suffix string
+	Result string
+}
+
 func main() {
 	var (
 		d = flag.Int("d", 60, "duration")
