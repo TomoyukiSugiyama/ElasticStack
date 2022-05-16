@@ -2,7 +2,8 @@ package main
 
 import (
 	"flag"
-	"time"
+	"fmt"
+	"strconv"
 )
 
 type Step struct {
@@ -13,29 +14,50 @@ type Step struct {
 	Result string
 }
 
-type LogFormat struct {
+type Log struct {
 	Prefix string
 	Steps  []Step
 	Suffix string
 	Result string
 }
 
+type Options struct {
+	StepCount int
+}
+
+func New(options Options) *Log {
+
+	steps := make([]Step, options.StepCount)
+
+	for i, step := range steps {
+		step.StepId = strconv.Itoa(i)
+		step.Value = strconv.Itoa(i)
+		fmt.Printf("%s\n", step.StepId)
+	}
+	log := &Log{Steps: steps}
+
+	return log
+}
+
 func main() {
 	var (
-		d = flag.Int("d", 60, "duration")
-		//p = flag.Int("p", 1, "period")
+	//d = flag.Int("d", 60, "duration")
+	//p = flag.Int("p", 1, "period")
 	)
 	flag.Parse()
-
-	chStop := make(chan int, 1)
+	options := Options{StepCount: 10}
+	log := New(options)
+	fmt.Printf("%s\n", log.Steps[0].StepId)
+	fmt.Printf("(%%#v) %#v\n", log)
+	// chStop := make(chan int, 1)
 	//create_periodic(*p,chStop)
 
-	time.Sleep(time.Second * time.Duration(*d))
-	chStop <- 0
+	// time.Sleep(time.Second * time.Duration(*d))
+	// chStop <- 0
 
-	close(chStop)
+	// close(chStop)
 
-	time.Sleep(time.Second * 1)
+	// time.Sleep(time.Second * 1)
 }
 
 // func create_log() string {
