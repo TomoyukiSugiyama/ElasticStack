@@ -5,39 +5,12 @@ import (
 	"time"
 )
 
-type IntData struct {
-	Value  int
-	StdMax int
-	StdMin int
-}
-
-type FloatData struct {
-	Value  float32
-	StdMax float32
-	StdMin float32
-}
-
-type StringData struct {
-	Value  string
-	StdMax string
-	StdMin string
-}
-
-type Type int
-
-const (
-	TypeInt Type = iota
-	TypeFloat
-	TypeString
-)
-
 type Step struct {
-	StepId     string
-	IntData    IntData
-	FloatData  FloatData
-	StringData StringData
-	DataType   Type
-	Result     string
+	StepId string
+	Value  interface{}
+	StdMax interface{}
+	StdMin interface{}
+	Result string
 }
 
 type LogFormat struct {
