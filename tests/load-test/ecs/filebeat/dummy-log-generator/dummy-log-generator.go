@@ -26,16 +26,12 @@ type Options struct {
 }
 
 func New(options Options) *Log {
-
 	steps := make([]Step, options.StepCount)
-
-	for i, step := range steps {
-		step.StepId = strconv.Itoa(i)
-		step.Value = strconv.Itoa(i)
-		fmt.Printf("%s\n", step.StepId)
+	for i := 0; i < options.StepCount; i++ {
+		steps[i].StepId = strconv.Itoa(i)
+		steps[i].Value = strconv.Itoa(i)
 	}
 	log := &Log{Steps: steps}
-
 	return log
 }
 
@@ -47,8 +43,7 @@ func main() {
 	flag.Parse()
 	options := Options{StepCount: 10}
 	log := New(options)
-	fmt.Printf("%s\n", log.Steps[0].StepId)
-	fmt.Printf("(%%#v) %#v\n", log)
+	fmt.Printf("%#v\n", log)
 	// chStop := make(chan int, 1)
 	//create_periodic(*p,chStop)
 
