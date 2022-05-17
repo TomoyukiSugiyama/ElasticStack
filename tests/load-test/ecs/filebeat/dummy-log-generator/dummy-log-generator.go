@@ -4,21 +4,26 @@ import (
 	"flag"
 	"fmt"
 	"strconv"
+	"time"
 )
 
 type Step struct {
-	StepId string
-	Value  interface{}
-	StdMax interface{}
-	StdMin interface{}
-	Result string
+	StepId   string
+	TestName string
+	Data     interface{}
+	LoLimit  interface{}
+	UpLimit  interface{}
+	Unit     string
+	Judge    string
 }
 
 type Log struct {
-	Prefix string
+	Mode   string
+	Name   string
+	Date   string
+	Result string
 	Steps  []Step
 	Suffix string
-	Result string
 }
 
 type Options struct {
@@ -26,12 +31,15 @@ type Options struct {
 }
 
 func New(options Options) *Log {
+	day := time.Now()
+	const dayLayout = "2006/01/02,15:04:05"
+	date := day.Format(dayLayout)
+
 	steps := make([]Step, options.StepCount)
 	for i := 0; i < options.StepCount; i++ {
 		steps[i].StepId = strconv.Itoa(i)
-		steps[i].Value = strconv.Itoa(i)
 	}
-	log := &Log{Steps: steps}
+	log := &Log{Mode: "dev", Name: "dummy", Date: date, Steps: steps}
 	return log
 }
 
