@@ -45,11 +45,12 @@ func New(options Options) *Log {
 
 func main() {
 	var (
-	//d = flag.Int("d", 60, "duration")
-	//p = flag.Int("p", 1, "period")
+		//d = flag.Int("d", 60, "duration")
+		//p = flag.Int("p", 1, "period")
+		n = flag.Int("n", 10, "step count")
 	)
 	flag.Parse()
-	options := Options{StepCount: 10}
+	options := Options{StepCount: *n}
 	log := New(options)
 	fmt.Printf("%#v\n", log)
 	// chStop := make(chan int, 1)
