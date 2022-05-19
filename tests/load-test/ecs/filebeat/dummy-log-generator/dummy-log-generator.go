@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"math"
 	"math/rand"
 	"sort"
 	"strconv"
@@ -50,21 +51,31 @@ func New(options Options) *Log {
 		steps[i].TestName = "test_" + strconv.Itoa(i)
 		unitIndex := rand.Intn(len(units))
 		steps[i].Unit = units[unitIndex]
-		digit := rand.Intn(7)
-		loLimit := rand.Intn(10 << digit)
-		upLimit := rand.Intn(10 << digit)
-		if loLimit > upLimit {
-			tmp := loLimit
-			loLimit = upLimit
-			upLimit = tmp
-		}
+		digit := rand.Intn(5)
+		fmt.Printf("digit : %d\n", digit)
+		digitFloat := math.Pow10(digit)
 
 		if units[unitIndex] == "HEX" {
+			loLimit := rand.Intn(1 << (digit * 4))
+			upLimit := rand.Intn(1 << (digit * 4))
+
+			if loLimit > upLimit {
+				tmp := loLimit
+				loLimit = upLimit
+				upLimit = tmp
+			}
 			steps[i].LoLimit = fmt.Sprintf("%x", loLimit)
 			steps[i].UpLimit = fmt.Sprintf("%x", upLimit)
 		} else {
-			steps[i].LoLimit = loLimit
-			steps[i].UpLimit = upLimit
+			loLimit := rand.Float64() * digitFloat
+			upLimit := rand.Float64() * digitFloat
+			if loLimit > upLimit {
+				tmp := loLimit
+				loLimit = upLimit
+				upLimit = tmp
+			}
+			steps[i].LoLimit = fmt.Sprintf("%.3f", loLimit)
+			steps[i].UpLimit = fmt.Sprintf("%.3f", upLimit)
 
 		}
 	}
