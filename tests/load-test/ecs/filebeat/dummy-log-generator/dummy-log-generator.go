@@ -44,9 +44,11 @@ func New(options Options) *Log {
 		stepsIds[i] = rand.Intn(options.StepCount * 10)
 	}
 	sort.Ints(stepsIds)
-
+	units := []string{"V", "MV", "A", "MA", "HEX", "MS"}
 	for i := 0; i < options.StepCount; i++ {
 		steps[i].StepId = strconv.Itoa(stepsIds[i])
+		unitIndex := rand.Intn(len(units))
+		steps[i].Unit = units[unitIndex]
 	}
 	log := &Log{Mode: "dev", Name: "dummy", Date: date, Steps: steps}
 	return log
@@ -61,7 +63,10 @@ func main() {
 	flag.Parse()
 	options := Options{StepCount: *n}
 	log := New(options)
-	fmt.Printf("%#v\n", log)
+	for i := 0; i < len(log.Steps); i++ {
+		fmt.Printf("%#v\n", log.Steps[i])
+	}
+
 	// chStop := make(chan int, 1)
 	//create_periodic(*p,chStop)
 
