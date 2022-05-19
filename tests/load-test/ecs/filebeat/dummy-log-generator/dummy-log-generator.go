@@ -52,7 +52,6 @@ func New(options Options) *Log {
 		unitIndex := rand.Intn(len(units))
 		steps[i].Unit = units[unitIndex]
 		digit := rand.Intn(5)
-		fmt.Printf("digit : %d\n", digit)
 		digitFloat := math.Pow10(digit)
 
 		if units[unitIndex] == "HEX" {
@@ -76,7 +75,6 @@ func New(options Options) *Log {
 			}
 			steps[i].LoLimit = fmt.Sprintf("%.3f", loLimit)
 			steps[i].UpLimit = fmt.Sprintf("%.3f", upLimit)
-
 		}
 	}
 	log := &Log{Mode: "dev", Name: "dummy", Date: date, Steps: steps}
