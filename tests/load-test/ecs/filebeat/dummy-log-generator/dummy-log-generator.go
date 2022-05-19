@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"math/rand"
+	"sort"
 	"strconv"
 	"time"
 )
@@ -35,9 +37,16 @@ func New(options Options) *Log {
 	const dayLayout = "2006/01/02,15:04:05"
 	date := day.Format(dayLayout)
 
+	rand.Seed(day.UnixNano())
 	steps := make([]Step, options.StepCount)
+	stepsIds := make([]int, options.StepCount)
 	for i := 0; i < options.StepCount; i++ {
-		steps[i].StepId = strconv.Itoa(i)
+		stepsIds[i] = rand.Intn(options.StepCount * 10)
+	}
+	sort.Ints(stepsIds)
+
+	for i := 0; i < options.StepCount; i++ {
+		steps[i].StepId = strconv.Itoa(stepsIds[i])
 	}
 	log := &Log{Mode: "dev", Name: "dummy", Date: date, Steps: steps}
 	return log
