@@ -47,8 +47,26 @@ func New(options Options) *Log {
 	units := []string{"V", "MV", "A", "MA", "HEX", "MS"}
 	for i := 0; i < options.StepCount; i++ {
 		steps[i].StepId = strconv.Itoa(stepsIds[i])
+		steps[i].TestName = "test_" + strconv.Itoa(i)
 		unitIndex := rand.Intn(len(units))
 		steps[i].Unit = units[unitIndex]
+		digit := rand.Intn(7)
+		loLimit := rand.Intn(10 << digit)
+		upLimit := rand.Intn(10 << digit)
+		if loLimit > upLimit {
+			tmp := loLimit
+			loLimit = upLimit
+			upLimit = tmp
+		}
+
+		if units[unitIndex] == "HEX" {
+			steps[i].LoLimit = fmt.Sprintf("%x", loLimit)
+			steps[i].UpLimit = fmt.Sprintf("%x", upLimit)
+		} else {
+			steps[i].LoLimit = loLimit
+			steps[i].UpLimit = upLimit
+
+		}
 	}
 	log := &Log{Mode: "dev", Name: "dummy", Date: date, Steps: steps}
 	return log
