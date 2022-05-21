@@ -15,6 +15,7 @@ type Step struct {
 	Data         interface{}
 	DataString   string
 	Judge        string
+	Options      *Options
 }
 
 type StepTemplate struct {
@@ -46,21 +47,20 @@ type Options struct {
 }
 
 type Result struct {
-	Logs []Log
+	Logs    []Log
+	Options *Options
 }
 
-func selectNgLogs(options Options) map[int]bool {
+func SelectNgLogs(options Options) map[int]bool {
 	t := time.Now()
 	rand.Seed(t.UnixNano())
 	ngCount := int(options.NgRate * float64(options.LogCount))
-	fmt.Printf("ngCount == %d\n", ngCount)
 	isNg := make(map[int]bool)
 	for i := 0; i < ngCount; {
 		n := rand.Intn(options.LogCount)
 		if !isNg[n] {
 			isNg[n] = true
 			i++
-			fmt.Printf("n == %d\n", n)
 		}
 	}
 	return isNg
@@ -78,6 +78,7 @@ func New(options Options) *Result {
 	sort.Ints(stepsNumbers)
 	units := []string{"V", "MV", "A", "MA", "HEX", "MS"}
 	for i := 0; i < len(steps); i++ {
+		steps[i].Options = &options
 		steps[i].StepTemplate = &stepTemplates[i]
 		stepTemplates[i].StepNumber = strconv.Itoa(stepsNumbers[i])
 		stepTemplates[i].TestName = "test_" + strconv.Itoa(i)
@@ -112,8 +113,7 @@ func New(options Options) *Result {
 			stepTemplates[i].UpLimitString = fmt.Sprintf("%.3f", upLimit)
 		}
 	}
-	isNg := selectNgLogs(options)
-	fmt.Printf("%#v\n", isNg)
+
 	logTemplate := &LogTemplate{Mode: "dev", Name: "dummy"}
 	log := Log{LogTemplate: logTemplate, Steps: steps}
 	logs := make([]Log, options.LogCount)
@@ -121,13 +121,9 @@ func New(options Options) *Result {
 		logs[logIndex].Steps = make([]Step, options.StepCount)
 		logs[logIndex].LogTemplate = log.LogTemplate
 		copy(logs[logIndex].Steps, log.Steps)
-		if isNg[logIndex] {
-			logs[logIndex].Result = "NG"
-		} else {
-			logs[logIndex].Result = "OK"
-		}
 	}
 	result := &Result{Logs: logs}
+	result.Options = &options
 	return result
 }
 
@@ -159,7 +155,13 @@ func Generate(result *Result) {
 	const dayLayout = "2006/01/02,15:04:05"
 	t := time.Now()
 
+	isNg := SelectNgLogs(*result.Options)
 	for logIndex := 0; logIndex < len(result.Logs); logIndex++ {
+		if isNg[logIndex] {
+			result.Logs[logIndex].Result = "NG"
+		} else {
+			result.Logs[logIndex].Result = "OK"
+		}
 		t = t.Add(5 * time.Minute)
 		result.Logs[logIndex].Date = t.Format(dayLayout)
 		GenerateSteps(&result.Logs[logIndex])
@@ -189,14 +191,14 @@ func CreateCsv(result *Result) {
 
 func main() {
 	var (
-		s = flag.Int("s", 10, "step count")
-		l = flag.Int("l", 10, "log count")
-		n = flag.Float64("n", 0.1, "ng rate")
+		s = flag.Int("s", 10, "step count (0 < s)")
+		l = flag.Int("l", 10, "log count (0 < l)")
+		n = flag.Float64("n", 0.1, "ng rate (0 <= n <= 1)")
 	)
 	flag.Parse()
+
 	options := Options{StepCount: *s, LogCount: *l, NgRate: *n}
 	result := New(options)
 	Generate(result)
 	CreateCsv(result)
-
 }
