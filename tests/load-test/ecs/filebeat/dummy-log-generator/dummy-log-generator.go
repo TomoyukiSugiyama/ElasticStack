@@ -30,14 +30,13 @@ type StepTemplate struct {
 type Log struct {
 	LogTemplate *LogTemplate
 	Date        string
+	Result      string
 	Steps       []Step
 }
 
 type LogTemplate struct {
-	Mode   string
-	Name   string
-	Result string
-	Suffix string
+	Mode string
+	Name string
 }
 
 type Options struct {
@@ -47,8 +46,24 @@ type Options struct {
 }
 
 type Result struct {
-	Logs    []Log
-	Options *Options
+	Logs []Log
+}
+
+func selectNgLogs(options Options) map[int]bool {
+	t := time.Now()
+	rand.Seed(t.UnixNano())
+	ngCount := int(options.NgRate * float64(options.LogCount))
+	fmt.Printf("ngCount == %d\n", ngCount)
+	isNg := make(map[int]bool)
+	for i := 0; i < ngCount; {
+		n := rand.Intn(options.LogCount)
+		if !isNg[n] {
+			isNg[n] = true
+			i++
+			fmt.Printf("n == %d\n", n)
+		}
+	}
+	return isNg
 }
 
 func New(options Options) *Result {
@@ -97,6 +112,8 @@ func New(options Options) *Result {
 			stepTemplates[i].UpLimitString = fmt.Sprintf("%.3f", upLimit)
 		}
 	}
+	isNg := selectNgLogs(options)
+	fmt.Printf("%#v\n", isNg)
 	logTemplate := &LogTemplate{Mode: "dev", Name: "dummy"}
 	log := Log{LogTemplate: logTemplate, Steps: steps}
 	logs := make([]Log, options.LogCount)
@@ -104,13 +121,17 @@ func New(options Options) *Result {
 		logs[logIndex].Steps = make([]Step, options.StepCount)
 		logs[logIndex].LogTemplate = log.LogTemplate
 		copy(logs[logIndex].Steps, log.Steps)
+		if isNg[logIndex] {
+			logs[logIndex].Result = "NG"
+		} else {
+			logs[logIndex].Result = "OK"
+		}
 	}
 	result := &Result{Logs: logs}
-	result.Options = &options
 	return result
 }
 
-func GenerateSteps(options Options, log *Log) {
+func GenerateSteps(log *Log) {
 	t := time.Now()
 	rand.Seed(t.UnixNano())
 
@@ -141,7 +162,7 @@ func Generate(result *Result) {
 	for logIndex := 0; logIndex < len(result.Logs); logIndex++ {
 		t = t.Add(5 * time.Minute)
 		result.Logs[logIndex].Date = t.Format(dayLayout)
-		GenerateSteps(*result.Options, &result.Logs[logIndex])
+		GenerateSteps(&result.Logs[logIndex])
 	}
 }
 
@@ -150,6 +171,7 @@ func CreateCsv(result *Result) {
 		fmt.Printf("Mode,%s\n", result.Logs[logIndex].LogTemplate.Mode)
 		fmt.Printf("TesterName,%s\n", result.Logs[logIndex].LogTemplate.Name)
 		fmt.Printf("Date,%s\n", result.Logs[logIndex].Date)
+		fmt.Printf("Result,%s\n", result.Logs[logIndex].Result)
 		fmt.Printf("Step,TstName,LoLimit,Data,UpLimit,Unit,Judge\n")
 		steps := result.Logs[logIndex].Steps
 		for stepIndex := 0; stepIndex < len(steps); stepIndex++ {
@@ -169,7 +191,7 @@ func main() {
 	var (
 		s = flag.Int("s", 10, "step count")
 		l = flag.Int("l", 10, "log count")
-		n = flag.Float64("n", 0.01, "ng rate")
+		n = flag.Float64("n", 0.1, "ng rate")
 	)
 	flag.Parse()
 	options := Options{StepCount: *s, LogCount: *l, NgRate: *n}
