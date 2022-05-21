@@ -62,7 +62,7 @@ func New(options Options) *Result {
 	}
 	sort.Ints(stepsNumbers)
 	units := []string{"V", "MV", "A", "MA", "HEX", "MS"}
-	for i := 0; i < options.StepCount; i++ {
+	for i := 0; i < len(steps); i++ {
 		steps[i].StepTemplate = &stepTemplates[i]
 		stepTemplates[i].StepNumber = strconv.Itoa(stepsNumbers[i])
 		stepTemplates[i].TestName = "test_" + strconv.Itoa(i)
@@ -80,9 +80,9 @@ func New(options Options) *Result {
 				upLimit = tmp
 			}
 			stepTemplates[i].LoLimit = loLimit
-			stepTemplates[i].LoLimitString = fmt.Sprintf("%x", loLimit)
+			stepTemplates[i].LoLimitString = fmt.Sprintf("%X", loLimit)
 			stepTemplates[i].UpLimit = upLimit
-			stepTemplates[i].UpLimitString = fmt.Sprintf("%x", upLimit)
+			stepTemplates[i].UpLimitString = fmt.Sprintf("%X", upLimit)
 		} else {
 			loLimit := rand.Float64() * digitFloat
 			upLimit := rand.Float64() * digitFloat
@@ -100,28 +100,37 @@ func New(options Options) *Result {
 	logTemplate := &LogTemplate{Mode: "dev", Name: "dummy"}
 	log := Log{LogTemplate: logTemplate, Steps: steps}
 	logs := make([]Log, options.LogCount)
-	for i := 0; i < options.LogCount; i++ {
-		logs[i] = log
+	for logIndex := 0; logIndex < len(logs); logIndex++ {
+		logs[logIndex].Steps = make([]Step, options.StepCount)
+		logs[logIndex].LogTemplate = log.LogTemplate
+		copy(logs[logIndex].Steps, log.Steps)
 	}
 	result := &Result{Logs: logs}
 	result.Options = &options
 	return result
 }
 
-func GenerateStep(options Options, log *Log) {
+func GenerateSteps(options Options, log *Log) {
 	t := time.Now()
 	rand.Seed(t.UnixNano())
 
-	for stepIndex := 0; stepIndex < options.StepCount; stepIndex++ {
+	for stepIndex := 0; stepIndex < len(log.Steps); stepIndex++ {
 		stepTemplate := log.Steps[stepIndex].StepTemplate
 		if stepTemplate.Unit == "HEX" {
-			data := rand.Intn(stepTemplate.UpLimit.(int)-stepTemplate.LoLimit.(int)) + stepTemplate.LoLimit.(int)
-			log.Steps[stepIndex].Data = fmt.Sprintf("%x", data)
+			var data int
+			if stepTemplate.UpLimit.(int) == stepTemplate.LoLimit.(int) {
+				data = stepTemplate.UpLimit.(int)
+			} else {
+				data = rand.Intn(stepTemplate.UpLimit.(int)-stepTemplate.LoLimit.(int)) + stepTemplate.LoLimit.(int)
+			}
+			log.Steps[stepIndex].Data = data
+			log.Steps[stepIndex].DataString = fmt.Sprintf("%X", data)
 		} else {
 			data := rand.Float64()*(stepTemplate.UpLimit.(float64)-stepTemplate.LoLimit.(float64)) + stepTemplate.LoLimit.(float64)
-			log.Steps[stepIndex].Data = fmt.Sprintf("%.3f", data)
+			log.Steps[stepIndex].Data = data
+			log.Steps[stepIndex].DataString = fmt.Sprintf("%.3f", data)
 		}
-		//log.Data[stepIndex]
+		log.Steps[stepIndex].Judge = "OK"
 	}
 }
 
@@ -129,10 +138,30 @@ func Generate(result *Result) {
 	const dayLayout = "2006/01/02,15:04:05"
 	t := time.Now()
 
-	for logIndex := 0; logIndex < result.Options.LogCount; logIndex++ {
+	for logIndex := 0; logIndex < len(result.Logs); logIndex++ {
 		t = t.Add(5 * time.Minute)
 		result.Logs[logIndex].Date = t.Format(dayLayout)
-		GenerateStep(*result.Options, &result.Logs[logIndex])
+		GenerateSteps(*result.Options, &result.Logs[logIndex])
+	}
+}
+
+func CreateCsv(result *Result) {
+	for logIndex := 0; logIndex < len(result.Logs); logIndex++ {
+		fmt.Printf("Mode,%s\n", result.Logs[logIndex].LogTemplate.Mode)
+		fmt.Printf("TesterName,%s\n", result.Logs[logIndex].LogTemplate.Name)
+		fmt.Printf("Date,%s\n", result.Logs[logIndex].Date)
+		fmt.Printf("Step,TstName,LoLimit,Data,UpLimit,Unit,Judge\n")
+		steps := result.Logs[logIndex].Steps
+		for stepIndex := 0; stepIndex < len(steps); stepIndex++ {
+			fmt.Printf("%s,", steps[stepIndex].StepTemplate.StepNumber)
+			fmt.Printf("%s,", steps[stepIndex].StepTemplate.TestName)
+			fmt.Printf("%s,", steps[stepIndex].StepTemplate.LoLimitString)
+			fmt.Printf("%s,", steps[stepIndex].DataString)
+			fmt.Printf("%s,", steps[stepIndex].StepTemplate.UpLimitString)
+			fmt.Printf("%s,", steps[stepIndex].StepTemplate.Unit)
+			fmt.Printf("%s\n", steps[stepIndex].Judge)
+		}
+		fmt.Printf("END\n")
 	}
 }
 
@@ -146,12 +175,6 @@ func main() {
 	options := Options{StepCount: *s, LogCount: *l, NgRate: *n}
 	result := New(options)
 	Generate(result)
-	for logIndex := 0; logIndex < options.LogCount; logIndex++ {
-		fmt.Printf("%#v\n", result.Logs[logIndex].Date)
-	}
-	for i := 0; i < len(result.Logs[0].Steps); i++ {
-		fmt.Printf("%#v\n", result.Logs[0].Steps[i].StepTemplate)
-		fmt.Printf("%#v\n", result.Logs[0].Steps[i].Data)
-	}
+	CreateCsv(result)
 
 }
