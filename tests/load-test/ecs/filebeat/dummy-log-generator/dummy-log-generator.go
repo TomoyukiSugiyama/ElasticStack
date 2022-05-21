@@ -15,7 +15,6 @@ type Step struct {
 	Data         interface{}
 	DataString   string
 	Judge        string
-	Options      *Options
 }
 
 type StepTemplate struct {
@@ -51,13 +50,12 @@ type Result struct {
 	Options *Options
 }
 
-func SelectNgLogs(options Options) map[int]bool {
+func SelectNg(totalCount int, ngCount int) map[int]bool {
 	t := time.Now()
 	rand.Seed(t.UnixNano())
-	ngCount := int(options.NgRate * float64(options.LogCount))
 	isNg := make(map[int]bool)
 	for i := 0; i < ngCount; {
-		n := rand.Intn(options.LogCount)
+		n := rand.Intn(totalCount)
 		if !isNg[n] {
 			isNg[n] = true
 			i++
@@ -78,7 +76,6 @@ func New(options Options) *Result {
 	sort.Ints(stepsNumbers)
 	units := []string{"V", "MV", "A", "MA", "HEX", "MS"}
 	for i := 0; i < len(steps); i++ {
-		steps[i].Options = &options
 		steps[i].StepTemplate = &stepTemplates[i]
 		stepTemplates[i].StepNumber = strconv.Itoa(stepsNumbers[i])
 		stepTemplates[i].TestName = "test_" + strconv.Itoa(i)
@@ -127,27 +124,57 @@ func New(options Options) *Result {
 	return result
 }
 
-func GenerateSteps(log *Log) {
+func DetectData(step *Step, isNgStep bool) {
 	t := time.Now()
 	rand.Seed(t.UnixNano())
-
-	for stepIndex := 0; stepIndex < len(log.Steps); stepIndex++ {
-		stepTemplate := log.Steps[stepIndex].StepTemplate
-		if stepTemplate.Unit == "HEX" {
-			var data int
-			if stepTemplate.UpLimit.(int) == stepTemplate.LoLimit.(int) {
-				data = stepTemplate.UpLimit.(int)
-			} else {
-				data = rand.Intn(stepTemplate.UpLimit.(int)-stepTemplate.LoLimit.(int)) + stepTemplate.LoLimit.(int)
-			}
-			log.Steps[stepIndex].Data = data
-			log.Steps[stepIndex].DataString = fmt.Sprintf("%X", data)
+	isHiNg := rand.Intn(2) == 0
+	step.Judge = "OK"
+	stepTemplate := step.StepTemplate
+	if stepTemplate.Unit == "HEX" {
+		var data int
+		if stepTemplate.UpLimit.(int) == stepTemplate.LoLimit.(int) {
+			data = stepTemplate.UpLimit.(int)
 		} else {
-			data := rand.Float64()*(stepTemplate.UpLimit.(float64)-stepTemplate.LoLimit.(float64)) + stepTemplate.LoLimit.(float64)
-			log.Steps[stepIndex].Data = data
-			log.Steps[stepIndex].DataString = fmt.Sprintf("%.3f", data)
+			data = rand.Intn(stepTemplate.UpLimit.(int)-stepTemplate.LoLimit.(int)) + stepTemplate.LoLimit.(int)
 		}
-		log.Steps[stepIndex].Judge = "OK"
+		if isNgStep && isHiNg {
+			data = data + stepTemplate.UpLimit.(int)
+			step.Judge = "HI"
+		}
+		if isNgStep && !isHiNg {
+			data = data - stepTemplate.UpLimit.(int)
+			step.Judge = "LO"
+		}
+		step.Data = data
+		step.DataString = fmt.Sprintf("%X", data)
+	} else {
+		data := rand.Float64()*(stepTemplate.UpLimit.(float64)-stepTemplate.LoLimit.(float64)) + stepTemplate.LoLimit.(float64)
+		if isNgStep && isHiNg {
+			data = data + stepTemplate.UpLimit.(float64)
+			step.Judge = "HI"
+		}
+		if isNgStep && !isHiNg {
+			data = data - stepTemplate.UpLimit.(float64)
+			step.Judge = "LO"
+		}
+		step.Data = data
+		step.DataString = fmt.Sprintf("%.3f", data)
+	}
+}
+func GenerateSteps(steps []Step, isNgLog bool) {
+	t := time.Now()
+	rand.Seed(t.UnixNano())
+	stepsCount := len(steps)
+	var ngCount int
+	if stepsCount <= 1 {
+		ngCount = 1
+	} else {
+		ngCount = rand.Intn(stepsCount-1) + 1
+	}
+	isNgStep := SelectNg(stepsCount, ngCount)
+	for stepIndex := 0; stepIndex < len(steps); stepIndex++ {
+		isNg := isNgLog && isNgStep[stepIndex]
+		DetectData(&steps[stepIndex], isNg)
 	}
 }
 
@@ -155,7 +182,8 @@ func Generate(result *Result) {
 	const dayLayout = "2006/01/02,15:04:05"
 	t := time.Now()
 
-	isNg := SelectNgLogs(*result.Options)
+	ngCount := int(result.Options.NgRate * float64(result.Options.LogCount))
+	isNg := SelectNg(result.Options.LogCount, ngCount)
 	for logIndex := 0; logIndex < len(result.Logs); logIndex++ {
 		if isNg[logIndex] {
 			result.Logs[logIndex].Result = "NG"
@@ -164,7 +192,7 @@ func Generate(result *Result) {
 		}
 		t = t.Add(5 * time.Minute)
 		result.Logs[logIndex].Date = t.Format(dayLayout)
-		GenerateSteps(&result.Logs[logIndex])
+		GenerateSteps(result.Logs[logIndex].Steps, isNg[logIndex])
 	}
 }
 
@@ -196,6 +224,18 @@ func main() {
 		n = flag.Float64("n", 0.1, "ng rate (0 <= n <= 1)")
 	)
 	flag.Parse()
+	if *s <= 0 {
+		flag.Usage()
+		return
+	}
+	if *l <= 1 {
+		flag.Usage()
+		return
+	}
+	if *n < 0 || *n > 1 {
+		flag.Usage()
+		return
+	}
 
 	options := Options{StepCount: *s, LogCount: *l, NgRate: *n}
 	result := New(options)
