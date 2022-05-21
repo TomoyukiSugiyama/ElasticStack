@@ -11,31 +11,30 @@ import (
 )
 
 type Step struct {
-	StepId   string
-	TestName string
+	StepTemplate *StepTemplate
+	Data         interface{}
+	Judge        string
+}
 
-	LoLimit interface{}
-	UpLimit interface{}
-	Unit    string
+type StepTemplate struct {
+	StepNumber string
+	TestName   string
+	LoLimit    interface{}
+	UpLimit    interface{}
+	Unit       string
 }
 
 type Log struct {
-	Date  string
-	Data  []interface{}
-	Judge string
+	LogTemplate *LogTemplate
+	Date        string
+	Steps       []Step
 }
 
-type Template struct {
+type LogTemplate struct {
 	Mode   string
 	Name   string
 	Result string
-	Steps  []Step
 	Suffix string
-}
-
-type Result struct {
-	Logs     []Log
-	Template *Template
 }
 
 type Options struct {
@@ -44,24 +43,30 @@ type Options struct {
 	NgRate    float64
 }
 
+type Result struct {
+	Logs    []Log
+	Options *Options
+}
+
 func New(options Options) *Result {
 	day := time.Now()
 	rand.Seed(day.UnixNano())
 	steps := make([]Step, options.StepCount)
-	stepsIds := make([]int, options.StepCount)
+	stepTemplates := make([]StepTemplate, options.StepCount)
+	stepsNumbers := make([]int, options.StepCount)
 	for i := 0; i < options.StepCount; i++ {
-		stepsIds[i] = rand.Intn(options.StepCount * 10)
+		stepsNumbers[i] = rand.Intn(options.StepCount * 10)
 	}
-	sort.Ints(stepsIds)
+	sort.Ints(stepsNumbers)
 	units := []string{"V", "MV", "A", "MA", "HEX", "MS"}
 	for i := 0; i < options.StepCount; i++ {
-		steps[i].StepId = strconv.Itoa(stepsIds[i])
-		steps[i].TestName = "test_" + strconv.Itoa(i)
+		steps[i].StepTemplate = &stepTemplates[i]
+		stepTemplates[i].StepNumber = strconv.Itoa(stepsNumbers[i])
+		stepTemplates[i].TestName = "test_" + strconv.Itoa(i)
 		unitIndex := rand.Intn(len(units))
-		steps[i].Unit = units[unitIndex]
+		stepTemplates[i].Unit = units[unitIndex]
 		digit := rand.Intn(5)
 		digitFloat := math.Pow10(digit)
-
 		if units[unitIndex] == "HEX" {
 			loLimit := rand.Intn(1 << (digit * 4))
 			upLimit := rand.Intn(1 << (digit * 4))
@@ -71,8 +76,8 @@ func New(options Options) *Result {
 				loLimit = upLimit
 				upLimit = tmp
 			}
-			steps[i].LoLimit = fmt.Sprintf("%x", loLimit)
-			steps[i].UpLimit = fmt.Sprintf("%x", upLimit)
+			stepTemplates[i].LoLimit = fmt.Sprintf("%x", loLimit)
+			stepTemplates[i].UpLimit = fmt.Sprintf("%x", upLimit)
 		} else {
 			loLimit := rand.Float64() * digitFloat
 			upLimit := rand.Float64() * digitFloat
@@ -81,26 +86,39 @@ func New(options Options) *Result {
 				loLimit = upLimit
 				upLimit = tmp
 			}
-			steps[i].LoLimit = fmt.Sprintf("%.3f", loLimit)
-			steps[i].UpLimit = fmt.Sprintf("%.3f", upLimit)
+			stepTemplates[i].LoLimit = fmt.Sprintf("%.3f", loLimit)
+			stepTemplates[i].UpLimit = fmt.Sprintf("%.3f", upLimit)
 		}
 	}
-	template := &Template{Mode: "dev", Name: "dummy", Steps: steps}
-	result := &Result{Template: template}
-	result.Logs = make([]Log, options.LogCount)
+	logTemplate := &LogTemplate{Mode: "dev", Name: "dummy"}
+	log := Log{LogTemplate: logTemplate, Steps: steps}
+	logs := make([]Log, options.LogCount)
+	for i := 0; i < options.LogCount; i++ {
+		logs[i] = log
+	}
+	result := &Result{Logs: logs}
+	result.Options = &options
 	return result
 }
-func Generate(options Options, result *Result) {
-	const dayLayout = "2006/01/02,15:04:05"
-	for logIndex := 0; logIndex < options.LogCount; logIndex++ {
-		day := time.Now()
-		date := day.Format(dayLayout)
-		result.Logs[logIndex].Date = date
-		for stepIndex := 0; stepIndex < options.StepCount; stepIndex++ {
 
-		}
+func GenerateStep(options Options, log *Log) {
+	for stepIndex := 0; stepIndex < options.StepCount; stepIndex++ {
+
+		//log.Data[stepIndex]
 	}
 }
+
+func Generate(result *Result) {
+	const dayLayout = "2006/01/02,15:04:05"
+	t := time.Now()
+
+	for logIndex := 0; logIndex < result.Options.LogCount; logIndex++ {
+		t = t.Add(5 * time.Minute)
+		result.Logs[logIndex].Date = t.Format(dayLayout)
+		GenerateStep(*result.Options, &result.Logs[logIndex])
+	}
+}
+
 func main() {
 	var (
 		s = flag.Int("s", 10, "step count")
@@ -110,12 +128,12 @@ func main() {
 	flag.Parse()
 	options := Options{StepCount: *s, LogCount: *l, NgRate: *n}
 	result := New(options)
-	Generate(options, result)
+	Generate(result)
 	for logIndex := 0; logIndex < options.LogCount; logIndex++ {
 		fmt.Printf("%#v\n", result.Logs[logIndex].Date)
 	}
-	for i := 0; i < len(result.Template.Steps); i++ {
-		fmt.Printf("%#v\n", result.Template.Steps[i])
+	for i := 0; i < len(result.Logs[0].Steps); i++ {
+		fmt.Printf("%#v\n", result.Logs[0].Steps[i].StepTemplate)
 	}
 
 }
