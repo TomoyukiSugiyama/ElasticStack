@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"os"
 	"sort"
 	"strconv"
 	"time"
@@ -40,9 +41,10 @@ type LogTemplate struct {
 }
 
 type Options struct {
-	StepCount int
-	LogCount  int
-	NgRate    float64
+	StepCount  int
+	LogCount   int
+	NgRate     float64
+	OutputFile string
 }
 
 type Result struct {
@@ -161,6 +163,7 @@ func DetectData(step *Step, isNgStep bool) {
 		step.DataString = fmt.Sprintf("%.3f", data)
 	}
 }
+
 func GenerateSteps(steps []Step, isNgLog bool) {
 	t := time.Now()
 	rand.Seed(t.UnixNano())
@@ -197,24 +200,32 @@ func Generate(result *Result) {
 }
 
 func CreateCsv(result *Result) {
+	f, err := os.Create(result.Options.OutputFile)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("fail to read file")
+		os.Exit(1)
+	}
+	csvLog := ""
 	for logIndex := 0; logIndex < len(result.Logs); logIndex++ {
-		fmt.Printf("Mode,%s\n", result.Logs[logIndex].LogTemplate.Mode)
-		fmt.Printf("TesterName,%s\n", result.Logs[logIndex].LogTemplate.Name)
-		fmt.Printf("Date,%s\n", result.Logs[logIndex].Date)
-		fmt.Printf("Result,%s\n", result.Logs[logIndex].Result)
-		fmt.Printf("Step,TstName,LoLimit,Data,UpLimit,Unit,Judge\n")
+		csvLog += fmt.Sprintf("Mode,%s\n", result.Logs[logIndex].LogTemplate.Mode)
+		csvLog += fmt.Sprintf("TesterName,%s\n", result.Logs[logIndex].LogTemplate.Name)
+		csvLog += fmt.Sprintf("Date,%s\n", result.Logs[logIndex].Date)
+		csvLog += fmt.Sprintf("Result,%s\n", result.Logs[logIndex].Result)
+		csvLog += "Step,TstName,LoLimit,Data,UpLimit,Unit,Judge\n"
 		steps := result.Logs[logIndex].Steps
 		for stepIndex := 0; stepIndex < len(steps); stepIndex++ {
-			fmt.Printf("%s,", steps[stepIndex].StepTemplate.StepNumber)
-			fmt.Printf("%s,", steps[stepIndex].StepTemplate.TestName)
-			fmt.Printf("%s,", steps[stepIndex].StepTemplate.LoLimitString)
-			fmt.Printf("%s,", steps[stepIndex].DataString)
-			fmt.Printf("%s,", steps[stepIndex].StepTemplate.UpLimitString)
-			fmt.Printf("%s,", steps[stepIndex].StepTemplate.Unit)
-			fmt.Printf("%s\n", steps[stepIndex].Judge)
+			csvLog += fmt.Sprintf("%s,", steps[stepIndex].StepTemplate.StepNumber)
+			csvLog += fmt.Sprintf("%s,", steps[stepIndex].StepTemplate.TestName)
+			csvLog += fmt.Sprintf("%s,", steps[stepIndex].StepTemplate.LoLimitString)
+			csvLog += fmt.Sprintf("%s,", steps[stepIndex].DataString)
+			csvLog += fmt.Sprintf("%s,", steps[stepIndex].StepTemplate.UpLimitString)
+			csvLog += fmt.Sprintf("%s,", steps[stepIndex].StepTemplate.Unit)
+			csvLog += fmt.Sprintf("%s\n", steps[stepIndex].Judge)
 		}
-		fmt.Printf("END\n")
+		csvLog += "END\n"
 	}
+	f.WriteString(csvLog)
 }
 
 func main() {
@@ -222,6 +233,7 @@ func main() {
 		s = flag.Int("s", 10, "step count (0 < s)")
 		l = flag.Int("l", 10, "log count (0 < l)")
 		n = flag.Float64("n", 0.1, "ng rate (0 <= n <= 1)")
+		o = flag.String("o", "result.csv", "output file")
 	)
 	flag.Parse()
 	if *s <= 0 {
@@ -237,7 +249,7 @@ func main() {
 		return
 	}
 
-	options := Options{StepCount: *s, LogCount: *l, NgRate: *n}
+	options := Options{StepCount: *s, LogCount: *l, NgRate: *n, OutputFile: *o}
 	result := New(options)
 	Generate(result)
 	CreateCsv(result)
