@@ -13,31 +13,39 @@ import (
 type Step struct {
 	StepId   string
 	TestName string
-	Data     interface{}
-	LoLimit  interface{}
-	UpLimit  interface{}
-	Unit     string
-	Judge    string
+
+	LoLimit interface{}
+	UpLimit interface{}
+	Unit    string
 }
 
 type Log struct {
+	Date  string
+	Data  []interface{}
+	Judge string
+}
+
+type Template struct {
 	Mode   string
 	Name   string
-	Date   string
 	Result string
 	Steps  []Step
 	Suffix string
 }
 
-type Options struct {
-	StepCount int
+type Result struct {
+	Logs     []Log
+	Template *Template
 }
 
-func New(options Options) *Log {
-	day := time.Now()
-	const dayLayout = "2006/01/02,15:04:05"
-	date := day.Format(dayLayout)
+type Options struct {
+	StepCount int
+	LogCount  int
+	NgRate    float64
+}
 
+func New(options Options) *Result {
+	day := time.Now()
 	rand.Seed(day.UnixNano())
 	steps := make([]Step, options.StepCount)
 	stepsIds := make([]int, options.StepCount)
@@ -77,19 +85,37 @@ func New(options Options) *Log {
 			steps[i].UpLimit = fmt.Sprintf("%.3f", upLimit)
 		}
 	}
-	log := &Log{Mode: "dev", Name: "dummy", Date: date, Steps: steps}
-	return log
+	template := &Template{Mode: "dev", Name: "dummy", Steps: steps}
+	result := &Result{Template: template}
+	result.Logs = make([]Log, options.LogCount)
+	return result
 }
+func Generate(options Options, result *Result) {
+	const dayLayout = "2006/01/02,15:04:05"
+	for logIndex := 0; logIndex < options.LogCount; logIndex++ {
+		day := time.Now()
+		date := day.Format(dayLayout)
+		result.Logs[logIndex].Date = date
+		for stepIndex := 0; stepIndex < options.StepCount; stepIndex++ {
 
+		}
+	}
+}
 func main() {
 	var (
-		n = flag.Int("n", 10, "step count")
+		s = flag.Int("s", 10, "step count")
+		l = flag.Int("l", 10, "log count")
+		n = flag.Float64("n", 0.01, "ng rate")
 	)
 	flag.Parse()
-	options := Options{StepCount: *n}
-	log := New(options)
-	for i := 0; i < len(log.Steps); i++ {
-		fmt.Printf("%#v\n", log.Steps[i])
+	options := Options{StepCount: *s, LogCount: *l, NgRate: *n}
+	result := New(options)
+	Generate(options, result)
+	for logIndex := 0; logIndex < options.LogCount; logIndex++ {
+		fmt.Printf("%#v\n", result.Logs[logIndex].Date)
+	}
+	for i := 0; i < len(result.Template.Steps); i++ {
+		fmt.Printf("%#v\n", result.Template.Steps[i])
 	}
 
 }
