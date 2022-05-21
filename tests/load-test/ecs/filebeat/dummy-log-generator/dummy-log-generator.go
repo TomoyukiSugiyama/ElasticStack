@@ -207,21 +207,25 @@ func CreateCsv(result *Result) {
 		os.Exit(1)
 	}
 	csvLog := ""
+	// var byteLog = make([]byte, 0, 100)
 	for logIndex := 0; logIndex < len(result.Logs); logIndex++ {
-		csvLog += fmt.Sprintf("Mode,%s\n", result.Logs[logIndex].LogTemplate.Mode)
-		csvLog += fmt.Sprintf("TesterName,%s\n", result.Logs[logIndex].LogTemplate.Name)
-		csvLog += fmt.Sprintf("Date,%s\n", result.Logs[logIndex].Date)
-		csvLog += fmt.Sprintf("Result,%s\n", result.Logs[logIndex].Result)
-		csvLog += "Step,TstName,LoLimit,Data,UpLimit,Unit,Judge\n"
+		// byteLog = append(byteLog, ',')
+		csvLog += "Mode," + result.Logs[logIndex].LogTemplate.Mode +
+			"\nTesterName," + result.Logs[logIndex].LogTemplate.Name +
+			"\nDate," + result.Logs[logIndex].Date +
+			"\nResult," + result.Logs[logIndex].Result +
+			"\nStep,TstName,LoLimit,Data,UpLimit,Unit,Judge\n"
 		steps := result.Logs[logIndex].Steps
 		for stepIndex := 0; stepIndex < len(steps); stepIndex++ {
-			csvLog += fmt.Sprintf("%s,", steps[stepIndex].StepTemplate.StepNumber)
-			csvLog += fmt.Sprintf("%s,", steps[stepIndex].StepTemplate.TestName)
-			csvLog += fmt.Sprintf("%s,", steps[stepIndex].StepTemplate.LoLimitString)
-			csvLog += fmt.Sprintf("%s,", steps[stepIndex].DataString)
-			csvLog += fmt.Sprintf("%s,", steps[stepIndex].StepTemplate.UpLimitString)
-			csvLog += fmt.Sprintf("%s,", steps[stepIndex].StepTemplate.Unit)
-			csvLog += fmt.Sprintf("%s\n", steps[stepIndex].Judge)
+			step := steps[stepIndex]
+			csvLog += step.StepTemplate.StepNumber + "," +
+				step.StepTemplate.TestName + "," +
+				step.StepTemplate.LoLimitString + "," +
+				step.DataString + "," +
+				step.StepTemplate.UpLimitString + "," +
+				step.StepTemplate.Unit + "," +
+				step.Judge + "\n"
+
 		}
 		csvLog += "END\n"
 	}
@@ -229,6 +233,7 @@ func CreateCsv(result *Result) {
 }
 
 func main() {
+	now := time.Now()
 	var (
 		s = flag.Int("s", 10, "step count (0 < s)")
 		l = flag.Int("l", 10, "log count (0 < l)")
@@ -250,7 +255,14 @@ func main() {
 	}
 
 	options := Options{StepCount: *s, LogCount: *l, NgRate: *n, OutputFile: *o}
+	fmt.Printf("option: %v ms\n", time.Since(now).Milliseconds())
+	now = time.Now()
 	result := New(options)
+	fmt.Printf("result: %v ms\n", time.Since(now).Milliseconds())
+	now = time.Now()
 	Generate(result)
+	fmt.Printf("generate: %v ms\n", time.Since(now).Milliseconds())
+	now = time.Now()
 	CreateCsv(result)
+	fmt.Printf("create csv: %v ms\n", time.Since(now).Milliseconds())
 }
