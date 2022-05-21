@@ -13,15 +13,18 @@ import (
 type Step struct {
 	StepTemplate *StepTemplate
 	Data         interface{}
+	DataString   string
 	Judge        string
 }
 
 type StepTemplate struct {
-	StepNumber string
-	TestName   string
-	LoLimit    interface{}
-	UpLimit    interface{}
-	Unit       string
+	StepNumber    string
+	TestName      string
+	LoLimit       interface{}
+	LoLimitString string
+	UpLimit       interface{}
+	UpLimitString string
+	Unit          string
 }
 
 type Log struct {
@@ -49,8 +52,8 @@ type Result struct {
 }
 
 func New(options Options) *Result {
-	day := time.Now()
-	rand.Seed(day.UnixNano())
+	t := time.Now()
+	rand.Seed(t.UnixNano())
 	steps := make([]Step, options.StepCount)
 	stepTemplates := make([]StepTemplate, options.StepCount)
 	stepsNumbers := make([]int, options.StepCount)
@@ -76,8 +79,10 @@ func New(options Options) *Result {
 				loLimit = upLimit
 				upLimit = tmp
 			}
-			stepTemplates[i].LoLimit = fmt.Sprintf("%x", loLimit)
-			stepTemplates[i].UpLimit = fmt.Sprintf("%x", upLimit)
+			stepTemplates[i].LoLimit = loLimit
+			stepTemplates[i].LoLimitString = fmt.Sprintf("%x", loLimit)
+			stepTemplates[i].UpLimit = upLimit
+			stepTemplates[i].UpLimitString = fmt.Sprintf("%x", upLimit)
 		} else {
 			loLimit := rand.Float64() * digitFloat
 			upLimit := rand.Float64() * digitFloat
@@ -86,8 +91,10 @@ func New(options Options) *Result {
 				loLimit = upLimit
 				upLimit = tmp
 			}
-			stepTemplates[i].LoLimit = fmt.Sprintf("%.3f", loLimit)
-			stepTemplates[i].UpLimit = fmt.Sprintf("%.3f", upLimit)
+			stepTemplates[i].LoLimit = loLimit
+			stepTemplates[i].LoLimitString = fmt.Sprintf("%.3f", loLimit)
+			stepTemplates[i].UpLimit = upLimit
+			stepTemplates[i].UpLimitString = fmt.Sprintf("%.3f", upLimit)
 		}
 	}
 	logTemplate := &LogTemplate{Mode: "dev", Name: "dummy"}
@@ -102,8 +109,18 @@ func New(options Options) *Result {
 }
 
 func GenerateStep(options Options, log *Log) {
-	for stepIndex := 0; stepIndex < options.StepCount; stepIndex++ {
+	t := time.Now()
+	rand.Seed(t.UnixNano())
 
+	for stepIndex := 0; stepIndex < options.StepCount; stepIndex++ {
+		stepTemplate := log.Steps[stepIndex].StepTemplate
+		if stepTemplate.Unit == "HEX" {
+			data := rand.Intn(stepTemplate.UpLimit.(int)-stepTemplate.LoLimit.(int)) + stepTemplate.LoLimit.(int)
+			log.Steps[stepIndex].Data = fmt.Sprintf("%x", data)
+		} else {
+			data := rand.Float64()*(stepTemplate.UpLimit.(float64)-stepTemplate.LoLimit.(float64)) + stepTemplate.LoLimit.(float64)
+			log.Steps[stepIndex].Data = fmt.Sprintf("%.3f", data)
+		}
 		//log.Data[stepIndex]
 	}
 }
@@ -134,6 +151,7 @@ func main() {
 	}
 	for i := 0; i < len(result.Logs[0].Steps); i++ {
 		fmt.Printf("%#v\n", result.Logs[0].Steps[i].StepTemplate)
+		fmt.Printf("%#v\n", result.Logs[0].Steps[i].Data)
 	}
 
 }
