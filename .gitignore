@@ -13,4 +13,9 @@ provisioning/params/*
 !provisioning/params/create-params-dev.sh
 !provisioning/params/template.yaml
 
+tests/load-test/ecs/filebeat/dummy-log-generator/dummy-log-generator
+tests/load-test/ecs/filebeat/logs/*
+
+*.pprof
+
 __pycache__
