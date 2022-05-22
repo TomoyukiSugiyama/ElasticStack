@@ -124,6 +124,18 @@ func New(options Options) *Result {
 	return result
 }
 
+func Clone(result *Result) *Result {
+	logs := make([]Log, len(result.Logs))
+	for logIndex := 0; logIndex < len(result.Logs); logIndex++ {
+		logs[logIndex].Steps = make([]Step, len(result.Logs[logIndex].Steps))
+		logs[logIndex].LogTemplate = result.Logs[logIndex].LogTemplate
+		copy(logs[logIndex].Steps, result.Logs[logIndex].Steps)
+	}
+	cloneResult := &Result{Logs: logs}
+	cloneResult.Options = result.Options
+	return cloneResult
+}
+
 func DetectData(step *Step, isNgStep bool) {
 	isHiNg := rand.Intn(2) == 0
 	step.Judge = "OK"
@@ -244,8 +256,8 @@ func main() {
 
 	rand.Seed(time.Now().UnixNano())
 	var (
-		s = flag.Int("s", 10, "step count (0 < s)")
-		l = flag.Int("l", 10, "log count (0 < l)")
+		s = flag.Int("s", 10, "step count (0 < s , s * l <= 10,000,000)")
+		l = flag.Int("l", 10, "log count (0 < l , s * l <= 10,000,000)")
 		n = flag.Float64("n", 0.1, "ng rate (0 <= n <= 1)")
 		o = flag.String("o", "result.csv", "output file")
 	)
@@ -258,6 +270,10 @@ func main() {
 		flag.Usage()
 		return
 	}
+	if *s**l > 10000000 {
+		flag.Usage()
+		return
+	}
 	if *n < 0 || *n > 1 {
 		flag.Usage()
 		return
@@ -265,6 +281,7 @@ func main() {
 
 	options := Options{StepCount: *s, LogCount: *l, NgRate: *n, OutputFile: *o}
 	result := New(options)
-	Generate(result)
-	CreateCsv(result)
+	cloneResult := Clone(result)
+	Generate(cloneResult)
+	CreateCsv(cloneResult)
 }
