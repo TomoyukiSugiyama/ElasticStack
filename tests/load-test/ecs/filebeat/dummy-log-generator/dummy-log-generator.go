@@ -9,6 +9,8 @@ import (
 	"sort"
 	"strconv"
 	"time"
+
+	"github.com/pkg/profile"
 )
 
 type Step struct {
@@ -53,8 +55,6 @@ type Result struct {
 }
 
 func SelectNg(totalCount int, ngCount int) map[int]bool {
-	t := time.Now()
-	rand.Seed(t.UnixNano())
 	isNg := make(map[int]bool)
 	for i := 0; i < ngCount; {
 		n := rand.Intn(totalCount)
@@ -67,8 +67,6 @@ func SelectNg(totalCount int, ngCount int) map[int]bool {
 }
 
 func New(options Options) *Result {
-	t := time.Now()
-	rand.Seed(t.UnixNano())
 	steps := make([]Step, options.StepCount)
 	stepTemplates := make([]StepTemplate, options.StepCount)
 	stepsNumbers := make([]int, options.StepCount)
@@ -127,8 +125,6 @@ func New(options Options) *Result {
 }
 
 func DetectData(step *Step, isNgStep bool) {
-	t := time.Now()
-	rand.Seed(t.UnixNano())
 	isHiNg := rand.Intn(2) == 0
 	step.Judge = "OK"
 	stepTemplate := step.StepTemplate
@@ -165,8 +161,6 @@ func DetectData(step *Step, isNgStep bool) {
 }
 
 func GenerateSteps(steps []Step, isNgLog bool) {
-	t := time.Now()
-	rand.Seed(t.UnixNano())
 	stepsCount := len(steps)
 	var ngCount int
 	if stepsCount <= 1 {
@@ -207,33 +201,48 @@ func CreateCsv(result *Result) {
 		os.Exit(1)
 	}
 	csvLog := ""
-	// var byteLog = make([]byte, 0, 100)
+
+	var byteLog = make([]byte, 0, 100000)
 	for logIndex := 0; logIndex < len(result.Logs); logIndex++ {
-		// byteLog = append(byteLog, ',')
-		csvLog += "Mode," + result.Logs[logIndex].LogTemplate.Mode +
-			"\nTesterName," + result.Logs[logIndex].LogTemplate.Name +
-			"\nDate," + result.Logs[logIndex].Date +
-			"\nResult," + result.Logs[logIndex].Result +
-			"\nStep,TstName,LoLimit,Data,UpLimit,Unit,Judge\n"
+
+		byteLog = append(byteLog, "Mode,"...)
+		byteLog = append(byteLog, result.Logs[logIndex].LogTemplate.Mode...)
+		byteLog = append(byteLog, "\nTesterName,"...)
+		byteLog = append(byteLog, result.Logs[logIndex].LogTemplate.Name...)
+		byteLog = append(byteLog, "\nDate,"...)
+		byteLog = append(byteLog, result.Logs[logIndex].Date...)
+		byteLog = append(byteLog, "\nResult,"...)
+		byteLog = append(byteLog, result.Logs[logIndex].Result...)
+		byteLog = append(byteLog, "\nStep,TstName,LoLimit,Data,UpLimit,Unit,Judge\n"...)
+
 		steps := result.Logs[logIndex].Steps
 		for stepIndex := 0; stepIndex < len(steps); stepIndex++ {
 			step := steps[stepIndex]
-			csvLog += step.StepTemplate.StepNumber + "," +
-				step.StepTemplate.TestName + "," +
-				step.StepTemplate.LoLimitString + "," +
-				step.DataString + "," +
-				step.StepTemplate.UpLimitString + "," +
-				step.StepTemplate.Unit + "," +
-				step.Judge + "\n"
-
+			byteLog = append(byteLog, step.StepTemplate.StepNumber...)
+			byteLog = append(byteLog, ',')
+			byteLog = append(byteLog, step.StepTemplate.TestName...)
+			byteLog = append(byteLog, ',')
+			byteLog = append(byteLog, step.StepTemplate.LoLimitString...)
+			byteLog = append(byteLog, ',')
+			byteLog = append(byteLog, step.DataString...)
+			byteLog = append(byteLog, ',')
+			byteLog = append(byteLog, step.StepTemplate.UpLimitString...)
+			byteLog = append(byteLog, ',')
+			byteLog = append(byteLog, step.StepTemplate.Unit...)
+			byteLog = append(byteLog, ',')
+			byteLog = append(byteLog, step.Judge...)
+			byteLog = append(byteLog, '\n')
 		}
-		csvLog += "END\n"
+		byteLog = append(byteLog, "END\n"...)
 	}
+	f.Write(byteLog)
 	f.WriteString(csvLog)
 }
 
 func main() {
-	now := time.Now()
+	defer profile.Start(profile.ProfilePath(".")).Stop()
+
+	rand.Seed(time.Now().UnixNano())
 	var (
 		s = flag.Int("s", 10, "step count (0 < s)")
 		l = flag.Int("l", 10, "log count (0 < l)")
@@ -255,14 +264,7 @@ func main() {
 	}
 
 	options := Options{StepCount: *s, LogCount: *l, NgRate: *n, OutputFile: *o}
-	fmt.Printf("option: %v ms\n", time.Since(now).Milliseconds())
-	now = time.Now()
 	result := New(options)
-	fmt.Printf("result: %v ms\n", time.Since(now).Milliseconds())
-	now = time.Now()
 	Generate(result)
-	fmt.Printf("generate: %v ms\n", time.Since(now).Milliseconds())
-	now = time.Now()
 	CreateCsv(result)
-	fmt.Printf("create csv: %v ms\n", time.Since(now).Milliseconds())
 }

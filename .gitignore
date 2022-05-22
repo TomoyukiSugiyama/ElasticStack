@@ -15,4 +15,6 @@ provisioning/params/*
 
 tests/load-test/ecs/filebeat/dummy-log-generator/dummy-log-generator
 
+*.pprof
+
 __pycache__
