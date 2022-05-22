@@ -6,8 +6,10 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	"runtime"
 	"sort"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/pkg/profile"
@@ -43,11 +45,12 @@ type LogTemplate struct {
 }
 
 type Options struct {
-	StepCount  int
-	LogCount   int
-	NgRate     float64
-	OutputFile string
-	Parallel   int
+	Files       int
+	StepsPerLog int
+	LogsPerFile int
+	NgRate      float64
+	OutputDir   string
+	Parallel    int
 }
 
 type Result struct {
@@ -68,11 +71,11 @@ func SelectNg(totalCount int, ngCount int) map[int]bool {
 }
 
 func New(options Options) *Result {
-	steps := make([]Step, options.StepCount)
-	stepTemplates := make([]StepTemplate, options.StepCount)
-	stepsNumbers := make([]int, options.StepCount)
-	for i := 0; i < options.StepCount; i++ {
-		stepsNumbers[i] = rand.Intn(options.StepCount * 10)
+	steps := make([]Step, options.StepsPerLog)
+	stepTemplates := make([]StepTemplate, options.StepsPerLog)
+	stepsNumbers := make([]int, options.StepsPerLog)
+	for i := 0; i < options.StepsPerLog; i++ {
+		stepsNumbers[i] = rand.Intn(options.StepsPerLog * 10)
 	}
 	sort.Ints(stepsNumbers)
 	units := []string{"V", "MV", "A", "MA", "HEX", "MS"}
@@ -114,9 +117,9 @@ func New(options Options) *Result {
 
 	logTemplate := &LogTemplate{Mode: "dev", Name: "dummy"}
 	log := Log{LogTemplate: logTemplate, Steps: steps}
-	logs := make([]Log, options.LogCount)
+	logs := make([]Log, options.LogsPerFile)
 	for logIndex := 0; logIndex < len(logs); logIndex++ {
-		logs[logIndex].Steps = make([]Step, options.StepCount)
+		logs[logIndex].Steps = make([]Step, options.StepsPerLog)
 		logs[logIndex].LogTemplate = log.LogTemplate
 		copy(logs[logIndex].Steps, log.Steps)
 	}
@@ -192,8 +195,8 @@ func Generate(result *Result) {
 	const dayLayout = "2006/01/02,15:04:05"
 	t := time.Now()
 
-	ngCount := int(result.Options.NgRate * float64(result.Options.LogCount))
-	isNg := SelectNg(result.Options.LogCount, ngCount)
+	ngCount := int(result.Options.NgRate * float64(result.Options.LogsPerFile))
+	isNg := SelectNg(result.Options.LogsPerFile, ngCount)
 	for logIndex := 0; logIndex < len(result.Logs); logIndex++ {
 		if isNg[logIndex] {
 			result.Logs[logIndex].Result = "NG"
@@ -207,7 +210,6 @@ func Generate(result *Result) {
 }
 
 func CreateCsv(result *Result, filename string) {
-	// f, err := os.Create(result.Options.OutputFile)
 	f, err := os.Create(filename)
 	if err != nil {
 		fmt.Println(err)
@@ -215,7 +217,7 @@ func CreateCsv(result *Result, filename string) {
 		os.Exit(1)
 	}
 
-	var byteLog = make([]byte, 0, result.Options.LogCount*result.Options.StepCount*100)
+	var byteLog = make([]byte, 0, result.Options.LogsPerFile*result.Options.StepsPerLog*100)
 	for logIndex := 0; logIndex < len(result.Logs); logIndex++ {
 
 		byteLog = append(byteLog, "Mode,"...)
@@ -254,20 +256,24 @@ func CreateCsv(result *Result, filename string) {
 func main() {
 	defer profile.Start(profile.ProfilePath(".")).Stop()
 
-	rand.Seed(time.Now().UnixNano())
 	var (
-		s = flag.Int("s", 10, "step count (0 < s , s * l <= 10,000,000)")
-		l = flag.Int("l", 10, "log count (0 < l , s * l <= 10,000,000)")
-		n = flag.Float64("n", 0.1, "ng rate (0 <= n <= 1)")
-		o = flag.String("o", "result.csv", "output file")
-		p = flag.Int("p", 4, "parallel")
+		f = flag.Int("f", 1, "Number of generate files.\n0 < f <= 10")
+		l = flag.Int("l", 10, "Number of logs per file.\n0 < l , s * l <= 10,000,000")
+		s = flag.Int("s", 10, "Number of steps per log.\n0 < s , s * l <= 10,000,000")
+		n = flag.Float64("n", 0.1, "NG rate.\n0.0 <= n <= 1.0")
+		o = flag.String("o", "./", "Output dir.")
+		p = flag.Int("p", 1, "Number of parallel executions.\n0 < p <= cpus")
 	)
 	flag.Parse()
-	if *s <= 0 {
+	if *f <= 0 || 10 < *f {
 		flag.Usage()
 		return
 	}
-	if *l <= 1 {
+	if *l <= 0 {
+		flag.Usage()
+		return
+	}
+	if *s <= 0 {
 		flag.Usage()
 		return
 	}
@@ -275,21 +281,39 @@ func main() {
 		flag.Usage()
 		return
 	}
-	if *n < 0 || *n > 1 {
+	if *n < 0.0 || 1.0 < *n {
+		flag.Usage()
+		return
+	}
+	cpus := runtime.NumCPU()
+	if *p > cpus || *p < 1 {
+		fmt.Printf("CPUs : %d\n", cpus)
+		fmt.Printf("You need to set # of parallel execution less than or equal to %d.\n\n", cpus)
 		flag.Usage()
 		return
 	}
 
-	options := Options{StepCount: *s, LogCount: *l, NgRate: *n, OutputFile: *o, Parallel: *p}
-	result := New(options)
+	options := Options{Files: *f, LogsPerFile: *l, StepsPerLog: *s, NgRate: *n, OutputDir: *o, Parallel: *p}
 
-	for i := 0; i < options.Parallel; i++ {
+	rand.Seed(time.Now().UnixNano())
+
+	result := New(options)
+	var wg sync.WaitGroup
+	semaphore := make(chan int, options.Parallel)
+	for i := 0; i < options.Files; i++ {
+		wg.Add(1)
 		go func(i int) {
+			defer wg.Done()
+			semaphore <- 1
 			cloneResult := Clone(result)
 			Generate(cloneResult)
-			filename := "test_" + strconv.Itoa(i) + ".csv"
+			filename := options.OutputDir + "/log_" + strconv.Itoa(i) + ".csv"
 			CreateCsv(cloneResult, filename)
+			fmt.Printf("Done : %s\n", filename)
+			<-semaphore
 		}(i)
 	}
+	wg.Wait()
 
+	fmt.Println("finish.")
 }

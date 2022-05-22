@@ -14,6 +14,7 @@ provisioning/params/*
 !provisioning/params/template.yaml
 
 tests/load-test/ecs/filebeat/dummy-log-generator/dummy-log-generator
+tests/load-test/ecs/filebeat/logs/*
 
 *.pprof
 
