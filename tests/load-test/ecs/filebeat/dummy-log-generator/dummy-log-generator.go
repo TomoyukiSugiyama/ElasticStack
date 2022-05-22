@@ -202,7 +202,7 @@ func CreateCsv(result *Result) {
 	}
 	csvLog := ""
 
-	var byteLog = make([]byte, 0, 100000)
+	var byteLog = make([]byte, 0, result.Options.LogCount*result.Options.StepCount*100)
 	for logIndex := 0; logIndex < len(result.Logs); logIndex++ {
 
 		byteLog = append(byteLog, "Mode,"...)
