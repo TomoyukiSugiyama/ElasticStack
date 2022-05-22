@@ -47,6 +47,7 @@ type Options struct {
 	LogCount   int
 	NgRate     float64
 	OutputFile string
+	Parallel   int
 }
 
 type Result struct {
@@ -205,14 +206,14 @@ func Generate(result *Result) {
 	}
 }
 
-func CreateCsv(result *Result) {
-	f, err := os.Create(result.Options.OutputFile)
+func CreateCsv(result *Result, filename string) {
+	// f, err := os.Create(result.Options.OutputFile)
+	f, err := os.Create(filename)
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println("fail to read file")
 		os.Exit(1)
 	}
-	csvLog := ""
 
 	var byteLog = make([]byte, 0, result.Options.LogCount*result.Options.StepCount*100)
 	for logIndex := 0; logIndex < len(result.Logs); logIndex++ {
@@ -248,7 +249,6 @@ func CreateCsv(result *Result) {
 		byteLog = append(byteLog, "END\n"...)
 	}
 	f.Write(byteLog)
-	f.WriteString(csvLog)
 }
 
 func main() {
@@ -260,6 +260,7 @@ func main() {
 		l = flag.Int("l", 10, "log count (0 < l , s * l <= 10,000,000)")
 		n = flag.Float64("n", 0.1, "ng rate (0 <= n <= 1)")
 		o = flag.String("o", "result.csv", "output file")
+		p = flag.Int("p", 4, "parallel")
 	)
 	flag.Parse()
 	if *s <= 0 {
@@ -279,9 +280,16 @@ func main() {
 		return
 	}
 
-	options := Options{StepCount: *s, LogCount: *l, NgRate: *n, OutputFile: *o}
+	options := Options{StepCount: *s, LogCount: *l, NgRate: *n, OutputFile: *o, Parallel: *p}
 	result := New(options)
-	cloneResult := Clone(result)
-	Generate(cloneResult)
-	CreateCsv(cloneResult)
+
+	for i := 0; i < options.Parallel; i++ {
+		go func(i int) {
+			cloneResult := Clone(result)
+			Generate(cloneResult)
+			filename := "test_" + strconv.Itoa(i) + ".csv"
+			CreateCsv(cloneResult, filename)
+		}(i)
+	}
+
 }
