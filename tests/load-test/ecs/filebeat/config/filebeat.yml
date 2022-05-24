@@ -173,7 +173,8 @@ setup.kibana:
 # ------------------------------ Logstash Output -------------------------------
 output.logstash:
   # The Logstash hosts
-  hosts: ["logstash"]
+  hosts: ["172.31.0.100", "172.31.16.100", "172.31.32.100"]
+  loadbalance: true
 
   # Optional SSL. By default is off.
   # List of root certificates for HTTPS server verifications
