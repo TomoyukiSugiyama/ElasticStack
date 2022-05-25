@@ -10,8 +10,6 @@ Parameters:
     Type: String
   SubnetId2:
     Type: String
-  SubnetId3:
-    Type: String
   DeployEnv:
     Type: String
     Default: dev
@@ -62,7 +60,6 @@ Resources:
       - FilebeatTCP5066Listener
       - LogfilesNFSMountTargetOnSubnet1
       - LogfilesNFSMountTargetOnSubnet2
-      - LogfilesNFSMountTargetOnSubnet3
     Type: AWS::ECS::Service
     Properties:
       Cluster: !GetAtt Cluster.Arn
@@ -85,7 +82,6 @@ Resources:
           Subnets:
             - !Ref SubnetId1
             - !Ref SubnetId2
-            - !Ref SubnetId3
       PlatformVersion: 1.4.0
       PropagateTags: SERVICE
       SchedulingStrategy: REPLICA
@@ -239,7 +235,6 @@ Resources:
       Subnets:
         - !Ref SubnetId1
         - !Ref SubnetId2
-        - !Ref SubnetId3
       Tags:
         - Key: test.service.name
           Value: filebeat-load-balancer
@@ -264,13 +259,6 @@ Resources:
       SecurityGroups:
         - !Ref DefaultNetwork
       SubnetId: !Ref SubnetId2
-  LogfilesNFSMountTargetOnSubnet3:
-    Type: AWS::EFS::MountTarget
-    Properties:
-      FileSystemId: fs-0e18651dfc267b9b5
-      SecurityGroups:
-        - !Ref DefaultNetwork
-      SubnetId: !Ref SubnetId3
   LogfilesNFSMountTargetOnSubnet1:
     Type: AWS::EFS::MountTarget
     Properties:
