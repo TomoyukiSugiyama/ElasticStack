@@ -6,9 +6,7 @@ Description: Logstash Fargate
 Parameters:
   VpcId:
     Type: AWS::EC2::VPC::Id
-  SubnetId1:
-    Type: String
-  SubnetId2:
+  SubnetIds:
     Type: String
   DeployEnv:
     Type: String
@@ -79,9 +77,7 @@ Resources:
           AssignPublicIp: ENABLED
           SecurityGroups:
             - !Ref DefaultNetwork
-          Subnets:
-            - !Ref SubnetId1
-            - !Ref SubnetId2
+          Subnets: !Split [",", !Ref SubnetIds]
       PlatformVersion: 1.4.0
       PropagateTags: SERVICE
       SchedulingStrategy: REPLICA
@@ -232,9 +228,7 @@ Resources:
         - Key: load_balancing.cross_zone.enabled
           Value: "true"
       Scheme: internet-facing
-      Subnets:
-        - !Ref SubnetId1
-        - !Ref SubnetId2
+      Subnets: !Split [",", !Ref SubnetIds]
       Tags:
         - Key: test.service.name
           Value: filebeat-load-balancer
@@ -258,11 +252,11 @@ Resources:
       FileSystemId: fs-0e18651dfc267b9b5
       SecurityGroups:
         - !Ref DefaultNetwork
-      SubnetId: !Ref SubnetId2
+      SubnetId: !Select [1, !Split [",", !Ref SubnetIds]]
   LogfilesNFSMountTargetOnSubnet1:
     Type: AWS::EFS::MountTarget
     Properties:
       FileSystemId: fs-0e18651dfc267b9b5
       SecurityGroups:
         - !Ref DefaultNetwork
-      SubnetId: !Ref SubnetId1
+      SubnetId: !Select [0, !Split [",", !Ref SubnetIds]]
