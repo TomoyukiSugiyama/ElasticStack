@@ -21,19 +21,20 @@ Parameters:
 # ------------------------------------------------------------------------------
 Resources:
   CloudMap:
+    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
     Properties:
       Description: Service Map for Docker Compose project ecs
       Name: filebeat-cluster.local
       Vpc: !Ref VpcId
-    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
   Cluster:
+    Type: AWS::ECS::Cluster
     Properties:
       ClusterName: filebeat-cluster
       Tags:
         - Key: test.service.name
           Value: filebeat-cluster
-    Type: AWS::ECS::Cluster
   Default5066Ingress:
+    Type: AWS::EC2::SecurityGroupIngress
     Properties:
       CidrIp: 0.0.0.0/0
       Description: filebeat:5066/tcp on default network
@@ -41,28 +42,28 @@ Resources:
       GroupId: !Ref DefaultNetwork
       IpProtocol: TCP
       ToPort: 5066
-    Type: AWS::EC2::SecurityGroupIngress
   DefaultNetwork:
+    Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: ecs Security Group for default network
       Tags:
         - Key: test.service.name
           Value: filebeat-network
       VpcId: !Ref VpcId
-    Type: AWS::EC2::SecurityGroup
   DefaultNetworkIngress:
+    Type: AWS::EC2::SecurityGroupIngress
     Properties:
       Description: Allow communication within network default
       GroupId: !Ref DefaultNetwork
       IpProtocol: "-1"
       SourceSecurityGroupId: !Ref DefaultNetwork
-    Type: AWS::EC2::SecurityGroupIngress
   FilebeatService:
     DependsOn:
       - FilebeatTCP5066Listener
       - LogfilesNFSMountTargetOnSubnet1
       - LogfilesNFSMountTargetOnSubnet2
       - LogfilesNFSMountTargetOnSubnet3
+    Type: AWS::ECS::Service
     Properties:
       Cluster: !GetAtt Cluster.Arn
       DeploymentConfiguration:
@@ -94,8 +95,8 @@ Resources:
         - Key: test.service.name
           Value: filebeat
       TaskDefinition: !Ref FilebeatTaskDefinition
-    Type: AWS::ECS::Service
   FilebeatServiceDiscoveryEntry:
+    Type: AWS::ServiceDiscovery::Service
     Properties:
       Description: '"filebeat" service discovery entry in Cloud Map'
       DnsConfig:
@@ -107,8 +108,8 @@ Resources:
         FailureThreshold: 1
       Name: filebeat
       NamespaceId: !Ref CloudMap
-    Type: AWS::ServiceDiscovery::Service
   FilebeatTCP5066Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       DefaultActions:
         - ForwardConfig:
@@ -118,8 +119,8 @@ Resources:
       LoadBalancerArn: !Ref LoadBalancer
       Port: 5066
       Protocol: TCP
-    Type: AWS::ElasticLoadBalancingV2::Listener
   FilebeatTCP5066TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       Port: 5066
       Protocol: TCP
@@ -128,8 +129,8 @@ Resources:
           Value: filebeat-target-group
       TargetType: ip
       VpcId: !Ref VpcId
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
   FilebeatTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
     Properties:
       ContainerDefinitions:
         - Command:
@@ -180,8 +181,8 @@ Resources:
             FilesystemId: fs-0e18651dfc267b9b5
             TransitEncryption: ENABLED
           Name: log-files
-    Type: AWS::ECS::TaskDefinition
   FilebeatTaskExecutionRole:
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -198,8 +199,8 @@ Resources:
       Tags:
         - Key: test.service.name
           Value: filebeat-task-execution-role
-    Type: AWS::IAM::Role
   FilebeatTaskRole:
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -228,8 +229,8 @@ Resources:
       Tags:
         - Key: test.service.name
           Value: filebeat-task-role
-    Type: AWS::IAM::Role
   LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       LoadBalancerAttributes:
         - Key: load_balancing.cross_zone.enabled
@@ -243,12 +244,12 @@ Resources:
         - Key: test.service.name
           Value: filebeat-load-balancer
       Type: network
-    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
   LogGroup:
+    Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: /docker-compose/filebeat
-    Type: AWS::Logs::LogGroup
   LogfilesAccessPoint:
+    Type: AWS::EFS::AccessPoint
     Properties:
       AccessPointTags:
         - Key: test.service.name
@@ -256,25 +257,24 @@ Resources:
         - Key: Name
           Value: ecs_log-files
       FileSystemId: fs-0e18651dfc267b9b5
-    Type: AWS::EFS::AccessPoint
   LogfilesNFSMountTargetOnSubnet2:
+    Type: AWS::EFS::MountTarget
     Properties:
       FileSystemId: fs-0e18651dfc267b9b5
       SecurityGroups:
         - !Ref DefaultNetwork
       SubnetId: !Ref SubnetId2
-    Type: AWS::EFS::MountTarget
   LogfilesNFSMountTargetOnSubnet3:
+    Type: AWS::EFS::MountTarget
     Properties:
       FileSystemId: fs-0e18651dfc267b9b5
       SecurityGroups:
         - !Ref DefaultNetwork
       SubnetId: !Ref SubnetId3
-    Type: AWS::EFS::MountTarget
   LogfilesNFSMountTargetOnSubnet1:
+    Type: AWS::EFS::MountTarget
     Properties:
       FileSystemId: fs-0e18651dfc267b9b5
       SecurityGroups:
         - !Ref DefaultNetwork
       SubnetId: !Ref SubnetId1
-    Type: AWS::EFS::MountTarget
