@@ -17,19 +17,20 @@ Parameters:
 # ------------------------------------------------------------------------------
 Resources:
   CloudMap:
+    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
     Properties:
       Description: Service Map for Docker Compose project ecs
       Name: ecs.local
       Vpc: !Ref VpcId
-    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
   Cluster:
+    Type: AWS::ECS::Cluster
     Properties:
       ClusterName: ecs
       Tags:
         - Key: com.docker.compose.project
           Value: ecs
-    Type: AWS::ECS::Cluster
   Default8089Ingress:
+    Type: AWS::EC2::SecurityGroupIngress
     Properties:
       CidrIp: 0.0.0.0/0
       Description: master:8089/tcp on default network
@@ -38,8 +39,8 @@ Resources:
         Ref: DefaultNetwork
       IpProtocol: TCP
       ToPort: 8089
-    Type: AWS::EC2::SecurityGroupIngress
   DefaultNetwork:
+    Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: ecs Security Group for default network
       Tags:
@@ -48,8 +49,8 @@ Resources:
         - Key: com.docker.compose.network
           Value: ecs_default
       VpcId: !Ref VpcId
-    Type: AWS::EC2::SecurityGroup
   DefaultNetworkIngress:
+    Type: AWS::EC2::SecurityGroupIngress
     Properties:
       Description: Allow communication within network default
       GroupId:
@@ -57,8 +58,8 @@ Resources:
       IpProtocol: "-1"
       SourceSecurityGroupId:
         Ref: DefaultNetwork
-    Type: AWS::EC2::SecurityGroupIngress
   LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       LoadBalancerAttributes:
         - Key: load_balancing.cross_zone.enabled
@@ -69,14 +70,14 @@ Resources:
         - Key: com.docker.compose.project
           Value: ecs
       Type: network
-    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
   LogGroup:
+    Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: /docker-compose/ecs
-    Type: AWS::Logs::LogGroup
   MasterService:
     DependsOn:
       - MasterTCP8089Listener
+    Type: AWS::ECS::Service
     Properties:
       Cluster:
         Fn::GetAtt:
@@ -115,8 +116,8 @@ Resources:
           Value: master
       TaskDefinition:
         Ref: MasterTaskDefinition
-    Type: AWS::ECS::Service
   MasterServiceDiscoveryEntry:
+    Type: AWS::ServiceDiscovery::Service
     Properties:
       Description: '"master" service discovery entry in Cloud Map'
       DnsConfig:
@@ -129,8 +130,8 @@ Resources:
       Name: master
       NamespaceId:
         Ref: CloudMap
-    Type: AWS::ServiceDiscovery::Service
   MasterTCP8089Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       DefaultActions:
         - ForwardConfig:
@@ -142,8 +143,8 @@ Resources:
         Ref: LoadBalancer
       Port: 8089
       Protocol: TCP
-    Type: AWS::ElasticLoadBalancingV2::Listener
   MasterTCP8089TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       Port: 8089
       Protocol: TCP
@@ -152,8 +153,8 @@ Resources:
           Value: ecs
       TargetType: ip
       VpcId: !Ref VpcId
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
   MasterTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
     Properties:
       ContainerDefinitions:
         - Command:
@@ -202,8 +203,8 @@ Resources:
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
-    Type: AWS::ECS::TaskDefinition
   MasterTaskExecutionRole:
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -222,8 +223,8 @@ Resources:
           Value: ecs
         - Key: com.docker.compose.service
           Value: master
-    Type: AWS::IAM::Role
   WorkerService:
+    Type: AWS::ECS::Service
     Properties:
       Cluster:
         Fn::GetAtt:
@@ -257,8 +258,8 @@ Resources:
           Value: worker
       TaskDefinition:
         Ref: WorkerTaskDefinition
-    Type: AWS::ECS::Service
   WorkerServiceDiscoveryEntry:
+    Type: AWS::ServiceDiscovery::Service
     Properties:
       Description: '"worker" service discovery entry in Cloud Map'
       DnsConfig:
@@ -271,8 +272,8 @@ Resources:
       Name: worker
       NamespaceId:
         Ref: CloudMap
-    Type: AWS::ServiceDiscovery::Service
   WorkerTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
     Properties:
       ContainerDefinitions:
         - Command:
@@ -317,8 +318,8 @@ Resources:
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
-    Type: AWS::ECS::TaskDefinition
   WorkerTaskExecutionRole:
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -337,4 +338,3 @@ Resources:
           Value: ecs
         - Key: com.docker.compose.service
           Value: worker
-    Type: AWS::IAM::Role
