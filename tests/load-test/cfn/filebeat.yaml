@@ -226,7 +226,7 @@ Resources:
     Properties:
       LoadBalancerAttributes:
         - Key: load_balancing.cross_zone.enabled
-          Value: "true"
+          Value: true
       Scheme: internet-facing
       Subnets: !Split [",", !Ref SubnetIds]
       Tags:
