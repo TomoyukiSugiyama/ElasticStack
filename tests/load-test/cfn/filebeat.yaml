@@ -11,6 +11,9 @@ Parameters:
   DeployEnv:
     Type: String
     Default: dev
+  EfsFileSystemId:
+    Type: String
+    Default: fs-0e18651dfc267b9b6
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -170,7 +173,7 @@ Resources:
             AuthorizationConfig:
               AccessPointId: !Ref LogfilesAccessPoint
               IAM: ENABLED
-            FilesystemId: fs-0e18651dfc267b9b5
+            FilesystemId: !Ref EfsFileSystemId
             TransitEncryption: ENABLED
           Name: log-files
   FilebeatTaskExecutionRole:
@@ -215,7 +218,7 @@ Resources:
                     elasticfilesystem:AccessPointArn: !GetAtt LogfilesAccessPoint.Arn
                 Effect: Allow
                 Resource:
-                  - !Sub arn:aws:elasticfilesystem:${AWS::Region}:${AWS::AccountId}:file-system/fs-0e18651dfc267b9b5
+                  - !Sub arn:aws:elasticfilesystem:${AWS::Region}:${AWS::AccountId}:file-system/!Ref EfsFileSystemId
             Version: 2012-10-17
           PolicyName: FilebeatLogfilesVolumeMountPolicy
       Tags:
@@ -245,18 +248,18 @@ Resources:
           Value: filebeat-log-files-access-point
         - Key: Name
           Value: ecs_log-files
-      FileSystemId: fs-0e18651dfc267b9b5
+      FileSystemId: !Ref EfsFileSystemId
   LogfilesNFSMountTargetOnSubnet2:
     Type: AWS::EFS::MountTarget
     Properties:
-      FileSystemId: fs-0e18651dfc267b9b5
+      FileSystemId: !Ref EfsFileSystemId
       SecurityGroups:
         - !Ref DefaultNetwork
       SubnetId: !Select [1, !Split [",", !Ref SubnetIds]]
   LogfilesNFSMountTargetOnSubnet1:
     Type: AWS::EFS::MountTarget
     Properties:
-      FileSystemId: fs-0e18651dfc267b9b5
+      FileSystemId: !Ref EfsFileSystemId
       SecurityGroups:
         - !Ref DefaultNetwork
       SubnetId: !Select [0, !Split [",", !Ref SubnetIds]]
