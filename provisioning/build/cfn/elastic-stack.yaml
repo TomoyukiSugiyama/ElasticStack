@@ -42,7 +42,7 @@ Resources:
         VpcId: !GetAtt Network.Outputs.VpcId
         VpcCidrBlock: !Ref VpcCidrBlock
         DeployEnv: !Ref DeployEnv
-  SpringBoard:
+  Bastion:
     Type: AWS::CloudFormation::Stack
     DependsOn: Elb
     Properties:
