@@ -272,12 +272,15 @@ Resources:
   EfsMountEC2Instance:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: t2.micro
       ImageId: ami-02c3627b04781eada
       KeyName: elastic-stack
-      SecurityGroupIds:
-        - !Ref DefaultNetwork
-      SubnetId: !Select [0, !Split [",", !Ref SubnetIds]]
+      InstanceType: t2.micro
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          SubnetId: !Select [0, !Split [",", !Ref SubnetIds]]
+          GroupSet:
+            - !Ref DefaultNetwork
       Tags:
         - Key: Name
           Value: efs-mount-ec2
