@@ -308,6 +308,7 @@ Resources:
           date
           # Mount the EFS file system using Access Point
           sudo mount -t efs -o tls,accesspoint=${LogfilesAccessPoint} ${LogfilesFilesystem}:/ /home/ec2-user/efs
+          sudo chown -R ec2-user:ec2-user /home/ec2-user/efs/
       Tags:
         - Key: Name
           Value: efs-mount-ec2
