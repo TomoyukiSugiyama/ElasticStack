@@ -25,7 +25,7 @@ filebeat.inputs:
 
     # Paths that should be crawled and fetched. Glob based paths.
     paths:
-      - ./logs/*.csv
+      - /var/log/*.csv
 
     parsers:
       ### Multiline options
