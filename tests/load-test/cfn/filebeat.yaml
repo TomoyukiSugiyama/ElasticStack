@@ -281,6 +281,34 @@ Resources:
           SubnetId: !Select [0, !Split [",", !Ref SubnetIds]]
           GroupSet:
             - !Ref DefaultNetwork
+      # UserData:
+      #   Fn::Base64: !Sub |
+      #     #!/bin/bash
+      #     set -x
+      #     exec > >(tee /var/log/user-data.log|logger -t user-data ) 2>&1
+      #     # Installing the amazon-efs-utils Package on Amazon Linux
+      #     sudo yum -y install amazon-efs-utils
+      #      # A directory for our Python packages and model
+      #     mkdir -p /home/ec2-user/efs
+      #     # Wait for EFS File System to be ready and DNS to propagate
+      #     date
+      #     echo Waiting for EFS File System to be ready and DNS to propagate
+      #     until nslookup ${LogfilesFilesystem}.efs.us-east-1.amazonaws.com; do
+      #       sleep 5
+      #     done
+      #     date
+      #     # Mount the EFS file system using Access Point
+      #     sudo mount -t efs -o tls,accesspoint=${LogfilesAccessPoint} ${LogfilesFilesystem}:/ /home/ec2-user/efs
+      #     # Install Python and pip
+      #     sudo yum -y install python37
+      #     curl -O https://bootstrap.pypa.io/get-pip.py
+      #     python3 get-pip.py --user
+      #     # Install the required Python packages to be able to train a model and make inference
+      #     pip3 install joblib -t /home/ec2-user/efs/lib/
+      #     pip3 install pandas -t /home/ec2-user/efs/lib/
+      #     pip3 install sklearn -t /home/ec2-user/efs/lib/
+      #     pip3 install xgboost==1.1.1 -t /home/ec2-user/efs/lib/
+      #     sudo chown -R ec2-user:ec2-user /home/ec2-user/efs/
       Tags:
         - Key: Name
           Value: efs-mount-ec2
