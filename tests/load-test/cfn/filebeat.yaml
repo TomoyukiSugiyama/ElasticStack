@@ -11,6 +11,10 @@ Parameters:
   DeployEnv:
     Type: String
     Default: dev
+  KeyName:
+    Description: The EC2 Key Pair to allow SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: elastic-stack
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -38,6 +42,15 @@ Resources:
       GroupId: !Ref DefaultNetwork
       IpProtocol: TCP
       ToPort: 5066
+  DefaultSSHIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      Description: filebeat:22/tcp on default network
+      FromPort: 22
+      GroupId: !Ref DefaultNetwork
+      IpProtocol: TCP
+      ToPort: 22
   DefaultNetwork:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -273,7 +286,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       ImageId: ami-02c3627b04781eada
-      KeyName: elastic-stack
+      KeyName: !Ref KeyName
       InstanceType: t2.micro
       NetworkInterfaces:
         - AssociatePublicIpAddress: true
@@ -281,6 +294,25 @@ Resources:
           SubnetId: !Select [0, !Split [",", !Ref SubnetIds]]
           GroupSet:
             - !Ref DefaultNetwork
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -x
+          exec > >(tee /var/log/user-data.log|logger -t user-data ) 2>&1
+          # Installing the amazon-efs-utils Package on Amazon Linux
+          sudo yum -y install amazon-efs-utils
+           # A directory for our Python packages and model
+          mkdir -p /home/ec2-user/efs
+          # Wait for EFS File System to be ready and DNS to propagate
+          date
+          echo Waiting for EFS File System to be ready and DNS to propagate
+          until nslookup ${LogfilesFilesystem}.efs.ap-northeast-1.amazonaws.com; do
+            sleep 5
+          done
+          date
+          # Mount the EFS file system using Access Point
+          sudo mount -t efs -o tls,accesspoint=${LogfilesAccessPoint} ${LogfilesFilesystem}:/ /home/ec2-user/efs
+          sudo chown -R ec2-user:ec2-user /home/ec2-user/efs/
       Tags:
         - Key: Name
           Value: efs-mount-ec2
