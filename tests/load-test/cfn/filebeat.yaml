@@ -11,6 +11,10 @@ Parameters:
   DeployEnv:
     Type: String
     Default: dev
+  KeyName:
+    Description: The EC2 Key Pair to allow SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: elastic-stack
 
 # ------------------------------------------------------------------------------
 # Resources
@@ -282,7 +286,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       ImageId: ami-02c3627b04781eada
-      KeyName: elastic-stack
+      KeyName: !Ref KeyName
       InstanceType: t2.micro
       NetworkInterfaces:
         - AssociatePublicIpAddress: true
