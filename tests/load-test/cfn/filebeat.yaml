@@ -163,7 +163,7 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: ecs
           MountPoints:
-            - ContainerPath: /var/log
+            - ContainerPath: /
               SourceVolume: log-files
           Name: filebeat
           PortMappings:
@@ -320,3 +320,4 @@ Resources:
       - LogfilesFilesystem
       - LogfilesAccessPoint
       - LogfilesNfsMountTargetOnSubnet1
+      - FilebeatTaskDefinition
