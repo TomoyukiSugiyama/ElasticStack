@@ -69,8 +69,8 @@ Resources:
   FilebeatService:
     DependsOn:
       - FilebeatTCP5066Listener
-      - LogfilesNFSMountTargetOnSubnet1
-      - LogfilesNFSMountTargetOnSubnet2
+      - LogfilesNfsMountTargetOnSubnet1
+      - LogfilesNfsMountTargetOnSubnet2
     Type: AWS::ECS::Service
     Properties:
       Cluster: !GetAtt Cluster.Arn
@@ -84,7 +84,7 @@ Resources:
       LoadBalancers:
         - ContainerName: filebeat
           ContainerPort: 5066
-          TargetGroupArn: !Ref FilebeatTCP5066TargetGroup
+          TargetGroupArn: !Ref FilebeatTcp5066TargetGroup
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: ENABLED
@@ -119,12 +119,12 @@ Resources:
       DefaultActions:
         - ForwardConfig:
             TargetGroups:
-              - TargetGroupArn: !Ref FilebeatTCP5066TargetGroup
+              - TargetGroupArn: !Ref FilebeatTcp5066TargetGroup
           Type: forward
       LoadBalancerArn: !Ref LoadBalancer
       Port: 5066
       Protocol: TCP
-  FilebeatTCP5066TargetGroup:
+  FilebeatTcp5066TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       Port: 5066
@@ -268,21 +268,21 @@ Resources:
           Value: filebeat-log-files-filesystem
         - Key: Name
           Value: ecs-filesystem
-  LogfilesNFSMountTargetOnSubnet2:
+  LogfilesNfsMountTargetOnSubnet2:
     Type: AWS::EFS::MountTarget
     Properties:
       FileSystemId: !Ref LogfilesFilesystem
       SecurityGroups:
         - !Ref DefaultNetwork
       SubnetId: !Select [1, !Split [",", !Ref SubnetIds]]
-  LogfilesNFSMountTargetOnSubnet1:
+  LogfilesNfsMountTargetOnSubnet1:
     Type: AWS::EFS::MountTarget
     Properties:
       FileSystemId: !Ref LogfilesFilesystem
       SecurityGroups:
         - !Ref DefaultNetwork
       SubnetId: !Select [0, !Split [",", !Ref SubnetIds]]
-  EfsMountEC2Instance:
+  EfsMountEc2:
     Type: AWS::EC2::Instance
     Properties:
       ImageId: ami-02c3627b04781eada
@@ -319,4 +319,4 @@ Resources:
     DependsOn:
       - LogfilesFilesystem
       - LogfilesAccessPoint
-      - LogfilesNFSMountTargetOnSubnet1
+      - LogfilesNfsMountTargetOnSubnet1
