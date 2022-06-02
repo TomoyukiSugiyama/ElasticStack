@@ -93,10 +93,10 @@ filebeat.config.modules:
 
 # ======================= Elasticsearch template setting =======================
 
-setup.template.settings:
-  index.number_of_shards: 1
-  #index.codec: best_compression
-  #_source.enabled: false
+# setup.template.settings:
+#   index.number_of_shards: 1
+#index.codec: best_compression
+#_source.enabled: false
 
 # ================================== General ===================================
 
