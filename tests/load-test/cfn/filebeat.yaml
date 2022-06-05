@@ -69,8 +69,8 @@ Resources:
   FilebeatService:
     DependsOn:
       - FilebeatTCP5066Listener
-      - LogfilesNfsMountTargetOnSubnet1
-      - LogfilesNfsMountTargetOnSubnet2
+      # - LogfilesNfsMountTargetOnSubnet1
+      # - LogfilesNfsMountTargetOnSubnet2
     Type: AWS::ECS::Service
     Properties:
       Cluster: !GetAtt Cluster.Arn
@@ -162,9 +162,9 @@ Resources:
               awslogs-group: !Ref LogGroup
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: ecs
-          MountPoints:
-            - ContainerPath: /var/log
-              SourceVolume: log-files
+          # MountPoints:
+          #   - ContainerPath: /var/log
+          #     SourceVolume: log-files
           Name: filebeat
           PortMappings:
             - ContainerPort: 5066
@@ -177,15 +177,15 @@ Resources:
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
-      TaskRoleArn: !Ref FilebeatTaskRole
-      Volumes:
-        - EFSVolumeConfiguration:
-            AuthorizationConfig:
-              AccessPointId: !Ref LogfilesAccessPoint
-              IAM: ENABLED
-            FilesystemId: !Ref LogfilesFilesystem
-            TransitEncryption: ENABLED
-          Name: log-files
+      # TaskRoleArn: !Ref FilebeatTaskRole
+      # Volumes:
+      #   - EFSVolumeConfiguration:
+      #       AuthorizationConfig:
+      #         AccessPointId: !Ref LogfilesAccessPoint
+      #         IAM: ENABLED
+      #       FilesystemId: !Ref LogfilesFilesystem
+      #       TransitEncryption: ENABLED
+      #     Name: log-files
   FilebeatTaskExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -204,36 +204,36 @@ Resources:
       Tags:
         - Key: test.service.name
           Value: filebeat-task-execution-role
-  FilebeatTaskRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Action:
-              - sts:AssumeRole
-            Condition: {}
-            Effect: Allow
-            Principal:
-              Service: ecs-tasks.amazonaws.com
-        Version: 2012-10-17
-      Policies:
-        - PolicyDocument:
-            Statement:
-              - Action:
-                  - elasticfilesystem:ClientMount
-                  - elasticfilesystem:ClientWrite
-                  - elasticfilesystem:ClientRootAccess
-                Condition:
-                  StringEquals:
-                    elasticfilesystem:AccessPointArn: !GetAtt LogfilesAccessPoint.Arn
-                Effect: Allow
-                Resource:
-                  - !GetAtt LogfilesFilesystem.Arn
-            Version: 2012-10-17
-          PolicyName: FilebeatLogfilesVolumeMountPolicy
-      Tags:
-        - Key: test.service.name
-          Value: filebeat-task-role
+  # FilebeatTaskRole:
+  #   Type: AWS::IAM::Role
+  #   Properties:
+  #     AssumeRolePolicyDocument:
+  #       Statement:
+  #         - Action:
+  #             - sts:AssumeRole
+  #           Condition: {}
+  #           Effect: Allow
+  #           Principal:
+  #             Service: ecs-tasks.amazonaws.com
+  #       Version: 2012-10-17
+  #     Policies:
+  #       - PolicyDocument:
+  #           Statement:
+  #             - Action:
+  #                 - elasticfilesystem:ClientMount
+  #                 - elasticfilesystem:ClientWrite
+  #                 - elasticfilesystem:ClientRootAccess
+  #               Condition:
+  #                 StringEquals:
+  #                   elasticfilesystem:AccessPointArn: !GetAtt LogfilesAccessPoint.Arn
+  #               Effect: Allow
+  #               Resource:
+  #                 - !GetAtt LogfilesFilesystem.Arn
+  #           Version: 2012-10-17
+  #         PolicyName: FilebeatLogfilesVolumeMountPolicy
+  #     Tags:
+  #       - Key: test.service.name
+  #         Value: filebeat-task-role
   LoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -250,74 +250,74 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: /docker-compose/filebeat
-  LogfilesAccessPoint:
-    Type: AWS::EFS::AccessPoint
-    Properties:
-      AccessPointTags:
-        - Key: test.service.name
-          Value: filebeat-log-files-access-point
-        - Key: Name
-          Value: ecs-access-point
-      FileSystemId: !Ref LogfilesFilesystem
-  LogfilesFilesystem:
-    Type: AWS::EFS::FileSystem
-    Properties:
-      Encrypted: true
-      FileSystemTags:
-        - Key: test.service.name
-          Value: filebeat-log-files-filesystem
-        - Key: Name
-          Value: ecs-filesystem
-  LogfilesNfsMountTargetOnSubnet2:
-    Type: AWS::EFS::MountTarget
-    Properties:
-      FileSystemId: !Ref LogfilesFilesystem
-      SecurityGroups:
-        - !Ref DefaultNetwork
-      SubnetId: !Select [1, !Split [",", !Ref SubnetIds]]
-  LogfilesNfsMountTargetOnSubnet1:
-    Type: AWS::EFS::MountTarget
-    Properties:
-      FileSystemId: !Ref LogfilesFilesystem
-      SecurityGroups:
-        - !Ref DefaultNetwork
-      SubnetId: !Select [0, !Split [",", !Ref SubnetIds]]
-  EfsMountEc2:
-    Type: AWS::EC2::Instance
-    Properties:
-      ImageId: ami-02c3627b04781eada
-      KeyName: !Ref KeyName
-      InstanceType: t2.micro
-      NetworkInterfaces:
-        - AssociatePublicIpAddress: true
-          DeviceIndex: 0
-          SubnetId: !Select [0, !Split [",", !Ref SubnetIds]]
-          GroupSet:
-            - !Ref DefaultNetwork
-      UserData:
-        Fn::Base64: !Sub |
-          #!/bin/bash
-          set -x
-          exec > >(tee /var/log/user-data.log|logger -t user-data ) 2>&1
-          # Installing the amazon-efs-utils Package on Amazon Linux
-          sudo yum -y install amazon-efs-utils
-           # A directory for our Python packages and model
-          mkdir -p /home/ec2-user/efs
-          # Wait for EFS File System to be ready and DNS to propagate
-          date
-          echo Waiting for EFS File System to be ready and DNS to propagate
-          until nslookup ${LogfilesFilesystem}.efs.ap-northeast-1.amazonaws.com; do
-            sleep 5
-          done
-          date
-          # Mount the EFS file system using Access Point
-          sudo mount -t efs -o tls,accesspoint=${LogfilesAccessPoint} ${LogfilesFilesystem}:/ /home/ec2-user/efs
-          sudo chown -R ec2-user:ec2-user /home/ec2-user/efs/
-      Tags:
-        - Key: Name
-          Value: efs-mount-ec2
-    DependsOn:
-      - LogfilesFilesystem
-      - LogfilesAccessPoint
-      - LogfilesNfsMountTargetOnSubnet1
-      - FilebeatTaskDefinition
+  # LogfilesAccessPoint:
+  #   Type: AWS::EFS::AccessPoint
+  #   Properties:
+  #     AccessPointTags:
+  #       - Key: test.service.name
+  #         Value: filebeat-log-files-access-point
+  #       - Key: Name
+  #         Value: ecs-access-point
+  #     FileSystemId: !Ref LogfilesFilesystem
+  # LogfilesFilesystem:
+  #   Type: AWS::EFS::FileSystem
+  #   Properties:
+  #     Encrypted: true
+  #     FileSystemTags:
+  #       - Key: test.service.name
+  #         Value: filebeat-log-files-filesystem
+  #       - Key: Name
+  #         Value: ecs-filesystem
+  # LogfilesNfsMountTargetOnSubnet2:
+  #   Type: AWS::EFS::MountTarget
+  #   Properties:
+  #     FileSystemId: !Ref LogfilesFilesystem
+  #     SecurityGroups:
+  #       - !Ref DefaultNetwork
+  #     SubnetId: !Select [1, !Split [",", !Ref SubnetIds]]
+  # LogfilesNfsMountTargetOnSubnet1:
+  #   Type: AWS::EFS::MountTarget
+  #   Properties:
+  #     FileSystemId: !Ref LogfilesFilesystem
+  #     SecurityGroups:
+  #       - !Ref DefaultNetwork
+  #     SubnetId: !Select [0, !Split [",", !Ref SubnetIds]]
+  # EfsMountEc2:
+  #   Type: AWS::EC2::Instance
+  #   Properties:
+  #     ImageId: ami-02c3627b04781eada
+  #     KeyName: !Ref KeyName
+  #     InstanceType: t2.micro
+  #     NetworkInterfaces:
+  #       - AssociatePublicIpAddress: true
+  #         DeviceIndex: 0
+  #         SubnetId: !Select [0, !Split [",", !Ref SubnetIds]]
+  #         GroupSet:
+  #           - !Ref DefaultNetwork
+  #     UserData:
+  #       Fn::Base64: !Sub |
+  #         #!/bin/bash
+  #         set -x
+  #         exec > >(tee /var/log/user-data.log|logger -t user-data ) 2>&1
+  #         # Installing the amazon-efs-utils Package on Amazon Linux
+  #         sudo yum -y install amazon-efs-utils
+  #          # A directory for our Python packages and model
+  #         mkdir -p /home/ec2-user/efs
+  #         # Wait for EFS File System to be ready and DNS to propagate
+  #         date
+  #         echo Waiting for EFS File System to be ready and DNS to propagate
+  #         until nslookup ${LogfilesFilesystem}.efs.${AWS::Region}.amazonaws.com; do
+  #           sleep 5
+  #         done
+  #         date
+  #         # Mount the EFS file system using Access Point
+  #         sudo mount -t efs -o tls,accesspoint=${LogfilesAccessPoint} ${LogfilesFilesystem}:/ /home/ec2-user/efs
+  #         sudo chown -R ec2-user:ec2-user /home/ec2-user/efs/
+  #     Tags:
+  #       - Key: Name
+  #         Value: efs-mount-ec2
+  #   DependsOn:
+  #     - LogfilesFilesystem
+  #     - LogfilesAccessPoint
+  #     - LogfilesNfsMountTargetOnSubnet1
+  #     - FilebeatTaskDefinition
