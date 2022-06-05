@@ -306,7 +306,7 @@ Resources:
           # Wait for EFS File System to be ready and DNS to propagate
           date
           echo Waiting for EFS File System to be ready and DNS to propagate
-          until nslookup ${LogfilesFilesystem}.efs.ap-northeast-1.amazonaws.com; do
+          until nslookup ${LogfilesFilesystem}.efs.${AWS::Region}.amazonaws.com; do
             sleep 5
           done
           date
