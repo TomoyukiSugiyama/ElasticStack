@@ -170,10 +170,9 @@ $ sh -i ~/.ssh/your-key.pem ec2-user@your-ec2-instance-public-ip -N -L 9200:vpc-
 ```
 
 # Load test
-deploy filebeat cluster.
+Deploy filebeat cluster.
 
 
 ```
 $ ./tests/load-test/run-filebeat.sh
-
 ```
