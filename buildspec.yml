@@ -10,8 +10,8 @@ phases:
       - export ECR_URI=$(aws ecr describe-repositories --repository-names dev-repogitory --query 'repositories[].repositoryUri' --output text)
       - pip install cfn-lint
       - gem install cfn-nag
-      - curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/aws-cloudformation/cloudformation-guard/main/install-guard.sh | sh
-      - export PATH="~/.guard/bin/:$PATH"
+      # - curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/aws-cloudformation/cloudformation-guard/main/install-guard.sh | sh
+      # - export PATH="~/.guard/bin/:$PATH"
       - chmod +x ${CODEBUILD_SRC_DIR}/provisioning/build/lambda/build.sh
       - chmod +x ${CODEBUILD_SRC_DIR}/provisioning/build/ecs/deploy-container-image-to-ecr.sh
       - chmod +x ${CODEBUILD_SRC_DIR}/provisioning/helper-scripts/s3-ops.sh
@@ -22,8 +22,8 @@ phases:
     commands:
       - cfn-lint -t ${CODEBUILD_SRC_DIR}/provisioning/build/cfn/*
       - cfn_nag_scan --input-path ${CODEBUILD_SRC_DIR}/provisioning/build/cfn/
-      - cd ${CODEBUILD_SRC_DIR}/cfn-guard-rules
-      - ./run-cfn-guard.sh
+      # - cd ${CODEBUILD_SRC_DIR}/cfn-guard-rules
+      # - ./run-cfn-guard.sh
 
   build:
     on-failure: ABORT
